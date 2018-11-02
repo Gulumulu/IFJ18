@@ -6,6 +6,7 @@
  * Precedence table
  */
 #include "prectable.h"
+#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,8 +18,7 @@
  */
 void checkMalloc(const char* checkedString) {
     if (checkedString == NULL) {
-        fprintf(stderr, "Stack error. Not enough space to perform malloc!");
-        return;
+        errorHandling(99);
     }
 }
 
@@ -39,28 +39,32 @@ void init(tExpendedStack* stack) {
  * @param c pointer to char is pushed element
  */
 void push(tExpendedStack* stack, char* c) {
-    char* tmp = malloc(strlen(stack->content)+strlen(c));
-    checkMalloc(tmp);
-    strcpy(tmp, stack->content);
-    stack->content = malloc(strlen(tmp)+strlen(c));
-    checkMalloc(stack->content);
-    if (strcmp(c, "<=") == 0) {     // in case we are pushing two chars
-        strcat(tmp,".");
-    } else if (strcmp(c, ">=") == 0){
-        strcat(tmp,",");
-    } else if (strcmp(c, "==") == 0){
-        strcat(tmp,"?");
-    } else if (strcmp(c, "!=") == 0){
-        strcat(tmp,"!");
-    } else if (strcmp(c, ">") == 0){
-        strcat(tmp,"g");
-    } else if (strcmp(c, "<") == 0){
-        strcat(tmp,"l");
+    if (stack == NULL) {
+        errorHandling(99);
     } else {
-        strcat(tmp, c);
+        char *tmp = malloc(strlen(stack->content) + strlen(c));
+        checkMalloc(tmp);
+        strcpy(tmp, stack->content);
+        stack->content = malloc(strlen(tmp) + strlen(c));
+        checkMalloc(stack->content);
+        if (strcmp(c, "<=") == 0) {     // in case we are pushing two chars
+            strcat(tmp, ".");
+        } else if (strcmp(c, ">=") == 0) {
+            strcat(tmp, ",");
+        } else if (strcmp(c, "==") == 0) {
+            strcat(tmp, "?");
+        } else if (strcmp(c, "!=") == 0) {
+            strcat(tmp, "!");
+        } else if (strcmp(c, ">") == 0) {
+            strcat(tmp, "g");
+        } else if (strcmp(c, "<") == 0) {
+            strcat(tmp, "l");
+        } else {
+            strcat(tmp, c);
+        }
+        strcpy(stack->content, tmp);
+        stack->top++;
     }
-    strcpy(stack->content, tmp);
-    stack->top++;
 }
 
 /**
@@ -70,8 +74,7 @@ void push(tExpendedStack* stack, char* c) {
  */
 void pop(tExpendedStack* stack) {
     if (stack->top == 0) {
-        fprintf(stderr, "Stack error. Trying to pop empty stack!");
-        return;
+        errorHandling(99);
     } else {
         stack->top--;
         char* tmp = malloc(strlen(stack->content)-1);
@@ -80,7 +83,6 @@ void pop(tExpendedStack* stack) {
         stack->content = malloc(strlen(tmp));
         checkMalloc(stack->content);
         memcpy(stack->content, tmp, strlen(tmp));
-        //printf("%s",tmp);
     }
 }
 
@@ -152,7 +154,9 @@ int getTableOffset(char* terminal) {
  * @return char of first terminal
  */
 char getTop(tExpendedStack* stack) {
-    if (stack != NULL) {
+    if (stack == NULL) {
+        errorHandling(99);
+    } else {
         if (stack->top == 1) {
             return stack->content[0];
         } else {
@@ -163,9 +167,6 @@ char getTop(tExpendedStack* stack) {
             }
             return stack->content[tmp];
         }
-    } else {
-        fprintf(stderr, "Stack error. Unable to get top terminal from stack.");
-        return 99;
     }
 }
 
@@ -187,6 +188,72 @@ char* appendChar(char* string, char addedChar) {
 }
 
 /**
+ * Function changes top-most terminal in stack to top-most+'<'. E.g. '$' -> '$<'
+ *
+ * @param stack pointer to tExpendedStack structure is stack to which rule sign is pushed
+ * @param firstChar character of top-most terminal in stack
+ */
+void pushEndRuleSign(tExpendedStack* stack, char firstChar) {
+    if (stack == NULL) {
+        errorHandling(99);
+    } else {
+        char *rest = strrchr(stack->content, firstChar);
+        char *beginning = malloc(strlen(stack->content) + 2);
+        memcpy(beginning, stack->content, (strlen(stack->content) - strlen(rest)) + 1);
+        beginning = appendChar(beginning, '<');
+        for (int i = 0; i < strlen(rest) - 1; i++) {
+            rest[i] = rest[i + 1];
+        }
+        if (strlen(rest) != 1) {
+            rest[strlen(rest)-1] = '\0';
+            strcat(beginning, rest);
+        } else {
+            strcat(beginning, "\0");
+        }
+        stack->content = beginning;
+        stack->top++;
+    }
+}
+
+/**
+ * Function changes terminals to non terminals according to rules.
+ *
+ * @param stack pointer to tExpendedStack structure is stack in which terminals are changed
+ * @param handle pointer to char is right side of rule
+ * @param rule pointer to char is left side of rule
+ */
+void applyRule(tExpendedStack* stack, char* handle,char* rule) {
+    if (stack == NULL) {
+        errorHandling(99);
+    } else {
+        char *tmpStackContent = malloc(strlen(stack->content) - strlen(handle) + strlen(rule) + 1);
+        memcpy(tmpStackContent, stack->content, strlen(stack->content) - strlen(handle));
+        strcat(tmpStackContent, rule);
+        stack->top -= (strlen(handle) - 1);
+        stack->content = tmpStackContent;
+    }
+}
+
+/**
+ * Function checks whether rule exists according to right side a.k.a handle.
+ *
+ * @param stack pointer to tExpendedStack structure is stack in which terminals are changed
+ * @param handle pointer to char is right side of rule
+ */
+void changeHandle(tExpendedStack* stack, char* handle) {
+    if (stack == NULL) {
+        errorHandling(99);
+    } else {
+        char* bigE = "E";
+        if (strcmp(handle, "<i") == 0 || strcmp(handle, "<E+E") == 0 || strcmp(handle, "<E*E") == 0 || strcmp(handle, "<(E)") == 0) {
+            applyRule(stack, handle, bigE);
+        } else {
+            errorHandling(99);                  // no rule for this kind of handle
+        }
+    }
+}
+
+/**
  * Function simulates operator precedence look up for given token.
  *
  * @param inputToken pointer to char is input token string
@@ -196,8 +263,7 @@ void simulatePrecedence(char* inputToken) {
     stack = malloc(sizeof(tExpendedStack));
 
     if (stack == NULL) {                        // stack error
-        fprintf(stderr, "Stack error. Not enough space to initialize stack!");
-        //return 99;
+        errorHandling(99);
     } else {
         init(stack);
 
@@ -209,50 +275,44 @@ void simulatePrecedence(char* inputToken) {
             a = "";
             b = "";
             char tmp1 = getTop(stack);
-            char tmp2 = inputToken[tokenOffset++];
+            char tmp2 = inputToken[tokenOffset];
 
-            /*size_t len = strlen(a);
-            char* a2 = malloc(len + 2);
-            strcpy(a2,a);
-            a2[len] = tmp1;
-            a2[len+1] = '\0';
-
-            len = strlen(b);
-            char* b2 = malloc(len + 2);
-            strcpy(b2,b);
-            b2[len] = tmp2;
-            b2[len+1] = '\0';*/
-            /*char* a2 = malloc(strlen(a) + 2);
-            char* b2 = malloc(strlen(b) + 2);*/
             a = appendChar(a, tmp1);
             b = appendChar(b, tmp2);
 
             int row = getTableOffset(a);
             int col = getTableOffset(b);
+            if (row > 13 || col > 13) {
+                errorHandling(99);                      // symbol doesn't occur in precedence table
+            }
+            if (row == 13 && col == 13) {
+                break;
+            }
             char prec = precTable[row][col];
             char* handle;
 
             switch (prec) {
                 case '=' :
                     push(stack, appendChar(emptyString, tmp2));
+                    tokenOffset++;
                     break;
                 case '<' :
-                    push(stack, "|");
+                    pushEndRuleSign(stack, tmp1);
                     push(stack, appendChar(emptyString, tmp2));
+                    tokenOffset++;
                     break;
                 case '>' :
-                    handle = strrchr(stack->content, '|');
-                    if (handle != NULL) {           // also check if rule exists
-                        // todo: change '<y' a.k.a '|handle' to 'E'
+                    handle = strrchr(stack->content, '<');
+                    if (handle != NULL) {
+                        changeHandle(stack, handle);
+                        // also check if rule exists
                         fprintf(stdout, "%s\n", handle);    // write rule to stdout
                     } else {
-                        fprintf(stderr, "Cannot find the appropriate rule.");
-                        // return 99;
+                        errorHandling(99);                  // cannot find the right rule
                     }
                     break;
                 default:
-                    fprintf(stderr, "Empty space in precedence table.");
-                    //return 99;
+                    errorHandling(99);                      // empty space in precedence table
                     break;
             }
         } while (strcmp(a, "$") != 0 || strcmp(b, "$") != 0);

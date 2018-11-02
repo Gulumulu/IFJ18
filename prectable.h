@@ -18,6 +18,9 @@ typedef struct {
 void init(tExpendedStack* stack);
 void push(tExpendedStack* stack, char* c);
 void pop(tExpendedStack* stack);
+void pushEndRuleSign(tExpendedStack* stack, char firstChar);
+void changeHandle(tExpendedStack* stack, char* handle);
+void applyRule(tExpendedStack* stack, char* handle,char* rule);
 
 // helper functions
 void checkMalloc(const char* checkedString);

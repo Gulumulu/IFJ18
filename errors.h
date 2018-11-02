@@ -1,0 +1,14 @@
+//
+// Created by parek on 11/2/18.
+//
+/**
+ * Header for error types
+ * Implemented by Marek Varga, xvarga14
+ */
+#ifndef IFJ_ERRORS_H
+#define IFJ_ERRORS_H
+
+int ERROR_TYPE = 0;
+
+void errorHandling(int errorNumber);
+#endif //IFJ_ERRORS_H
