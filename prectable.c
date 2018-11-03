@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "sematnic.h"
 
 /**
  * Function checks whether given string passed malloc.
@@ -245,8 +246,18 @@ void changeHandle(tExpendedStack* stack, char* handle) {
         errorHandling(99);
     } else {
         char* bigE = "E";
-        if (strcmp(handle, "<i") == 0 || strcmp(handle, "<E+E") == 0 || strcmp(handle, "<E*E") == 0 || strcmp(handle, "<(E)") == 0) {
+        if (strcmp(handle, "<i") == 0) {
             applyRule(stack, handle, bigE);
+            rule = 4;
+        } else if (strcmp(handle, "<E+E") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 1;
+        } else if (strcmp(handle, "<E*E") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 2;
+        } else if (strcmp(handle, "<(E)") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 3;
         } else {
             errorHandling(99);                  // no rule for this kind of handle
         }
@@ -305,6 +316,17 @@ void simulatePrecedence(char* inputToken) {
                     handle = strrchr(stack->content, '<');
                     if (handle != NULL) {
                         changeHandle(stack, handle);
+                        switch (rule) {
+                            case 1:
+                            case 2:
+                            case 3:
+
+                                break;
+                            case 4:
+                                break;
+                            default:
+                                break;
+                        }
                         // also check if rule exists
                         fprintf(stdout, "%s\n", handle);    // write rule to stdout
                     } else {

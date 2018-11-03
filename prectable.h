@@ -8,6 +8,8 @@
 #ifndef IFJ_PRECTABLE_H
 #define IFJ_PRECTABLE_H
 
+int rule;
+
 // structure for extended stack
 typedef struct {
     int top;

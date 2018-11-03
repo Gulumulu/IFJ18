@@ -15,6 +15,7 @@ typedef struct BSTNodeContent {
     char* ID;
     int declared;
     int defined;
+    char* type;
 } BSTNodeContentPtr;
 
 typedef struct BSTNode {
