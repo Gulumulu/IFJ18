@@ -26,6 +26,6 @@ void errorHandling(int errorNumber) {
     } else if (errorNumber == 9) {
         fprintf(stderr, "Division by zero!!!\n");
     } else if (errorNumber == 99) {
-        fprintf(stderr, "Internal compiler error. Sorry\n");
+        fprintf(stderr, "Internal compiler error. Sorry :(\n");
     }
 }
