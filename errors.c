@@ -1,12 +1,17 @@
 //
 // Created by parek on 11/2/18.
 //
+/**
+ * Source file for error types
+ * Implemented by Marek Varga, xvarga14
+ */
 #include <stdio.h>
 #include "errors.h"
 
 /**
- * Source file for error types
- * Implemented by Marek Varga, xvarga14
+ * Function displays appropriate error message according to error number.
+ *
+ * @param errorNumber error number occurred during compilation
  */
 void errorHandling(int errorNumber) {
     ERROR_TYPE = errorNumber;

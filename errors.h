@@ -8,7 +8,7 @@
 #ifndef IFJ_ERRORS_H
 #define IFJ_ERRORS_H
 
-int ERROR_TYPE = 0;
+int ERROR_TYPE;
 
 void errorHandling(int errorNumber);
 #endif //IFJ_ERRORS_H

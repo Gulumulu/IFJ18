@@ -8,6 +8,9 @@
 #ifndef IFJ_PRECTABLE_H
 #define IFJ_PRECTABLE_H
 
+#include "sematnic.h"
+#include "errors.h"
+
 int rule;
 
 // structure for extended stack
@@ -27,7 +30,7 @@ void applyRule(tExpendedStack* stack, char* handle,char* rule);
 // helper functions
 void checkMalloc(const char* checkedString);
 int getTableOffset(char* terminal);
-void simulatePrecedence(char* inputToken);
+void simulatePrecedence(char* inputToken, tASTPointer* AST);
 char getTop(tExpendedStack* stack);
 char* appendChar(char *string, char addedChar);
 #endif //IFJ_PRECTABLE_H

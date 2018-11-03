@@ -6,11 +6,9 @@
  * Precedence table
  */
 #include "prectable.h"
-#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "sematnic.h"
 
 /**
  * Function checks whether given string passed malloc.
@@ -269,14 +267,26 @@ void changeHandle(tExpendedStack* stack, char* handle) {
  *
  * @param inputToken pointer to char is input token string
  */
-void simulatePrecedence(char* inputToken) {
-    tExpendedStack* stack;
-    stack = malloc(sizeof(tExpendedStack));
-
-    if (stack == NULL) {                        // stack error
+void simulatePrecedence(char* inputToken, tASTPointer* AST) {
+    // todo: delete this
+    BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
+    if (tmpNode == NULL) {
         errorHandling(99);
     } else {
-        init(stack);
+        tmpNode->type = "int";
+        tmpNode->value = 3;
+    }
+
+    tExpendedStack* expendedStack;
+    expendedStack = malloc(sizeof(tExpendedStack));
+    tStackASTPtr* stackAST;
+    stackAST = malloc(sizeof(struct tStackAST));
+
+    if (expendedStack == NULL || stackAST == NULL) {                        // expendedStack error
+        errorHandling(99);
+    } else {
+        init(expendedStack);
+        tStackASTInit(stackAST);
 
         int tokenOffset = 0;                    // offset by which to look into the input token
         char* a;
@@ -285,7 +295,7 @@ void simulatePrecedence(char* inputToken) {
         do {
             a = "";
             b = "";
-            char tmp1 = getTop(stack);
+            char tmp1 = getTop(expendedStack);
             char tmp2 = inputToken[tokenOffset];
 
             a = appendChar(a, tmp1);
@@ -304,25 +314,26 @@ void simulatePrecedence(char* inputToken) {
 
             switch (prec) {
                 case '=' :
-                    push(stack, appendChar(emptyString, tmp2));
+                    push(expendedStack, appendChar(emptyString, tmp2));
                     tokenOffset++;
                     break;
                 case '<' :
-                    pushEndRuleSign(stack, tmp1);
-                    push(stack, appendChar(emptyString, tmp2));
+                    pushEndRuleSign(expendedStack, tmp1);
+                    push(expendedStack, appendChar(emptyString, tmp2));
                     tokenOffset++;
                     break;
                 case '>' :
-                    handle = strrchr(stack->content, '<');
+                    handle = strrchr(expendedStack->content, '<');
                     if (handle != NULL) {
-                        changeHandle(stack, handle);
+                        changeHandle(expendedStack, handle);
                         switch (rule) {
                             case 1:
                             case 2:
                             case 3:
-
+                                tStackASTPush(stackAST, makeTree(tmp1, tStackASTPop(stackAST), tStackASTPop(stackAST)));
                                 break;
                             case 4:
+                                tStackASTPush(stackAST, makeLeaf(tmpNode));
                                 break;
                             default:
                                 break;

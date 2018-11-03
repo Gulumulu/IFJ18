@@ -16,6 +16,7 @@ typedef struct BSTNodeContent {
     int declared;
     int defined;
     char* type;
+    int value;
 } BSTNodeContentPtr;
 
 typedef struct BSTNode {

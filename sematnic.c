@@ -6,11 +6,9 @@
  *  Implemented by Marek Varga, xvarga14
  */
 #include <memory.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "sematnic.h"
-#include "symtable.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "errors.h"
 
 /**
  * Function initializes AST.
@@ -89,13 +87,63 @@ tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPoint
             newTree->LeftPointer = leftPointer;
             newTree->RightPointer = rightPointer;
             newTree->ID = ID;
-            newTree->content = NULL;
             if (matchingTypes(leftPointer->content, rightPointer->content) != 0) {
-                return newTree;
+                BSTNodeContentPtr* tmpContent = malloc(sizeof(struct BSTNodeContent));
+                if (tmpContent == NULL) {
+                    errorHandling(99);
+                    return NULL;
+                } else {
+                    tmpContent->type = malloc(strlen(leftPointer->content->type)+1);
+                    memcpy(tmpContent->type, leftPointer->content->type, strlen(leftPointer->content->type));
+                    newTree->content = tmpContent;
+                    return newTree;
+                }
             } else {
                 errorHandling(4);
                 return NULL;
             }
         }
+    }
+}
+
+/**
+ * Function initializes stack of ASTs.
+ *
+ * @param stack
+ */
+void tStackASTInit(tStackASTPtr* stack) {
+    stack->top = 0;
+}
+
+/**
+ * Function pushes AST into the stack of ASTs.
+ *
+ * @param stack
+ * @param AST
+ */
+void tStackASTPush(tStackASTPtr* stack, tASTPointer* AST) {
+    if (stack == NULL || stack->top == MAX) {
+        errorHandling(99);
+    } else {
+        stack->top++;
+        stack->body[stack->top] = AST;
+    }
+}
+
+/**
+ * Function pops ASt from stack of ASTs.
+ *
+ * @param stack
+ * @return
+ */
+tASTPointer* tStackASTPop(tStackASTPtr* stack) {
+    if (stack == NULL || stack->top == 0) {
+        errorHandling(99);
+        return NULL;
+    } else {
+        tASTPointer* tmp = stack->body[stack->top];
+        stack->body[stack->top] = NULL;
+        stack->top--;
+        return tmp;
     }
 }

@@ -9,6 +9,9 @@
 #define IFJ_SEMATNIC_H
 
 #include "symtable.h"
+#include "errors.h"
+
+#define MAX 50
 
 // structure for node
 /*typedef struct tNode {
@@ -24,10 +27,21 @@ typedef struct tAST {
     struct tAST* RightPointer;
 } tASTPointer;
 
+// stack of ASTs
+typedef struct tStackAST{
+    tASTPointer* body[MAX];
+    int top;
+} tStackASTPtr;
+
 // function for working with AST
 void tASTInit(tASTPointer* AST);
 tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer);
 tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPointer);
+
+// functions for working with stack of ASTs
+void tStackASTInit(tStackASTPtr* stack);
+void tStackASTPush(tStackASTPtr* stack, tASTPointer* AST);
+tASTPointer* tStackASTPop(tStackASTPtr* stack);
 
 // helper functions
 int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *righContent);
