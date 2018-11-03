@@ -1,7 +1,8 @@
+#include <stdio.h>
 #include "symtable.h"
 #include "prectable.h"
-#include <stdio.h>
 #include "errors.h"
+#include "scanner.h"
 
 int main() {
     printf("Hello, World!\n");
