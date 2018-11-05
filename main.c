@@ -4,6 +4,7 @@
 #include "symtable.h"
 #include "sematnic.h"
 #include "prectable.h"
+#include "predict.h"
 
 int main() {
     printf("Hello, World!\n");
@@ -16,6 +17,7 @@ int main() {
             //return ERROR_TYPE;
         }
         tASTInit(AST);
+        //simulatePredictive("i+i*i", AST);                     // predictive SA
         simulatePrecedence("i+i*i$", AST);                      // tokens "i+i*i$" will be rewritten to AST
         tASTDispose(AST);
     }
