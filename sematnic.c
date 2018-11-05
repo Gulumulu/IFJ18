@@ -23,6 +23,23 @@ void tASTInit(tASTPointer* AST) {
 }
 
 /**
+ * Function disposes AST.
+ *
+ * @param AST pointer to AST structure is AST that is disposed
+ */
+void tASTDispose(tASTPointer* AST) {
+    if (AST == NULL) {
+        return;
+    } else {
+        tASTPointer* disposedNode = AST;
+        tASTDispose(disposedNode->LeftPointer);
+        tASTDispose(disposedNode->RightPointer);
+        free(disposedNode);
+        //AST = NULL;
+    }
+}
+
+/**
  * Function creates new leaf for AST.
  *
  * @param symtablePointer pointer to AST structure is AST leaf will be created
@@ -109,7 +126,7 @@ tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPoint
 /**
  * Function initializes stack of ASTs.
  *
- * @param stack
+ * @param stack pointer to tStackAST structure is initialized stack
  */
 void tStackASTInit(tStackASTPtr* stack) {
     stack->top = 0;
@@ -118,8 +135,8 @@ void tStackASTInit(tStackASTPtr* stack) {
 /**
  * Function pushes AST into the stack of ASTs.
  *
- * @param stack
- * @param AST
+ * @param stack pointer to tStackAST structure is stack to which AST will be pushed
+ * @param AST pointer to tAST structure is AST that is pushed onto the stack
  */
 void tStackASTPush(tStackASTPtr* stack, tASTPointer* AST) {
     if (stack == NULL || stack->top == MAX) {
@@ -133,8 +150,8 @@ void tStackASTPush(tStackASTPtr* stack, tASTPointer* AST) {
 /**
  * Function pops ASt from stack of ASTs.
  *
- * @param stack
- * @return
+ * @param stack pointer to tStackAST structure is stack from which AST will be poped
+ * @return pointer to tAST structure is AST that is poped from the stack
  */
 tASTPointer* tStackASTPop(tStackASTPtr* stack) {
     if (stack == NULL || stack->top == 0) {
@@ -145,5 +162,20 @@ tASTPointer* tStackASTPop(tStackASTPtr* stack) {
         stack->body[stack->top] = NULL;
         stack->top--;
         return tmp;
+    }
+}
+
+/**
+ * Function disposes stack of ASTs.
+ *
+ * @param stack pointer to tStackAST structure is stack that will be disposed
+ */
+void tStackASTDispose(tStackASTPtr* stack) {
+    if (stack == NULL) {
+        errorHandling(99);
+    } else {
+        if (stack->top >= 0) {
+            free(stack->body);
+        }
     }
 }

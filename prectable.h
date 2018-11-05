@@ -21,6 +21,7 @@ typedef struct {
 
 // functions for working with stack
 void init(tExpendedStack* stack);
+void dispose(tExpendedStack* stack);
 void push(tExpendedStack* stack, char* c);
 void pop(tExpendedStack* stack);
 void pushEndRuleSign(tExpendedStack* stack, char firstChar);

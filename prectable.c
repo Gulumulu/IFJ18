@@ -32,6 +32,21 @@ void init(tExpendedStack* stack) {
 }
 
 /**
+ * Function disposes stack.
+ *
+ * @param stack pointer to tExpendedStack structure is disposed stack
+ */
+void dispose(tExpendedStack* stack) {
+    if (stack == NULL) {
+        errorHandling(99);
+    } else {
+        if (stack->top >= 0) {
+            free(stack->content);
+        }
+    }
+}
+
+/**
  * Function "pushes" new element into the stack.
  *
  * @param stack pointer to tExpendedStack structure is stack that will contain new element
@@ -277,6 +292,7 @@ void simulatePrecedence(char* inputToken, tASTPointer* AST) {
         tmpNode->value = 3;
     }
 
+    // initialize needed stacks
     tExpendedStack* expendedStack;
     expendedStack = malloc(sizeof(tExpendedStack));
     tStackASTPtr* stackAST;
@@ -350,4 +366,8 @@ void simulatePrecedence(char* inputToken, tASTPointer* AST) {
             }
         } while (strcmp(a, "$") != 0 || strcmp(b, "$") != 0);
     }
+
+    // free allocated stacks
+    dispose(expendedStack);
+    tStackASTDispose(stackAST);
 }

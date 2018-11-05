@@ -17,7 +17,7 @@ int main() {
         }
         tASTInit(AST);
         simulatePrecedence("i+i*i$", AST);                      // tokens "i+i*i$" will be rewritten to AST
-        // todo: free space
+        tASTDispose(AST);
     }
 
     return ERROR_TYPE;

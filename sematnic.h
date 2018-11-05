@@ -35,6 +35,7 @@ typedef struct tStackAST{
 
 // function for working with AST
 void tASTInit(tASTPointer* AST);
+void tASTDispose(tASTPointer* AST);
 tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer);
 tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPointer);
 
@@ -42,6 +43,7 @@ tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPoint
 void tStackASTInit(tStackASTPtr* stack);
 void tStackASTPush(tStackASTPtr* stack, tASTPointer* AST);
 tASTPointer* tStackASTPop(tStackASTPtr* stack);
+void tStackASTDispose(tStackASTPtr* stack);
 
 // helper functions
 int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *righContent);
