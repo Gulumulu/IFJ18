@@ -67,20 +67,60 @@ tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer) {
  * Function checks whether types of operands of either nodes are matching.
  *
  * @param leftContent pointer to BSTNodeContent is pointer to content in BST
- * @param righContent pointer to BSTNodeContent is pointer to content in BST
+ * @param rightContent pointer to BSTNodeContent is pointer to content in BST
  * @return non-zero value when types are matching otherwise zero value is returned
  */
-int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *righContent) {
-    if (leftContent == NULL || righContent == NULL) {
+int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent) {
+    if (leftContent == NULL || rightContent == NULL) {
         errorHandling(99);
         return 0;
     } else {
-        if (strcmp(leftContent->type,righContent->type) == 0) {
+        if (strcmp(leftContent->type,rightContent->type) == 0) {
             return 1;
         } else {
             return 0;
         }
     }
+}
+
+/**
+ * Function checks wheter variables were defined.
+ *
+ * @param leftContent pointer to BSTNodeContent is pointer to content in BST
+ * @param rightContent pointer to BSTNodeContent is pointer to content in BST
+ * @return non-zero value when variables are defined otherwise zero value is returned
+ */
+int definedVariables(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent) {
+    if (leftContent == NULL || rightContent == NULL) {
+        errorHandling(99);
+        return 0;
+    } else {
+        if (leftContent->defined == 1 && rightContent->defined == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
+
+/**
+ * Function performs semantic actions such as variable definition, type matching, etc.
+ *
+ * @param leftContent pointer to BSTNodeContent is pointer to content in BST
+ * @param rightContent pointer to BSTNodeContent is pointer to content in BST
+ * @return non-zero value when semantics are correct otherwise zero value is returned
+ */
+int correctSemantics(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent) {
+    if (matchingTypes(leftContent, rightContent) == 0) {
+        errorHandling(4);
+        return 0;
+    }
+    if (definedVariables(leftContent, rightContent) == 0) {
+        errorHandling(3);
+        return 0;
+    }
+
+    return 1;
 }
 
 /**
@@ -104,7 +144,7 @@ tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPoint
             newTree->LeftPointer = leftPointer;
             newTree->RightPointer = rightPointer;
             newTree->ID = ID;
-            if (matchingTypes(leftPointer->content, rightPointer->content) != 0) {
+            if (correctSemantics(leftPointer->content, rightPointer->content) != 0) {
                 BSTNodeContentPtr* tmpContent = malloc(sizeof(struct BSTNodeContent));
                 if (tmpContent == NULL) {
                     errorHandling(99);
@@ -112,11 +152,12 @@ tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPoint
                 } else {
                     tmpContent->type = malloc(strlen(leftPointer->content->type)+1);
                     memcpy(tmpContent->type, leftPointer->content->type, strlen(leftPointer->content->type));
+                    tmpContent->defined = 1;
                     newTree->content = tmpContent;
                     return newTree;
                 }
             } else {
-                errorHandling(4);
+                //errorHandling(4);
                 return NULL;
             }
         }

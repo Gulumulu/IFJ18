@@ -194,6 +194,7 @@ char getTop(tExpendedStack* stack) {
 char* appendChar(char* string, char addedChar) {
     size_t len = strlen(string);
     char* returnedString = malloc(len + 2);
+    checkMalloc(returnedString);
     strcpy(returnedString, string);
     returnedString[len] = addedChar;
     returnedString[len+1] = '\0';
@@ -290,6 +291,7 @@ void simulatePrecedence(char* inputToken, tASTPointer* AST) {
     } else {
         tmpNode->type = "int";
         tmpNode->value = 3;
+        tmpNode->defined = 1;
     }
 
     // initialize needed stacks
@@ -365,6 +367,11 @@ void simulatePrecedence(char* inputToken, tASTPointer* AST) {
                     break;
             }
         } while (strcmp(a, "$") != 0 || strcmp(b, "$") != 0);
+    }
+
+    // assign newly created AST
+    if (stackAST != NULL && ERROR_TYPE == 0) {              // semantic analysis did not result in error
+        *AST = *stackAST->body[stackAST->top];
     }
 
     // free allocated stacks

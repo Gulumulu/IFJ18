@@ -46,5 +46,5 @@ tASTPointer* tStackASTPop(tStackASTPtr* stack);
 void tStackASTDispose(tStackASTPtr* stack);
 
 // helper functions
-int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *righContent);
+int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent);
 #endif //IFJ_SEMATNIC_H
