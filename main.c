@@ -8,21 +8,23 @@
 #include "predict.h"
 #include "syntax.h"
 
-/*
- * Main file for our compilator.
- * Implemented by Gabriel Quirschfeld, xquirs00
- *                Marek Imrich, ximric01
- *                Marek Varga, xvarga14
- *                Michal Plsek, xplsek03
- */
-
-/**
- * Main function.
- * @return
- */
 int main() {
     printf("Hello, World!\n");
+    FILE *file = fopen("D:\\Coding\\IFJ18\\test.txt", "r");
 
+    int count = 0;
+    char c;
+    while ((c = fgetc(file)) != EOF) {
+        if (c == '\n') {
+            count++;
+        }
+    }
+    rewind(file);
+    for (int i = 0; i <= count; i++) {
+        token_generate(file);
+    }
+
+    fclose(file);
     doMagic();
 
     return ERROR_TYPE;
