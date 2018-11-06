@@ -6,9 +6,9 @@
 #include "scanner.h"
 #include "errors.h"
 #include <string.h>
-#include <assert.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 /**
  * Defining the keywords inside an array
@@ -37,8 +37,8 @@ TokenType identify_keyword() {
  * @param t token to initialize
  */
 void create_token(Token* t) {
-    t->type = NULL;
-    t->line = NULL;
+    t->type = 0;
+    t->line = 0;
     t->content = (char*)malloc(sizeof(char) * CHUNK);
     if (t->content == NULL) {
         fprintf(stderr, "ERROR, not enough space in memory to allocate!");
@@ -55,8 +55,8 @@ void create_token(Token* t) {
  * @param space needed memory
  */
 void create_spec_token(Token* t, int space) {
-    t->type = NULL;
-    t->line = NULL;
+    t->type = 0;
+    t->line = 0;
     t->content = (char*)malloc(sizeof(char) * space);
     if (t->content == NULL) {
         fprintf(stderr, "ERROR, not enough space in memory to allocate!");
@@ -72,9 +72,9 @@ void create_spec_token(Token* t, int space) {
  * @param t token to destroy
  */
 void destroy_token(Token* t) {
-    t->size = NULL;
-    t->type = NULL;
-    t->line = NULL;
+    t->size = 0;
+    t->type = 0;
+    t->line = 0;
     free(t->content);
     t->content = NULL;
 }
@@ -85,8 +85,8 @@ void destroy_token(Token* t) {
  * @param t token to empty
  */
 void empty_token(Token* t) {
-    t->type = NULL;
-    t->line = NULL;
+    t->type = 0;
+    t->line = 0;
     t->content = (char*)realloc(t->content, sizeof(char) * CHUNK);
     if (t->content == NULL) {
         free(t->content);
@@ -114,7 +114,7 @@ int append_token(Token* t, char c) {
             errorHandling(99);
             return 99;
         }
-        t->size = strlen(length + CHUNK);
+        t->size = length + CHUNK;
     }
     t->content[length] = c;
     t->content[++length] = '\0';
@@ -123,23 +123,23 @@ int append_token(Token* t, char c) {
 
 /**
  * Main function of the scanner
- * Gets characters from the input file and generates specific tokens
+ * Gets characters from the input stdin and generates specific tokens
  *
  * @return id of the input token
  */
-int token_generate()
+int token_generate(FILE *file)
 {
-    create_token(global_token);
+    create_token(&global_token);
     char c;
     char* string;
-    int error;
+    int error = 0;
     TokenType state = ss_new;
 
-    if (global_token.type = s_eol) {
+    if (global_token.type == s_eol) {
         global_token.line++;
-    }
+    };
 
-    while (c = getc(stdin)) {
+    while ((c = getc(file)) != EOF) {
         switch (state) {
             case ss_new: {
                 if (c == '\n') {
@@ -153,6 +153,12 @@ int token_generate()
                 }
                 else if ((islower(c) || c == '_')) {
                     state = s_id;
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                 }
                 else if (isdigit(c)) {
                     state = s_int;
@@ -208,7 +214,7 @@ int token_generate()
                 else {
                     ungetc(c, stdin);
                     state = s_error;
-                    fprintf(stderr, "LEX: At Line **NUMBER TO DO** -> Error, token unknown!\n");
+                    fprintf(stderr, "LEX: At Line %d -> Error, token unknown!\n", global_token.line);
                     break;
                 }
             }
@@ -216,7 +222,12 @@ int token_generate()
 
             case s_id: { // getting the whole character sequence
                 if (isalnum(c)) {
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_id;
                 }
                 else if ((c == '?') || (c == '!')) { // last character is ? or !
@@ -234,15 +245,30 @@ int token_generate()
 
             case s_int: {
                 if (isdigit(c)) { // integer continues
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_int;
                 }
                 else if (c == '.') { // float
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_float;
                 }
                 else if ((c == 'e') || (c == 'E')) { // integer with an exponent
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_exp_int_s;
                 }
                 else { // integer loaded
@@ -255,15 +281,25 @@ int token_generate()
 
             case s_exp_int_s: {
                 if ((c == '+') || (c == '-')) { // exponent has a sign
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_num_i;
                 }
                 else if (isdigit(c)) { // exponent does not have a sign
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_exp_int;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO** -> Error, exponent must be followed by a number or +/- sign!");
+                    fprintf(stderr, "LEX: At line %d -> Error, exponent must be followed by a number or +/- sign!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
@@ -272,11 +308,16 @@ int token_generate()
 
             case s_num_i: {
                 if (isdigit(c)) { // sign is followed by a number
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_exp_int;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO** -> Error, sign must be followed by a number!");
+                    fprintf(stderr, "LEX: At line %d -> Error, sign must be followed by a number!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
@@ -285,7 +326,12 @@ int token_generate()
 
             case s_exp_int: {
                 if (isdigit(c)) { // exponent of integer continues
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_exp_int;
                 }
                 else { // exponent loaded
@@ -298,11 +344,21 @@ int token_generate()
 
             case s_float: {
                 if (isdigit(c)) { // float continues
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_float;
                 }
                 else if ((c == 'e') || (c == 'E')) { // float with an exponent
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_exp_f_s;
                 }
                 else { // float loaded
@@ -315,15 +371,25 @@ int token_generate()
 
             case s_exp_f_s: {
                 if ((c == '+') || (c == '-')) { // exponent has a sign
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_num_f;
                 }
                 else if (isdigit(c)) { // exponent does not have a sign
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_exp_f;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO** -> Error, exponent must be followed by a number or +/- sign!");
+                    fprintf(stderr, "LEX: At line %d -> Error, exponent must be followed by a number or +/- sign!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
@@ -332,11 +398,16 @@ int token_generate()
 
             case s_num_f: {
                 if (isdigit(c)) { // sign is followed by a number
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_exp_f;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO** -> Error, sign must be followed by a number!");
+                    fprintf(stderr, "LEX: At line %d -> Error, sign must be followed by a number!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
@@ -345,7 +416,12 @@ int token_generate()
 
             case s_exp_f: {
                 if (isdigit(c)) { // exponent of float continues
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_exp_f;
                 }
                 else { // exponent loaded
@@ -358,7 +434,12 @@ int token_generate()
 
             case s_less: {
                 if (c == '=') { // less than or equal to
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_less_eq;
                 }
                 else { // less than
@@ -371,7 +452,12 @@ int token_generate()
 
             case s_great: {
                 if (c == '=') { // greater than or equal to
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_great_eq;
                 }
                 else { // greater than
@@ -384,15 +470,30 @@ int token_generate()
 
             case s_eq: {
                 if (c == 'b') { // comment block start
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = ss_com_bl_s;
                 }
                 else if (c == 'e') { // comment block end
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = ss_com_bl_e;
                 }
                 else if (c == '=') { // equal to
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_eqto;
                 }
                 else { // equals sign
@@ -404,16 +505,21 @@ int token_generate()
             break;
 
             case ss_com_bl_s: {
-                if ((c == EOL) && ((strcmp(global_token.content, "begin\0") == 0))) {
+                if ((c == '\n') && ((strcmp(global_token.content, "begin\0") == 0))) {
                     state = ss_com_bl;
                 }
-                else if (c == "EOF") {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO"" -> Error, comment block incomplete!");
+                else if (c == EOF) {
+                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
                 else {
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = ss_com_bl_s;
                 }
             }
@@ -424,7 +530,7 @@ int token_generate()
                     state = ss_com_bl_e;
                 }
                 else if (c == EOF) {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO"" -> Error, comment block incomplete!");
+                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
@@ -435,16 +541,21 @@ int token_generate()
             break;
 
             case ss_com_bl_e: {
-                if ((c == EOL) && ((strcmp(global_token.content, "end\0") == 0))) {
+                if ((c == '\n') && ((strcmp(global_token.content, "end\0") == 0))) {
                     state = ss_new;
                 }
                 else if (c == EOF) {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO** -> Error, comment block incomplete!");
+                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
                 else {
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = ss_com_bl_e;
                 }
             }
@@ -457,7 +568,7 @@ int token_generate()
                     state = ss_final;
                 }
                 else { // misplaced exclamation point
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO** -> Error, undefined symbol sequence!");
+                    fprintf(stderr, "LEX: At line %d -> Error, undefined symbol sequence!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
@@ -468,7 +579,7 @@ int token_generate()
                 int value = (int) c; // getting ascii value of char
 
                 if ((c == EOF) || (c == '\n')) {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO** -> Error, string must end with the \" character!");
+                    fprintf(stderr, "LEX: At line %d -> Error, string must end with the \" character!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
@@ -477,14 +588,29 @@ int token_generate()
                     ungetc(c, stdin);
                     state = ss_final;
                 }
-                else if (c == "\\") { // escape sequence in the string
+                else if (c == '\\') { // escape sequence in the string
                     state = ss_esc;
                 }
                 else if (value <= 31) { // characters that cannot be just displayed
-
+                    char temp[5];
+                    sprintf(temp, "\\%03d", value);
+                    for (int i = 0; temp[i] != '\0'; i++) {
+                        error = append_token(&global_token, c);
+                        if (error) {
+                            destroy_token(&global_token);
+                            state = s_error;
+                            break;
+                        };
+                    }
+                    state = s_string;
                 }
                 else {
-                    append_token(global_token.content, c);
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_string;
                 }
             }
@@ -501,16 +627,21 @@ int token_generate()
                         esc = "\\010";
                     }
                     else if (c == 't') {
-                        esc = "\\009"
+                        esc = "\\009";
                     }
                     else if (c == 's') {
-                        esc = "\\032"
+                        esc = "\\032";
                     }
                     else if (c == '\\') {
                         esc = "\\092";
                     }
                     for (int i = 0; esc[i] != '\0'; i++) {
-                        append_token(global_token.content, esc[i]);
+                        error = append_token(&global_token, esc[i]);
+                        if (error) {
+                            destroy_token(&global_token);
+                            state = s_error;
+                            break;
+                        };
                     }
                     state = s_string;
                 }
@@ -519,7 +650,7 @@ int token_generate()
                     state = ss_esc_hex;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO** -> Error, escape sequence incorrect!");
+                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
@@ -527,15 +658,27 @@ int token_generate()
             break;
 
             case ss_esc_hex: {
-                if ((strlen(global_token.content) < 2) && (isalnum(c)))) { // loading the hex values
-                    append_token(global_token.content, c);
+                if ((strlen(global_token.content) < 1) && (isalnum(c))) { // loading the hex values
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = ss_esc_hex;
                 }
-                else if {
+                else if (isalnum(c)) {
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
 
+                    int temp;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line **NUMBER TO DO** -> Error, escape sequence incorrect!");
+                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!", global_token.line);
                     ungetc(c, stdin);
                     state = s_error;
                 }
@@ -564,6 +707,7 @@ int token_generate()
             break;
 
             case s_error: {
+                destroy_token(&global_token);
                 error = 1;
                 global_token.type = state;
             }

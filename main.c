@@ -8,6 +8,9 @@
 
 int main() {
     printf("Hello, World!\n");
+    FILE *file = fopen("D:\\Coding\\IFJ18\\test.txt", "r");
+    token_generate(file);
+    fclose(file);
 
     // if lexical analysis passed ERROR_TYPE should still be 0
     if (ERROR_TYPE == 0) {
