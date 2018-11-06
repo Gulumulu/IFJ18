@@ -10,6 +10,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#define KEYWORDS_COUNT 17
+
 /**
  * Defining the keywords inside an array
  */
@@ -18,17 +20,29 @@ char* keywords[] = {
 };
 
 /**
+ * Function returns the character back into the stream
+ *
+ * @param c character to be returned
+ * @param file stream being used
+ */
+void unget_char(int c, FILE *file) {
+    if (!(isspace(c)) || (c != '\n')) {
+        ungetc(c, file);
+    }
+}
+
+/**
  * Function for determining whether a sequence of characters is an identifier or a keyword
  *
  * @return id of specific keyword or general identifier
  */
 TokenType identify_keyword() {
-    for (int i = 0; i < sizeof(keywords); i++) {
-        if (strcmp(global_token.content, keywords[i]) == 0) {
+    for (int i = 0; i < KEYWORDS_COUNT; i++) {
+        if ((strcmp(global_token.content, keywords[i])) == 0) {
             return i;
         }
-        return s_id;
     }
+    return s_id;
 }
 
 /**
@@ -38,10 +52,10 @@ TokenType identify_keyword() {
  */
 void create_token(Token* t) {
     t->type = 0;
-    t->line = 0;
+    t->line = 1;
     t->content = (char*)malloc(sizeof(char) * CHUNK);
     if (t->content == NULL) {
-        fprintf(stderr, "ERROR, not enough space in memory to allocate!");
+        fprintf(stderr, "ERROR, not enough space in memory to allocate!\n");
         errorHandling(99);
     }
     t->size = CHUNK;
@@ -56,10 +70,10 @@ void create_token(Token* t) {
  */
 void create_spec_token(Token* t, int space) {
     t->type = 0;
-    t->line = 0;
+    t->line = 1;
     t->content = (char*)malloc(sizeof(char) * space);
     if (t->content == NULL) {
-        fprintf(stderr, "ERROR, not enough space in memory to allocate!");
+        fprintf(stderr, "ERROR, not enough space in memory to allocate!\n");
         errorHandling(99);
     }
     t->size = space;
@@ -86,11 +100,11 @@ void destroy_token(Token* t) {
  */
 void empty_token(Token* t) {
     t->type = 0;
-    t->line = 0;
+    t->line = 1;
     t->content = (char*)realloc(t->content, sizeof(char) * CHUNK);
     if (t->content == NULL) {
         free(t->content);
-        fprintf(stderr, "ERROR, not enough space in memory to allocate!");
+        fprintf(stderr, "ERROR, not enough space in memory to allocate!\n");
         errorHandling(99);
     }
     t->size = CHUNK;
@@ -110,7 +124,7 @@ int append_token(Token* t, char c) {
         t->content = (char*)realloc(t->content, sizeof(char) * (length + CHUNK));
         if (t->content == NULL) {
             free(t->content);
-            fprintf(stderr, "ERROR, not enough space in memory to allocate!");
+            fprintf(stderr, "ERROR, not enough space in memory to allocate!\n");
             errorHandling(99);
             return 99;
         }
@@ -123,7 +137,7 @@ int append_token(Token* t, char c) {
 
 /**
  * Main function of the scanner
- * Gets characters from the input stdin and generates specific tokens
+ * Gets characters from the input file and generates specific tokens
  *
  * @return id of the input token
  */
@@ -134,17 +148,19 @@ int token_generate(FILE *file)
     char* string;
     int error = 0;
     TokenType state = ss_new;
+    int gen_fin = 0;
 
     if (global_token.type == s_eol) {
         global_token.line++;
     };
 
-    while ((c = getc(file)) != EOF) {
+    while (gen_fin != 1) {
+        c = getc(file);
         switch (state) {
             case ss_new: {
                 if (c == '\n') {
                     state = s_eol;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     break;
                 }
                 else if (isspace(c)) {
@@ -152,67 +168,157 @@ int token_generate(FILE *file)
                     break;
                 }
                 else if ((islower(c) || c == '_')) {
-                    state = s_id;
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
                         state = s_error;
                         break;
                     };
+                    state = s_id;
                 }
                 else if (isdigit(c)) {
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_int;
                 }
                 else if (c == '#') {                    // comment line
                     state = ss_com;
                 }
                 else if (c == '+') {                    // addition
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_add;
                 }
                 else if (c == '-') {                    // subtraction
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_sub;
                 }
                 else if (c == '*') {                    // multiplication
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_mul;
                 }
                 else if (c == '/') {                    // division
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_div;
                 }
                 else if (c == '<') {                    // less than OR less than or equal to
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_less;
                 }
                 else if (c == '>') {                    // greater than OR greater than or equal to
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_great;
                 }
                 else if (c == '=') {                    // equal to OR block comment start OR block comment end OR equal
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_eq;
                 }
                 else if (c == '!') {                    // not equal to
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_noteq;
                 }
                 else if (c == '(') {                    // left bracket
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_lbrac;
                 }
                 else if (c == ')') {                    // right bracket
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_rbrac;
                 }
                 else if (c == ',') {                    // comma
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_comma;
                 }
                 else if (c == '"') {                    // string starting with "
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_string;
                 }
                 else if (c == '{') {                    // left curly bracket
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_lbrac_c;
                 }
                 else if (c == '}') {                    // right curly bracket
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     state = s_rbrac_c;
                 }
                 else if (c == EOF) {
                     state = s_eof;
                 }
                 else {
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = s_error;
                     fprintf(stderr, "LEX: At Line %d -> Error, token unknown!\n", global_token.line);
                     break;
@@ -232,12 +338,12 @@ int token_generate(FILE *file)
                 }
                 else if ((c == '?') || (c == '!')) { // last character is ? or !
                     global_token.type = s_id;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
                 else { // identifier OR keyword
                     global_token.type = identify_keyword();
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
             }
@@ -273,7 +379,7 @@ int token_generate(FILE *file)
                 }
                 else { // integer loaded
                     global_token.type = state;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
             }
@@ -299,8 +405,8 @@ int token_generate(FILE *file)
                     state = s_exp_int;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, exponent must be followed by a number or +/- sign!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, exponent must be followed by a number or +/- sign!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
             }
@@ -317,8 +423,8 @@ int token_generate(FILE *file)
                     state = s_exp_int;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, sign must be followed by a number!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, sign must be followed by a number!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
             }
@@ -336,7 +442,7 @@ int token_generate(FILE *file)
                 }
                 else { // exponent loaded
                     global_token.type = state;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
             }
@@ -363,7 +469,7 @@ int token_generate(FILE *file)
                 }
                 else { // float loaded
                     global_token.type = state;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
             }
@@ -389,8 +495,8 @@ int token_generate(FILE *file)
                     state = s_exp_f;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, exponent must be followed by a number or +/- sign!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, exponent must be followed by a number or +/- sign!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
             }
@@ -407,8 +513,8 @@ int token_generate(FILE *file)
                     state = s_exp_f;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, sign must be followed by a number!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, sign must be followed by a number!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
             }
@@ -426,7 +532,7 @@ int token_generate(FILE *file)
                 }
                 else { // exponent loaded
                     global_token.type = state;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
             }
@@ -444,7 +550,7 @@ int token_generate(FILE *file)
                 }
                 else { // less than
                     global_token.type = state;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
             }
@@ -462,7 +568,7 @@ int token_generate(FILE *file)
                 }
                 else { // greater than
                     global_token.type = state;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
             }
@@ -498,7 +604,22 @@ int token_generate(FILE *file)
                 }
                 else { // equals sign
                     global_token.type = state;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
+                    state = ss_final;
+                }
+            }
+            break;
+
+            case ss_com: {
+                if (c != '\n') { // comment continues
+                    state = ss_com;
+                }
+                else if (c == '\n') { // comment ends with new line
+                    unget_char(c, file);
+                    state = ss_new;
+                }
+                else if (c == EOF) {
+                    unget_char(c, file);
                     state = ss_final;
                 }
             }
@@ -509,8 +630,8 @@ int token_generate(FILE *file)
                     state = ss_com_bl;
                 }
                 else if (c == EOF) {
-                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
                 else {
@@ -530,8 +651,8 @@ int token_generate(FILE *file)
                     state = ss_com_bl_e;
                 }
                 else if (c == EOF) {
-                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
                 else {
@@ -545,8 +666,8 @@ int token_generate(FILE *file)
                     state = ss_new;
                 }
                 else if (c == EOF) {
-                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
                 else {
@@ -564,12 +685,12 @@ int token_generate(FILE *file)
             case s_noteq: {
                 if (c == '=') { // not equal to
                     global_token.type = identify_keyword();
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
                 else { // misplaced exclamation point
-                    fprintf(stderr, "LEX: At line %d -> Error, undefined symbol sequence!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, undefined symbol sequence!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
             }
@@ -579,13 +700,19 @@ int token_generate(FILE *file)
                 int value = (int) c; // getting ascii value of char
 
                 if ((c == EOF) || (c == '\n')) {
-                    fprintf(stderr, "LEX: At line %d -> Error, string must end with the \" character!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, string must end with the \" character!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
                 else if (c == '"') { // empty string
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = s_error;
+                        break;
+                    };
                     global_token.type = state;
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_final;
                 }
                 else if (c == '\\') { // escape sequence in the string
@@ -646,12 +773,12 @@ int token_generate(FILE *file)
                     state = s_string;
                 }
                 else if (c == 'x') { // escape sequence is a hex number
-                    ungetc(c, stdin);
+                    unget_char(c, file);
                     state = ss_esc_hex;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
             }
@@ -678,8 +805,8 @@ int token_generate(FILE *file)
                     int temp;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!", global_token.line);
-                    ungetc(c, stdin);
+                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!\n", global_token.line);
+                    unget_char(c, file);
                     state = s_error;
                 }
             }
@@ -695,7 +822,7 @@ int token_generate(FILE *file)
             case s_rbrac_c:
             case s_eof: {
                 global_token.type = state;
-                ungetc(c, stdin);
+                unget_char(c, file);
                 state = ss_final;
             }
             break;
@@ -710,11 +837,13 @@ int token_generate(FILE *file)
                 destroy_token(&global_token);
                 error = 1;
                 global_token.type = state;
+                gen_fin = 1;
             }
             break;
 
             case ss_final: {
-                ungetc(c, stdin);
+                unget_char(c, file);
+                gen_fin = 1;
             }
             break;
 
@@ -724,6 +853,6 @@ int token_generate(FILE *file)
             break;
         }
     }
-    printf("token: %d ... %s \n", global_token.type, global_token.content);
+    printf("token: %d -> %s \n", global_token.type, global_token.content);
     return error;
 }
