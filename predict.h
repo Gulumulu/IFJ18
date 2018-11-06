@@ -22,13 +22,15 @@ typedef struct {
 void tStackPredictiveInit(tStackPredictive* stack);
 void tStackPredictiveDispose(tStackPredictive* stack);
 void tStackPredictivePush(tStackPredictive* stack, char* symbol);
+void tStackPredictivePop(tStackPredictive* stack);
 char* tStackPredictiveGetTop(tStackPredictive* stack);
+void tStackPredictiveChangeTop(tStackPredictive* stack, int ruleNumber);
 
 // main function
-void simulatePredictive(char* inputToken, tASTPointer* AST);
+void simulatePredictive(char* inputToken, tASTPointer* AST, tStackPredictive* predictiveStack);
 
 // helper functions
 int rowOffset(char* symbol);
 int colOffset(char* symbol);
-
+int isTerminal(char* symbol);
 #endif //IFJ_PREDICT_H
