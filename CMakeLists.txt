@@ -3,4 +3,4 @@ project(IFJ C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(IFJ main.c errors.h errors.c symtable.h symtable.c sematnic.h sematnic.c prectable.h prectable.c predict.c predict.h scanner.c scanner.h test.txt syntax.h syntax.c)
+add_executable(IFJ main.c errors.h errors.c symtable.h symtable.c sematnic.h sematnic.c prectable.h prectable.c predict.c predict.h scanner.c scanner.h syntax.h syntax.c)
