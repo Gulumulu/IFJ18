@@ -72,9 +72,10 @@ typedef enum {
 /*51*/  ss_com_bl_e,    // end of comment block =end
 /*52*/  ss_esc,         // escape sequence
 /*53*/  ss_esc_hex,     // hexadecimal number
-/*54*/  s_error,        // error
-/*55*/  ss_new,         // start a new scan
-/*56*/  ss_final        // end of scanning
+/*54*/  ss_after_hex,   // space after hex
+/*55*/  s_error,        // error
+/*56*/  ss_new,         // start a new scan
+/*57*/  ss_final        // end of scanning
 
 } TokenType;
 
