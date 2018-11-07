@@ -64,8 +64,8 @@ typedef enum {
 /*45*/  s_num_f,        // number following sign in float
 
     /* SPECIAL STATES */
-/*46*/  s_eol,          // end of line
-/*47*/  s_eof,          // end of file
+/*46*/  ss_eol,         // end of line
+/*47*/  ss_eof,         // end of file
 /*48*/  ss_com,         // comment in line #
 /*49*/  ss_com_bl_s,    // start of comment block =begin
 /*50*/  ss_com_bl,      // continuous comment block
@@ -73,7 +73,7 @@ typedef enum {
 /*52*/  ss_esc,         // escape sequence
 /*53*/  ss_esc_hex,     // hexadecimal number
 /*54*/  ss_after_hex,   // space after hex
-/*55*/  s_error,        // error
+/*55*/  ss_error,       // error
 /*56*/  ss_new,         // start a new scan
 /*57*/  ss_final        // end of scanning
 

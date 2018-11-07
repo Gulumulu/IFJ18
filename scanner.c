@@ -155,7 +155,7 @@ int token_generate(FILE *file)
         switch (state) {
             case ss_new: {
                 if (c == '\n') {
-                    state = s_eol;
+                    state = ss_eol;
                     break;
                 }
                 else if (isspace(c)) {
@@ -166,7 +166,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_id;
@@ -175,7 +175,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_int;
@@ -187,7 +187,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_add;
@@ -196,7 +196,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_sub;
@@ -205,7 +205,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_mul;
@@ -214,7 +214,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_div;
@@ -223,7 +223,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_less;
@@ -232,7 +232,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_great;
@@ -241,7 +241,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_eq;
@@ -250,7 +250,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_noteq;
@@ -259,7 +259,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_lbrac;
@@ -268,7 +268,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_rbrac;
@@ -277,7 +277,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_comma;
@@ -286,7 +286,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_string;
@@ -295,7 +295,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_lbrac_c;
@@ -304,18 +304,18 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_rbrac_c;
                 }
                 else if (c == EOF) {
-                    state = s_eof;
+                    state = ss_eof;
                 }
                 else {
                     unget_char(c, file);
-                    state = s_error;
-                    fprintf(stderr, "LEX: At Line %d -> Error, token unknown!\n", global_token.line);
+                    state = ss_error;
+                    fprintf(stderr, "LEX -> Error, token unknown!\n");
                     break;
                 }
             }
@@ -326,7 +326,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_id;
@@ -336,7 +336,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = ss_final;
@@ -354,7 +354,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_int;
@@ -363,7 +363,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_float;
@@ -372,7 +372,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_exp_int_s;
@@ -390,7 +390,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_num_i;
@@ -399,15 +399,15 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_exp_int;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, exponent must be followed by a number or +/- sign!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, exponent must be followed by a number or +/- sign!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
             }
             break;
@@ -417,15 +417,15 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_exp_int;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, sign must be followed by a number!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, sign must be followed by a number!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
             }
             break;
@@ -435,7 +435,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_exp_int;
@@ -453,7 +453,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_float;
@@ -462,7 +462,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_exp_f_s;
@@ -480,7 +480,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_num_f;
@@ -489,15 +489,15 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_exp_f;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, exponent must be followed by a number or +/- sign!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, exponent must be followed by a number or +/- sign!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
             }
             break;
@@ -507,15 +507,15 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_exp_f;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, sign must be followed by a number!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, sign must be followed by a number!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
             }
             break;
@@ -525,7 +525,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_exp_f;
@@ -543,7 +543,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_less_eq;
@@ -561,7 +561,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_great_eq;
@@ -579,7 +579,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = ss_com_bl_s;
@@ -588,7 +588,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     global_token.type = s_eqto;
@@ -624,15 +624,15 @@ int token_generate(FILE *file)
                     state = ss_com_bl;
                 }
                 else if ((c == EOF) || (c == '\n')) {
-                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, comment block incomplete!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
                 else {
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = ss_com_bl_s;
@@ -647,14 +647,14 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                 }
                 else if (c == EOF) {
-                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, comment block incomplete!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
                 else {
                     state = ss_com_bl;
@@ -668,15 +668,15 @@ int token_generate(FILE *file)
                     state = ss_new;
                 }
                 else if ((c == EOF) || (c == '\n')) {
-                    fprintf(stderr, "LEX: At line %d -> Error, comment block incomplete!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, comment block incomplete!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
                 else {
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = ss_com_bl_e;
@@ -689,16 +689,16 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     global_token.type = state;
                     state = ss_final;
                 }
                 else { // misplaced exclamation point
-                    fprintf(stderr, "LEX: At line %d -> Error, undefined symbol sequence!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, undefined symbol sequence!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
             }
             break;
@@ -707,15 +707,15 @@ int token_generate(FILE *file)
                 int value = (int) c; // getting ascii value of char
 
                 if ((c == EOF) || (c == '\n')) {
-                    fprintf(stderr, "LEX: At line %d -> Error, string must end with the \" character!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, string must end with the \" character!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
                 else if (c == '"') { // empty string
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     global_token.type = state;
@@ -725,7 +725,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = ss_esc;
@@ -737,7 +737,7 @@ int token_generate(FILE *file)
                         error = append_token(&global_token, c);
                         if (error) {
                             destroy_token(&global_token);
-                            state = s_error;
+                            state = ss_error;
                             break;
                         };
                     }
@@ -747,7 +747,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_string;
@@ -778,7 +778,7 @@ int token_generate(FILE *file)
                         error = append_token(&global_token, esc[i]);
                         if (error) {
                             destroy_token(&global_token);
-                            state = s_error;
+                            state = ss_error;
                             break;
                         };
                     }
@@ -788,38 +788,37 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = ss_esc_hex;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!\n", global_token.line);
-                    state = s_error;
+                    fprintf(stderr, "LEX -> Error, escape sequence incorrect!\n");
+                    state = ss_error;
                 }
             }
             break;
 
             case ss_esc_hex: {
-                if ((strlen(global_token.content) < 4) && (isalnum(c))) { // loading the hex values
+                if (isalpha(c)) {
+                    c = tolower(c);
+                }
+                if ((strlen(global_token.content) < 4) && ((isdigit(c)) || (c <= 'f'))) { // loading the hex values
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = ss_esc_hex;
                 }
-                else if (strlen(global_token.content) > 4) {
-                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!\n", global_token.line);
-                    unget_char(c, file);
-                    state = s_error;
-                }
-                else if (isalnum(c)) {
+                else if ((isdigit(c)) || (c <= 'f')) {
+                    int esc = c * 16;
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = ss_after_hex;
@@ -828,7 +827,7 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_string;
@@ -837,16 +836,16 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     global_token.type = state;
                     state = ss_final;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!\n", global_token.line);
+                    fprintf(stderr, "LEX -> Error, escape sequence incorrect!\n");
                     unget_char(c, file);
-                    state = s_error;
+                    state = ss_error;
                 }
             }
             break;
@@ -856,17 +855,17 @@ int token_generate(FILE *file)
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
-                        state = s_error;
+                        state = ss_error;
                         break;
                     };
                     state = s_string;
                 }
                 else {
-                    fprintf(stderr, "LEX: At line %d -> Error, escape sequence incorrect!\n", global_token.line);
-                    unget_char(c, file);
-                    state = s_error;
+                    fprintf(stderr, "LEX -> Error, escape sequence incorrect!\n");
+                    state = ss_error;
                 }
             }
+            break;
 
             case s_add:
             case s_sub:
@@ -879,26 +878,27 @@ int token_generate(FILE *file)
             case s_rbrac_c:
             case s_great_eq:
             case s_less_eq:
-            case s_eof: {
+            case ss_eof: {
                 global_token.type = state;
                 unget_char(c, file);
                 state = ss_final;
             }
             break;
 
-            case s_eol: {
+            case ss_eol: {
                 global_token.type = state;
                 unget_char(c, file);
                 state = ss_final;
             }
             break;
 
-            case s_error: {
+            case ss_error: {
                 destroy_token(&global_token);
                 error = 1;
                 global_token.type = state;
                 gen_fin = 1;
                 unget_char(c, file);
+                errorHandling(1);
             }
             break;
 
