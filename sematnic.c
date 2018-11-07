@@ -5,7 +5,7 @@
  *  Source file for generating AST and appropriated semantic actions.
  *  Implemented by Marek Varga, xvarga14
  */
-#include <memory.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "sematnic.h"

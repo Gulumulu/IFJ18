@@ -10,7 +10,7 @@
 
 #include "symtable.h"
 #include "errors.h"
-
+#include <string.h>
 #define MAX 50
 
 // structure for node

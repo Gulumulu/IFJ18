@@ -6,8 +6,8 @@
  * Implemented by Gabriel Quirschfeld, xquirs00
  *                Marek Varga, xvarga14
  */
-#include <memory.h>
-#include <mem.h>
+//#include <memory.h>
+//#include <mem.h>
 #include "syntax.h"
 #include "scanner.h"
 
@@ -17,7 +17,7 @@ void doMagic() {
 
     // first transit of compiler -- filling out symtable
     Token tmpToken = global_token;
-    while (global_token.type != s_eof) {
+    while (global_token.type != ss_eof) {
         // call lexical anal
         token_generate(file);
         // put symbol into symtable
@@ -35,7 +35,7 @@ void doMagic() {
     tStackPredictiveInit(predictiveStack);
     global_token = tmpToken;
     free(tmpToken.content);
-    while (global_token.type != s_eof) {
+    while (global_token.type != ss_eof) {
         // call lexical anal
         token_generate(file);
         // call top down anal

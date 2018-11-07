@@ -12,7 +12,7 @@
 #include "sematnic.h"
 #include "prectable.h"
 #include "scanner.h"
-
+#include <string.h>
 // stack for predictive SA
 typedef struct {
     int top;

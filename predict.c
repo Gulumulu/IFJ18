@@ -5,7 +5,7 @@
  * Source file for predictive syntax analysis.
  * Implemented by Marek Varga, xvarga14
  */
-#include <memory.h>
+#include <string.h>
 #include "predict.h"
 
 /**

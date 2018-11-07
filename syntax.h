@@ -14,6 +14,7 @@
 #include "symtable.h"
 #include "predict.h"
 #include "sematnic.h"
+#include <string.h>
 
 // function that does all the work
 void doMagic();
