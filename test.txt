@@ -1,2 +1,3 @@
-"\xag d"
-hey
+def nasobeni(a)
+	a=2*a
+end
