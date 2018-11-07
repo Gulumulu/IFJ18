@@ -46,7 +46,9 @@ void tStackPredictivePush(tStackPredictive* stack, char* symbol) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        stack->content[stack->top] = malloc(sizeof(strlen(symbol)));
+        // todo: malloc overrides globalToken.content
+        //stack->content[stack->top] = malloc(sizeof(strlen(symbol)));
+        //checkMalloc(stack->content[stack->top]);
         stack->content[stack->top] = symbol;
         stack->top++;
     }
@@ -212,7 +214,7 @@ int isTerminal(char* symbol) {
  * @param inputToken
  * @param AST
  */
-void simulatePredictive(char* inputToken, tASTPointer* AST, tStackPredictive* predictiveStack) {
+void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predictiveStack) {
     // allocated needed stacks
 
     tStackASTPtr* stackAST;
@@ -253,14 +255,14 @@ void simulatePredictive(char* inputToken, tASTPointer* AST, tStackPredictive* pr
             //char *handle;
 
             if (strcmp(a, "$") == 0) {
-                if (strcmp(inputToken, "$") == 0) {
+                if (strcmp(token.content, "$") == 0) {
                     end = 1;                            // success
                 } else {
                     end = -1;                           // failure
                 }
             } else if (isTerminal(a) != 0) {
                 // todo: if top-most symbol in stack is id, if statement does not necessary mean true
-                if (strcmp(a, inputToken) == 0) {
+                if (strcmp(a, token.content) == 0) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
                 } else {
@@ -268,7 +270,7 @@ void simulatePredictive(char* inputToken, tASTPointer* AST, tStackPredictive* pr
                 }
             } else if (strcmp(a, "<expr>") != 0){
                 int row = rowOffset(a);
-                int col = colOffset(inputToken);
+                int col = colOffset(token.content);
                 if (row > 11 || col > 17) {
                     errorHandling(99);                      // symbol doesn't occur in precedence table
                 }

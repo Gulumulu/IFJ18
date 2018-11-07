@@ -8,12 +8,47 @@
  */
 #include <memory.h>
 #include "syntax.h"
+#include "scanner.h"
 
 void doMagic() {
 
-    // call lexical anal
-    //...
-    // call top down anal
+    FILE *file = fopen("../test.txt", "r");
+
+    // first transit of compiler -- filling out symtable
+    Token tmpToken = global_token;
+    while (global_token.type != s_eof) {
+        // call lexical anal
+        token_generate(file);
+        // put symbol into symtable
+        if (global_token.type == s_id) {
+
+        }
+    }
+
+    rewind(file);
+
+    // second transit of compiler -- passing tokens to parser
+    tASTPointer* AST = malloc(sizeof(struct tAST));
+    tASTInit(AST);
+    tStackPredictive* predictiveStack = malloc(sizeof(tStackPredictive));
+    tStackPredictiveInit(predictiveStack);
+    global_token = tmpToken;
+    free(tmpToken.content);
+    while (global_token.type != s_eof) {
+        // call lexical anal
+        token_generate(file);
+        // call top down anal
+        if (ERROR_TYPE == 0) {
+            if (global_token.type == s_exp_f || global_token.type == s_exp_f_s || global_token.type == s_exp_int || global_token.type == s_exp_int_s) {
+                simulatePrecedence("", AST);
+            } else {
+                simulatePredictive(global_token, AST, predictiveStack);
+            }
+        }
+    }
+    tStackPredictiveDispose(predictiveStack);
+    tASTDispose(AST);
+    /*
     // if lexical analysis passed ERROR_TYPE should still be 0
     if (ERROR_TYPE == 0) {
         tASTPointer* AST = malloc(sizeof(struct tAST));
@@ -45,5 +80,7 @@ void doMagic() {
         //simulatePredictive("i+i*i", AST);                     // predictive SA
         //simulatePrecedence("i+i*i$", AST);                      // tokens "i+i*i$" will be rewritten to AST
         tASTDispose(AST);
-    }
+    }*/
+
+    fclose(file);
 }

@@ -10,7 +10,7 @@
 
 int main() {
     printf("Hello, World!\n");
-    FILE *file = fopen("D:\\Coding\\IFJ18\\test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
     int count = 0;
     char c;

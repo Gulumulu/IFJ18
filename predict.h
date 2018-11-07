@@ -11,6 +11,7 @@
 #include "errors.h"
 #include "sematnic.h"
 #include "prectable.h"
+#include "scanner.h"
 
 // stack for predictive SA
 typedef struct {
@@ -27,7 +28,7 @@ char* tStackPredictiveGetTop(tStackPredictive* stack);
 void tStackPredictiveChangeTop(tStackPredictive* stack, int ruleNumber);
 
 // main function
-void simulatePredictive(char* inputToken, tASTPointer* AST, tStackPredictive* predictiveStack);
+void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predictiveStack);
 
 // helper functions
 int rowOffset(char* symbol);
