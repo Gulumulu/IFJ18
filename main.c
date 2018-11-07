@@ -25,7 +25,7 @@ int main() {
     }
 
     fclose(file);
-//    doMagic();
+    doMagic();
 
     return ERROR_TYPE;
 }
