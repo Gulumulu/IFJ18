@@ -7,6 +7,7 @@
  *                Marek Varga, xvarga14
  */
 #include <memory.h>
+#include <mem.h>
 #include "syntax.h"
 #include "scanner.h"
 

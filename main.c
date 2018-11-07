@@ -10,7 +10,7 @@
 
 int main() {
     printf("Hello, World!\n");
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("..\\test.txt", "r");
 
     int count = 0;
     char c;
@@ -25,7 +25,7 @@ int main() {
     }
 
     fclose(file);
-    doMagic();
+//    doMagic();
 
     return ERROR_TYPE;
 }
