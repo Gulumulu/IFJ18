@@ -26,7 +26,7 @@ char* keywords[] = {
  * @param file stream being used
  */
 void unget_char(int c, FILE *file) {
-    if (!(isspace(c)) || (c != '\n')) {
+    if (!(isspace(c)) || (c == '\n')) {
         ungetc(c, file);
     }
 }
