@@ -47,7 +47,7 @@ void tStackPredictivePush(tStackPredictive* stack, char* symbol) {
         errorHandling(99);
     } else {
         // todo: malloc overrides globalToken.content
-        //stack->content[stack->top] = malloc(sizeof(strlen(symbol)));
+        stack->content[stack->top] = malloc(sizeof(strlen(symbol)));
         //checkMalloc(stack->content[stack->top]);
         stack->content[stack->top] = symbol;
         stack->top++;
@@ -168,28 +168,31 @@ int rowOffset(char* symbol) {
  * @param symbol pointer to char is sought col
  * @return column number by which to look into the table
  */
-int colOffset(char* symbol) {
-    char* col[] = {"def", "EOL", "end", ",", "=", "id", "expr", "(", ")", "if", "then", "else", "while", "do", "function-id", "$"};
-    for (int i = 0; i < 16; i++) {
-        if (strcmp(symbol, col[i]) == 0) {
+int colOffset(TokenType symbol) {
+    TokenType col[] = {kw_def, ss_eol, kw_end, s_comma, s_eq, s_id, s_exp_int_s, s_lbrac, s_rbrac, kw_if, kw_then, kw_else, kw_while, kw_do, ss_eof};
+    for (int i = 0; i < 15; i++) {
+        if (symbol == col[i]) {
             return i;
         }
+    }
+    if (symbol == s_int || symbol == s_float || symbol == s_exp_int || symbol == s_exp_int_s || symbol == s_exp_f || symbol == s_exp_f_s) {
+        return 6;
     }
     return 18;
 }
 
-int LLTable[10][16] = {
-        /*<start*/          {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<function>*/      {2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<function-head>*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0},
-        /*<function-tail>*/ {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<next-par>*/      {0, 9, 0, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 9},
+int LLTable[10][15] = {
+        /*<start*/          {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<function>*/      {2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
+        /*<function-head>*/ {0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<function-tail>*/ {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<next-par>*/      {0, 9, 0, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 9},
         //{0, 0, 0, 0, 0, 0, 10, 11, 12, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<st-list>*/       {0, 13, 11, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12},
-        /*<stat>*/          {0, 0, 0, 0, 0, 14, 0, 0, 0, 19, 0, 0, 20, 0, 0, 0},
-        /*<eval>*/          {0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15},
-        /*<assign>*/        {0, 0, 0, 0, 0, 17, 17, 17, 0, 0, 0, 0, 0, 0, 18, 0},
+        /*<st-list>*/       {0, 13, 11, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 12},
+        /*<stat>*/          {0, 0, 0, 0, 0, 14, 0, 0, 0, 19, 0, 0, 20, 0, 0},
+        /*<eval>*/          {0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15},
+        /*<assign>*/        {0, 0, 0, 0, 0, 18, 17, 17, 0, 0, 0, 0, 0, 0, 0},
         //{0, 23, 0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
@@ -255,22 +258,23 @@ void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predict
             //char *handle;
 
             if (strcmp(a, "$") == 0) {
-                if (strcmp(token.content, "$") == 0) {
+                if (token.type == ss_eof) {
                     end = 1;                            // success
+                    fprintf(stdout, "SUCCESS, YOU ARE AWESOME!");
                 } else {
                     end = -1;                           // failure
                 }
             } else if (isTerminal(a) != 0) {
                 // todo: if top-most symbol in stack is id, if statement does not necessary mean true
-                if (strcmp(a, token.content) == 0) {
+                if (strcmp(a, token.content) == 0 || token.type == s_id  || (strcmp(a, "EOL") == 0 && token.type == ss_eol)) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
                 } else {
-                    end = -1;
+                        end = -1;
                 }
             } else if (strcmp(a, "<expr>") != 0){
                 int row = rowOffset(a);
-                int col = colOffset(token.content);
+                int col = colOffset(token.type);
                 if (row > 11 || col > 17) {
                     errorHandling(99);                      // symbol doesn't occur in precedence table
                 }
@@ -283,10 +287,15 @@ void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predict
                     fprintf(stdout, "Applying rule number: %d\n", rule);
                 }
             } else {
+                precedence = 1;
                 end = 3;                                    // need to calculate expression
             }
 
         } while (rule != 0 && end == 0);
+
+        if (strcmp(predictiveStack->content[predictiveStack->top-1],"<expr>") == 0) {
+            precedence = 1;
+        }
     }
 
     // todo: do something for failure?

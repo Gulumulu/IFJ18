@@ -10,8 +10,10 @@
 
 #include "sematnic.h"
 #include "errors.h"
+#include "scanner.h"
 
 int rule;
+int precedence;
 
 // structure for extended stack
 typedef struct {
@@ -31,7 +33,7 @@ void applyRule(tExpendedStack* stack, char* handle,char* rule);
 // helper functions
 void checkMalloc(const char* checkedString);
 int getTableOffset(char* terminal);
-void simulatePrecedence(char* inputToken, tASTPointer* AST);
+void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedStack, tStackASTPtr* stackAST);
 char getTop(tExpendedStack* stack);
 char* appendChar(char *string, char addedChar);
 #endif //IFJ_PRECTABLE_H

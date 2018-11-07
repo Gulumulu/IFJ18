@@ -29,24 +29,42 @@ void doMagic() {
     rewind(file);
 
     // second transit of compiler -- passing tokens to parser
-    tASTPointer* AST = malloc(sizeof(struct tAST));
+    tASTPointer* AST = malloc(sizeof(struct tAST)*10);
     tASTInit(AST);
-    tStackPredictive* predictiveStack = malloc(sizeof(tStackPredictive));
+    tStackPredictive* predictiveStack = malloc(sizeof(tStackPredictive)*10);
     tStackPredictiveInit(predictiveStack);
+    tExpendedStack* expendedStack = malloc(sizeof(tExpendedStack)*10);
+    init(expendedStack);
+    tStackASTPtr* stackAST = malloc(sizeof(struct tStackAST)*10);
+    tStackASTInit(stackAST);
     global_token = tmpToken;
     free(tmpToken.content);
+
     while (global_token.type != ss_eof) {
         // call lexical anal
         token_generate(file);
         // call top down anal
         if (ERROR_TYPE == 0) {
-            if (global_token.type == s_exp_f || global_token.type == s_exp_f_s || global_token.type == s_exp_int || global_token.type == s_exp_int_s) {
-                simulatePrecedence("", AST);
-            } else {
+            if (precedence == 1 || global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) {
+                precedence = 1;
+                simulatePrecedence(global_token, AST, expendedStack, stackAST);
+                if (precedence == 0) {
+                    tStackPredictivePop(predictiveStack);
+                }
+            }
+            if (precedence == 0) {
+                //tExpendedStack* expendedStack2 = malloc(sizeof(tExpendedStack));
+                //expendedStack2 = expendedStack;
                 simulatePredictive(global_token, AST, predictiveStack);
+                //expendedStack = expendedStack2;
+            }
+            if (global_token.type == kw_if) {
+                precedence = 1;
             }
         }
     }
+    tStackASTDispose(stackAST);
+    dispose(expendedStack);
     tStackPredictiveDispose(predictiveStack);
     tASTDispose(AST);
     /*

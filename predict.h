@@ -32,6 +32,6 @@ void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predict
 
 // helper functions
 int rowOffset(char* symbol);
-int colOffset(char* symbol);
+int colOffset(TokenType symbol);
 int isTerminal(char* symbol);
 #endif //IFJ_PREDICT_H

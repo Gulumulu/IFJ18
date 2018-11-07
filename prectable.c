@@ -61,6 +61,7 @@ void push(tExpendedStack* stack, char* c) {
         strcpy(tmp, stack->content);
         stack->content = malloc(strlen(tmp) + strlen(c));
         checkMalloc(stack->content);
+        // todo: pushing < into the stack that is not endRuleSign
         if (strcmp(c, "<=") == 0) {     // in case we are pushing two chars
             strcat(tmp, ".");
         } else if (strcmp(c, ">=") == 0) {
@@ -159,6 +160,57 @@ int getTableOffset(char* terminal) {
     } else {
         return 14;
     }
+}
+
+char changeTokenTypeToChar(TokenType tokenType) {
+    switch (tokenType) {
+        case s_add:
+            return '+';
+        case s_sub:
+            return '-';
+        case s_mul:
+            return '*';
+        case s_div:
+            return '/';
+        case s_less:
+            return '<';
+        case s_less_eq:
+            return '.';
+        case s_great:
+            return 'g';
+        case s_great_eq:
+            return ',';
+        case s_eqto:
+            return '=';
+        case s_noteq:
+            return '!';
+        case s_lbrac:
+            return '(';
+        case s_rbrac:
+            return ')';
+        case s_id:
+        case s_exp_f_s:
+        case s_exp_f:
+        case s_float:
+        case s_int:
+        case s_exp_int_s:
+        case s_exp_int:
+            return 'i';
+        case ss_eol:
+            return '$';
+        default:
+            return '&';
+    }
+}
+
+int getTableColOffset(TokenType terminal) {
+    TokenType terminals[] = {s_add, s_sub, s_mul, s_mul, s_div, s_less, s_less_eq, s_great, s_great_eq, s_eqto, s_noteq, s_lbrac, s_rbrac, s_id, ss_eol};
+    for (int i = 0; i < 14; i++) {
+        if (terminal == terminals[i]){
+            return i;
+        }
+    }
+    return 14;
 }
 
 /**
@@ -278,12 +330,13 @@ void changeHandle(tExpendedStack* stack, char* handle) {
     }
 }
 
+
 /**
  * Function simulates operator precedence look up for given token.
  *
  * @param inputToken pointer to char is input token string
  */
-void simulatePrecedence(char* inputToken, tASTPointer* AST) {
+void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedStack, tStackASTPtr* stackAST) {
     // todo: delete this
     BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
     if (tmpNode == NULL) {
@@ -295,32 +348,41 @@ void simulatePrecedence(char* inputToken, tASTPointer* AST) {
     }
 
     // initialize needed stacks
-    tExpendedStack* expendedStack;
-    expendedStack = malloc(sizeof(tExpendedStack));
-    tStackASTPtr* stackAST;
-    stackAST = malloc(sizeof(struct tStackAST));
+
+
 
     if (expendedStack == NULL || stackAST == NULL) {                        // expendedStack error
         errorHandling(99);
     } else {
-        init(expendedStack);
-        tStackASTInit(stackAST);
 
-        int tokenOffset = 0;                    // offset by which to look into the input token
+        //tStackASTInit(stackAST);
+
+        //int tokenOffset = 0;                    // offset by which to look into the input token
         char* a;
-        char* b;
+        //char* b;
+        char* c;
         char* emptyString = "";
+        int end = 0;
+        if (token.type == ss_eol || token.type == kw_then) {
+            precedence = 0;                     // precedence SA has finished, need to do predictive SA with the same token
+        }
         do {
             a = "";
-            b = "";
+            //b = "";
+            c = "";
             char tmp1 = getTop(expendedStack);
-            char tmp2 = inputToken[tokenOffset];
+            //char tmp2 = inputToken[tokenOffset];
+            char tmp3 = changeTokenTypeToChar(token.type);
 
             a = appendChar(a, tmp1);
-            b = appendChar(b, tmp2);
+            //b = appendChar(b, tmp2);
+            c = appendChar(c, tmp3);
 
             int row = getTableOffset(a);
-            int col = getTableOffset(b);
+            //int col = getTableOffset(b);
+            //int col = getTableColOffset(token.type);
+            int col = getTableOffset(c);
+
             if (row > 13 || col > 13) {
                 errorHandling(99);                      // symbol doesn't occur in precedence table
             }
@@ -332,13 +394,15 @@ void simulatePrecedence(char* inputToken, tASTPointer* AST) {
 
             switch (prec) {
                 case '=' :
-                    push(expendedStack, appendChar(emptyString, tmp2));
-                    tokenOffset++;
+                    push(expendedStack, appendChar(emptyString, tmp3));
+                    //tokenOffset++;
+                    end = 1;                            // need to get next token
                     break;
                 case '<' :
                     pushEndRuleSign(expendedStack, tmp1);
-                    push(expendedStack, appendChar(emptyString, tmp2));
-                    tokenOffset++;
+                    push(expendedStack, appendChar(emptyString, tmp3));
+                    //tokenOffset++;
+                    end = 1;                            // need to get next token
                     break;
                 case '>' :
                     handle = strrchr(expendedStack->content, '<');
@@ -366,15 +430,14 @@ void simulatePrecedence(char* inputToken, tASTPointer* AST) {
                     errorHandling(99);                      // empty space in precedence table
                     break;
             }
-        } while (strcmp(a, "$") != 0 || strcmp(b, "$") != 0);
+        } while ((strcmp(a, "$") != 0 || strcmp(c, "$") != 0 ) && end != 1);
     }
 
     // assign newly created AST
-    if (stackAST != NULL && ERROR_TYPE == 0) {              // semantic analysis did not result in error
+    /*if (stackAST != NULL && ERROR_TYPE == 0) {              // semantic analysis did not result in error
         *AST = *stackAST->body[stackAST->top];
-    }
+    }*/
 
     // free allocated stacks
-    dispose(expendedStack);
-    tStackASTDispose(stackAST);
+    //tStackASTDispose(stackAST);
 }
