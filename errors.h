@@ -11,4 +11,5 @@
 int ERROR_TYPE;
 
 void errorHandling(int errorNumber);
+int showErrorMessage(int errorNumber);
 #endif //IFJ_ERRORS_H

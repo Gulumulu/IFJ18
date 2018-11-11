@@ -14,8 +14,12 @@
  * @param errorNumber error number occurred during compilation
  */
 void errorHandling(int errorNumber) {
-    ERROR_TYPE = errorNumber;
+    if (ERROR_TYPE == 0) {
+        ERROR_TYPE = errorNumber;
+    }
+}
 
+int showErrorMessage(int errorNumber) {
     if (errorNumber == 1) {
         fprintf(stderr, "Error occurred during lexical analysis.\n");
     } else if (errorNumber == 2) {
@@ -33,4 +37,6 @@ void errorHandling(int errorNumber) {
     } else if (errorNumber == 99) {
         fprintf(stderr, "Internal compiler error. Sorry :(\n");
     }
+
+    return errorNumber;
 }

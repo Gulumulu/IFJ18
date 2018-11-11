@@ -197,6 +197,7 @@ char changeTokenTypeToChar(TokenType tokenType) {
         case s_exp_int:
             return 'i';
         case ss_eol:
+        case ss_eof:
             return '$';
         default:
             return '&';
@@ -307,9 +308,10 @@ void applyRule(tExpendedStack* stack, char* handle,char* rule) {
  * @param stack pointer to tExpendedStack structure is stack in which terminals are changed
  * @param handle pointer to char is right side of rule
  */
-void changeHandle(tExpendedStack* stack, char* handle) {
+int changeHandle(tExpendedStack* stack, char* handle) {
     if (stack == NULL) {
         errorHandling(99);
+        return 0;
     } else {
         char* bigE = "E";
         if (strcmp(handle, "<i") == 0) {
@@ -325,8 +327,10 @@ void changeHandle(tExpendedStack* stack, char* handle) {
             applyRule(stack, handle, bigE);
             rule = 3;
         } else {
-            errorHandling(99);                  // no rule for this kind of handle
+            errorHandling(2);                  // no rule for this kind of handle
+            return 0;
         }
+        return 1;
     }
 }
 
@@ -363,7 +367,7 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
         char* c;
         char* emptyString = "";
         int end = 0;
-        if (token.type == ss_eol || token.type == kw_then) {
+        if (token.type == ss_eol || token.type == kw_then || token.type == ss_eof) {
             precedence = 0;                     // precedence SA has finished, need to do predictive SA with the same token
         }
         do {
@@ -406,8 +410,7 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
                     break;
                 case '>' :
                     handle = strrchr(expendedStack->content, '<');
-                    if (handle != NULL) {
-                        changeHandle(expendedStack, handle);
+                    if (handle != NULL && changeHandle(expendedStack, handle) != 0) {
                         switch (rule) {
                             case 1:
                             case 2:
@@ -423,11 +426,13 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
                         // also check if rule exists
                         fprintf(stdout, "%s\n", handle);    // write rule to stdout
                     } else {
-                        errorHandling(99);                  // cannot find the right rule
+                        errorHandling(2);                  // cannot find the right rule
+                        end = 1;
                     }
                     break;
                 default:
-                    errorHandling(99);                      // empty space in precedence table
+                    errorHandling(2);                      // empty space in precedence table
+                    end = 1;
                     break;
             }
         } while ((strcmp(a, "$") != 0 || strcmp(c, "$") != 0 ) && end != 1);

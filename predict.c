@@ -276,11 +276,11 @@ void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predict
                 int row = rowOffset(a);
                 int col = colOffset(token.type);
                 if (row > 11 || col > 17) {
-                    errorHandling(99);                      // symbol doesn't occur in precedence table
+                    errorHandling(2);                      // symbol doesn't occur in LL rule table
                 }
                 rule = LLTable[row][col];
                 if (rule == 0) {
-                    errorHandling(3);                       // no such rule
+                    errorHandling(2);                       // no such rule
                     end = -1;
                 } else {
                     tStackPredictiveChangeTop(predictiveStack, rule);

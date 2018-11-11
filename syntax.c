@@ -63,6 +63,7 @@ void doMagic() {
             }
         }
     }
+    // todo: what if something remained in predictive stack? e.g. '<function-tail>'
     tStackASTDispose(stackAST);
     dispose(expendedStack);
     tStackPredictiveDispose(predictiveStack);
