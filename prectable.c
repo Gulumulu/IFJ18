@@ -223,6 +223,7 @@ int getTableColOffset(TokenType terminal) {
 char getTop(tExpendedStack* stack) {
     if (stack == NULL) {
         errorHandling(99);
+        return '$';
     } else {
         if (stack->top == 1) {
             return stack->content[0];
@@ -334,11 +335,28 @@ int changeHandle(tExpendedStack* stack, char* handle) {
     }
 }
 
+/**
+ * Function decides whether current token is id or function id based on next token.
+ *
+ * @param nextToken Token type is next token after current token
+ * @return TokenType s_id if current token is variable otherwise s_func_id is returned if current token is function
+ */
+TokenType decideID(Token nextToken) {
+    switch (nextToken.type) {
+        case s_lbrac:
+            return s_func_id;
+        default:
+            return s_id;
+    }
+}
 
 /**
  * Function simulates operator precedence look up for given token.
  *
- * @param inputToken pointer to char is input token string
+ * @param Token token is given token from lexical analysis
+ * @param AST
+ * @param expendedStack
+ * @param stackAST
  */
 void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedStack, tStackASTPtr* stackAST) {
     // todo: delete this
@@ -391,6 +409,7 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
                 errorHandling(99);                      // symbol doesn't occur in precedence table
             }
             if (row == 13 && col == 13) {
+                pop(expendedStack);                     // precedence SA is done, pop stack, there should only be 'E' left
                 break;
             }
             char prec = precTable[row][col];

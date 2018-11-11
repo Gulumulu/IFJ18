@@ -75,7 +75,10 @@ typedef enum {
 /*54*/  ss_after_hex,   // space after hex
 /*55*/  ss_error,       // error
 /*56*/  ss_new,         // start a new scan
-/*57*/  ss_final        // end of scanning
+/*57*/  ss_final,       // end of scanning
+
+    /*  VERY SPECIFIC SPECIAL STATE */
+/*58*/  s_func_id       // function id
 
 } TokenType;
 

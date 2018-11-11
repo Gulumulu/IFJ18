@@ -38,7 +38,6 @@ void doMagic() {
     tStackASTPtr* stackAST = malloc(sizeof(struct tStackAST)*10);
     tStackASTInit(stackAST);
     global_token = tmpToken;
-    free(tmpToken.content);
 
     while (global_token.type != ss_eof) {
         // call lexical anal
@@ -52,11 +51,15 @@ void doMagic() {
                     tStackPredictivePop(predictiveStack);
                 }
             }
+            // && strcmp(predictiveStack->content[predictiveStack->top-1], "<assign>") == 0
             if (precedence == 0) {
-                //tExpendedStack* expendedStack2 = malloc(sizeof(tExpendedStack));
-                //expendedStack2 = expendedStack;
+                if (global_token.type == s_id ) {
+                    tmpToken = global_token;
+                    token_generate(file);
+                    tmpToken.type = decideID(global_token);
+                    simulatePredictive(tmpToken, AST, predictiveStack);
+                }
                 simulatePredictive(global_token, AST, predictiveStack);
-                //expendedStack = expendedStack2;
             }
             if (global_token.type == kw_if) {
                 precedence = 1;
@@ -64,6 +67,7 @@ void doMagic() {
         }
     }
     // todo: what if something remained in predictive stack? e.g. '<function-tail>'
+    free(tmpToken.content);
     tStackASTDispose(stackAST);
     dispose(expendedStack);
     tStackPredictiveDispose(predictiveStack);

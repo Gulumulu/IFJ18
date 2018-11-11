@@ -36,4 +36,5 @@ int getTableOffset(char* terminal);
 void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedStack, tStackASTPtr* stackAST);
 char getTop(tExpendedStack* stack);
 char* appendChar(char *string, char addedChar);
+TokenType decideID(Token nextToken);
 #endif //IFJ_PRECTABLE_H

@@ -1,3 +1,7 @@
 def nasobeni(a)
 	a=2*a
 end
+
+def krat(b)
+    b=a*3
+end

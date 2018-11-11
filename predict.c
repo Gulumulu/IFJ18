@@ -46,9 +46,8 @@ void tStackPredictivePush(tStackPredictive* stack, char* symbol) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        // todo: malloc overrides globalToken.content
         stack->content[stack->top] = malloc(sizeof(strlen(symbol)));
-        //checkMalloc(stack->content[stack->top]);
+        checkMalloc(stack->content[stack->top]);
         stack->content[stack->top] = symbol;
         stack->top++;
     }
@@ -169,8 +168,8 @@ int rowOffset(char* symbol) {
  * @return column number by which to look into the table
  */
 int colOffset(TokenType symbol) {
-    TokenType col[] = {kw_def, ss_eol, kw_end, s_comma, s_eq, s_id, s_exp_int_s, s_lbrac, s_rbrac, kw_if, kw_then, kw_else, kw_while, kw_do, ss_eof};
-    for (int i = 0; i < 15; i++) {
+    TokenType col[] = {kw_def, ss_eol, kw_end, s_comma, s_eq, s_id, s_exp_int_s, s_lbrac, s_rbrac, kw_if, kw_then, kw_else, kw_while, kw_do, s_func_id, ss_eof};
+    for (int i = 0; i < 16; i++) {
         if (symbol == col[i]) {
             return i;
         }
@@ -181,18 +180,18 @@ int colOffset(TokenType symbol) {
     return 18;
 }
 
-int LLTable[10][15] = {
-        /*<start*/          {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<function>*/      {2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
-        /*<function-head>*/ {0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<function-tail>*/ {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<next-par>*/      {0, 9, 0, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 9},
+int LLTable[10][16] = {
+        /*<start*/          {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<function>*/      {2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
+        /*<function-head>*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0},
+        /*<function-tail>*/ {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<next-par>*/      {0, 9, 0, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 9},
         //{0, 0, 0, 0, 0, 0, 10, 11, 12, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<st-list>*/       {0, 13, 11, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 12},
-        /*<stat>*/          {0, 0, 0, 0, 0, 14, 0, 0, 0, 19, 0, 0, 20, 0, 0},
-        /*<eval>*/          {0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15},
-        /*<assign>*/        {0, 0, 0, 0, 0, 18, 17, 17, 0, 0, 0, 0, 0, 0, 0},
+        /*<st-list>*/       {0, 13, 11, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12},
+        /*<stat>*/          {0, 0, 0, 0, 0, 14, 0, 0, 0, 19, 0, 0, 20, 0, 0, 0},
+        /*<eval>*/          {0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15},
+        /*<assign>*/        {0, 0, 0, 0, 0, 17, 17, 17, 0, 0, 0, 0, 0, 0, 18, 0},
         //{0, 23, 0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
@@ -213,9 +212,11 @@ int isTerminal(char* symbol) {
 }
 
 /**
+ * Function simulates predictive syntax analysis for given token.
  *
- * @param inputToken
+ * @param token token is given token from lexical analysis
  * @param AST
+ * @param predictiveStack
  */
 void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predictiveStack) {
     // allocated needed stacks
@@ -235,17 +236,17 @@ void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predict
         //tStackPredictivePush(predictiveStack, "function");
 
         //int tokenOffset = 0;                    // offset by which to look into the input token
-        char* a;
+        char* predictiveStackTop;
         //char* b;
-        char* emptyString = "";
-        //fprintf(stdout, "a is:%s\n", a);
+        //char* emptyString = "";
+        //fprintf(stdout, "predictiveStackTop is:%s\n", predictiveStackTop);
         int rule = 0;
 
         do {
             //b = "";
-            //a = malloc(sizeof(strlen(tStackPredictiveGetTop(predictiveStack))));
-            a = malloc(10);
-            a = tStackPredictiveGetTop(predictiveStack);
+            //predictiveStackTop = malloc(sizeof(strlen(tStackPredictiveGetTop(predictiveStack))));
+            predictiveStackTop = malloc(10);
+            predictiveStackTop = tStackPredictiveGetTop(predictiveStack);
             //char tmp2 = inputToken[tokenOffset];
 
             //b = appendChar(b, tmp2);
@@ -257,23 +258,26 @@ void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predict
             }*/
             //char *handle;
 
-            if (strcmp(a, "$") == 0) {
+            if (strcmp(predictiveStackTop, "$") == 0) {
                 if (token.type == ss_eof) {
                     end = 1;                            // success
                     fprintf(stdout, "SUCCESS, YOU ARE AWESOME!");
+                } else if (token.type == kw_def) {
+                    tStackPredictivePush(predictiveStack, "<start>");  // another function follows
+                    rule = 1;
                 } else {
                     end = -1;                           // failure
                 }
-            } else if (isTerminal(a) != 0) {
+            } else if (isTerminal(predictiveStackTop) != 0) {
                 // todo: if top-most symbol in stack is id, if statement does not necessary mean true
-                if (strcmp(a, token.content) == 0 || token.type == s_id  || (strcmp(a, "EOL") == 0 && token.type == ss_eol)) {
+                if (strcmp(predictiveStackTop, token.content) == 0 || token.type == s_id  || token.type == s_func_id || (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eol)) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
                 } else {
-                        end = -1;
+                    end = -1;
                 }
-            } else if (strcmp(a, "<expr>") != 0){
-                int row = rowOffset(a);
+            } else if (strcmp(predictiveStackTop, "<expr>") != 0){
+                int row = rowOffset(predictiveStackTop);
                 int col = colOffset(token.type);
                 if (row > 11 || col > 17) {
                     errorHandling(2);                      // symbol doesn't occur in LL rule table
