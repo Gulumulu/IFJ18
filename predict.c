@@ -280,15 +280,16 @@ void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predict
                 int row = rowOffset(predictiveStackTop);
                 int col = colOffset(token.type);
                 if (row > 11 || col > 17) {
-                    errorHandling(2);                      // symbol doesn't occur in LL rule table
-                }
-                rule = LLTable[row][col];
-                if (rule == 0) {
-                    errorHandling(2);                       // no such rule
-                    end = -1;
+                    errorHandling(40);                      // symbol doesn't occur in LL rule table
                 } else {
-                    tStackPredictiveChangeTop(predictiveStack, rule);
-                    fprintf(stdout, "Applying rule number: %d\n", rule);
+                    rule = LLTable[row][col];
+                    if (rule == 0) {
+                        errorHandling(41);                      // no such rule
+                        end = -1;
+                    } else {
+                        tStackPredictiveChangeTop(predictiveStack, rule);
+                        fprintf(stdout, "Applying rule number: %d\n", rule);
+                    }
                 }
             } else {
                 precedence = 1;

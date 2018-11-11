@@ -328,7 +328,7 @@ int changeHandle(tExpendedStack* stack, char* handle) {
             applyRule(stack, handle, bigE);
             rule = 3;
         } else {
-            errorHandling(2);                  // no rule for this kind of handle
+            errorHandling(42);                  // no rule for this kind of handle
             return 0;
         }
         return 1;
@@ -405,54 +405,55 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
             //int col = getTableColOffset(token.type);
             int col = getTableOffset(c);
 
-            if (row > 13 || col > 13) {
-                errorHandling(99);                      // symbol doesn't occur in precedence table
-            }
             if (row == 13 && col == 13) {
                 pop(expendedStack);                     // precedence SA is done, pop stack, there should only be 'E' left
                 break;
-            }
-            char prec = precTable[row][col];
-            char* handle;
+            } else if (row > 13 || col > 13) {
+                errorHandling(44);                      // symbol doesn't occur in precedence table
+            } else {
+                char prec = precTable[row][col];
+                char *handle;
 
-            switch (prec) {
-                case '=' :
-                    push(expendedStack, appendChar(emptyString, tmp3));
-                    //tokenOffset++;
-                    end = 1;                            // need to get next token
-                    break;
-                case '<' :
-                    pushEndRuleSign(expendedStack, tmp1);
-                    push(expendedStack, appendChar(emptyString, tmp3));
-                    //tokenOffset++;
-                    end = 1;                            // need to get next token
-                    break;
-                case '>' :
-                    handle = strrchr(expendedStack->content, '<');
-                    if (handle != NULL && changeHandle(expendedStack, handle) != 0) {
-                        switch (rule) {
-                            case 1:
-                            case 2:
-                            case 3:
-                                tStackASTPush(stackAST, makeTree(tmp1, tStackASTPop(stackAST), tStackASTPop(stackAST)));
-                                break;
-                            case 4:
-                                tStackASTPush(stackAST, makeLeaf(tmpNode));
-                                break;
-                            default:
-                                break;
+                switch (prec) {
+                    case '=' :
+                        push(expendedStack, appendChar(emptyString, tmp3));
+                        //tokenOffset++;
+                        end = 1;                            // need to get next token
+                        break;
+                    case '<' :
+                        pushEndRuleSign(expendedStack, tmp1);
+                        push(expendedStack, appendChar(emptyString, tmp3));
+                        //tokenOffset++;
+                        end = 1;                            // need to get next token
+                        break;
+                    case '>' :
+                        handle = strrchr(expendedStack->content, '<');
+                        if (handle != NULL && changeHandle(expendedStack, handle) != 0) {
+                            switch (rule) {
+                                case 1:
+                                case 2:
+                                case 3:
+                                    tStackASTPush(stackAST,
+                                                  makeTree(tmp1, tStackASTPop(stackAST), tStackASTPop(stackAST)));
+                                    break;
+                                case 4:
+                                    tStackASTPush(stackAST, makeLeaf(tmpNode));
+                                    break;
+                                default:
+                                    break;
+                            }
+                            // also check if rule exists
+                            fprintf(stdout, "%s\n", handle);    // write rule to stdout
+                        } else {
+                            errorHandling(42);                 // cannot find the right rule
+                            end = 1;
                         }
-                        // also check if rule exists
-                        fprintf(stdout, "%s\n", handle);    // write rule to stdout
-                    } else {
-                        errorHandling(2);                  // cannot find the right rule
+                        break;
+                    default:
+                        errorHandling(43);                     // empty space in precedence table
                         end = 1;
-                    }
-                    break;
-                default:
-                    errorHandling(2);                      // empty space in precedence table
-                    end = 1;
-                    break;
+                        break;
+                }
             }
         } while ((strcmp(a, "$") != 0 || strcmp(c, "$") != 0 ) && end != 1);
     }
