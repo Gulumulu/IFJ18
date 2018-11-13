@@ -27,7 +27,7 @@ void dispose(tExpendedStack* stack);
 void push(tExpendedStack* stack, char* c);
 void pop(tExpendedStack* stack);
 void pushEndRuleSign(tExpendedStack* stack, char firstChar);
-void changeHandle(tExpendedStack* stack, char* handle);
+int changeHandle(tExpendedStack* stack, char* handle);
 void applyRule(tExpendedStack* stack, char* handle,char* rule);
 
 // helper functions
@@ -36,4 +36,5 @@ int getTableOffset(char* terminal);
 void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedStack, tStackASTPtr* stackAST);
 char getTop(tExpendedStack* stack);
 char* appendChar(char *string, char addedChar);
+TokenType decideID(Token nextToken);
 #endif //IFJ_PRECTABLE_H

@@ -197,6 +197,7 @@ char changeTokenTypeToChar(TokenType tokenType) {
         case s_exp_int:
             return 'i';
         case ss_eol:
+        case ss_eof:
             return '$';
         default:
             return '&';
@@ -222,6 +223,7 @@ int getTableColOffset(TokenType terminal) {
 char getTop(tExpendedStack* stack) {
     if (stack == NULL) {
         errorHandling(99);
+        return '$';
     } else {
         if (stack->top == 1) {
             return stack->content[0];
@@ -307,9 +309,10 @@ void applyRule(tExpendedStack* stack, char* handle,char* rule) {
  * @param stack pointer to tExpendedStack structure is stack in which terminals are changed
  * @param handle pointer to char is right side of rule
  */
-void changeHandle(tExpendedStack* stack, char* handle) {
+int changeHandle(tExpendedStack* stack, char* handle) {
     if (stack == NULL) {
         errorHandling(99);
+        return 0;
     } else {
         char* bigE = "E";
         if (strcmp(handle, "<i") == 0) {
@@ -325,16 +328,35 @@ void changeHandle(tExpendedStack* stack, char* handle) {
             applyRule(stack, handle, bigE);
             rule = 3;
         } else {
-            errorHandling(99);                  // no rule for this kind of handle
+            errorHandling(42);                  // no rule for this kind of handle
+            return 0;
         }
+        return 1;
     }
 }
 
+/**
+ * Function decides whether current token is id or function id based on next token.
+ *
+ * @param nextToken Token type is next token after current token
+ * @return TokenType s_id if current token is variable otherwise s_func_id is returned if current token is function
+ */
+TokenType decideID(Token nextToken) {
+    switch (nextToken.type) {
+        case s_lbrac:
+            return s_func_id;
+        default:
+            return s_id;
+    }
+}
 
 /**
  * Function simulates operator precedence look up for given token.
  *
- * @param inputToken pointer to char is input token string
+ * @param Token token is given token from lexical analysis
+ * @param AST
+ * @param expendedStack
+ * @param stackAST
  */
 void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedStack, tStackASTPtr* stackAST) {
     // todo: delete this
@@ -363,7 +385,7 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
         char* c;
         char* emptyString = "";
         int end = 0;
-        if (token.type == ss_eol || token.type == kw_then) {
+        if (token.type == ss_eol || token.type == kw_then || token.type == ss_eof) {
             precedence = 0;                     // precedence SA has finished, need to do predictive SA with the same token
         }
         do {
@@ -383,52 +405,55 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
             //int col = getTableColOffset(token.type);
             int col = getTableOffset(c);
 
-            if (row > 13 || col > 13) {
-                errorHandling(99);                      // symbol doesn't occur in precedence table
-            }
             if (row == 13 && col == 13) {
+                pop(expendedStack);                     // precedence SA is done, pop stack, there should only be 'E' left
                 break;
-            }
-            char prec = precTable[row][col];
-            char* handle;
+            } else if (row > 13 || col > 13) {
+                errorHandling(44);                      // symbol doesn't occur in precedence table
+            } else {
+                char prec = precTable[row][col];
+                char *handle;
 
-            switch (prec) {
-                case '=' :
-                    push(expendedStack, appendChar(emptyString, tmp3));
-                    //tokenOffset++;
-                    end = 1;                            // need to get next token
-                    break;
-                case '<' :
-                    pushEndRuleSign(expendedStack, tmp1);
-                    push(expendedStack, appendChar(emptyString, tmp3));
-                    //tokenOffset++;
-                    end = 1;                            // need to get next token
-                    break;
-                case '>' :
-                    handle = strrchr(expendedStack->content, '<');
-                    if (handle != NULL) {
-                        changeHandle(expendedStack, handle);
-                        switch (rule) {
-                            case 1:
-                            case 2:
-                            case 3:
-                                tStackASTPush(stackAST, makeTree(tmp1, tStackASTPop(stackAST), tStackASTPop(stackAST)));
-                                break;
-                            case 4:
-                                tStackASTPush(stackAST, makeLeaf(tmpNode));
-                                break;
-                            default:
-                                break;
+                switch (prec) {
+                    case '=' :
+                        push(expendedStack, appendChar(emptyString, tmp3));
+                        //tokenOffset++;
+                        end = 1;                            // need to get next token
+                        break;
+                    case '<' :
+                        pushEndRuleSign(expendedStack, tmp1);
+                        push(expendedStack, appendChar(emptyString, tmp3));
+                        //tokenOffset++;
+                        end = 1;                            // need to get next token
+                        break;
+                    case '>' :
+                        handle = strrchr(expendedStack->content, '<');
+                        if (handle != NULL && changeHandle(expendedStack, handle) != 0) {
+                            switch (rule) {
+                                case 1:
+                                case 2:
+                                case 3:
+                                    tStackASTPush(stackAST,
+                                                  makeTree(tmp1, tStackASTPop(stackAST), tStackASTPop(stackAST)));
+                                    break;
+                                case 4:
+                                    tStackASTPush(stackAST, makeLeaf(tmpNode));
+                                    break;
+                                default:
+                                    break;
+                            }
+                            // also check if rule exists
+                            fprintf(stdout, "%s\n", handle);    // write rule to stdout
+                        } else {
+                            errorHandling(42);                 // cannot find the right rule
+                            end = 1;
                         }
-                        // also check if rule exists
-                        fprintf(stdout, "%s\n", handle);    // write rule to stdout
-                    } else {
-                        errorHandling(99);                  // cannot find the right rule
-                    }
-                    break;
-                default:
-                    errorHandling(99);                      // empty space in precedence table
-                    break;
+                        break;
+                    default:
+                        errorHandling(43);                     // empty space in precedence table
+                        end = 1;
+                        break;
+                }
             }
         } while ((strcmp(a, "$") != 0 || strcmp(c, "$") != 0 ) && end != 1);
     }

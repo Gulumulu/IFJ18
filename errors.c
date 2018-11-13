@@ -14,8 +14,12 @@
  * @param errorNumber error number occurred during compilation
  */
 void errorHandling(int errorNumber) {
-    ERROR_TYPE = errorNumber;
+    if (ERROR_TYPE == 0) {
+        ERROR_TYPE = errorNumber;
+    }
+}
 
+int showErrorMessage(int errorNumber) {
     if (errorNumber == 1) {
         fprintf(stderr, "Error occurred during lexical analysis.\n");
     } else if (errorNumber == 2) {
@@ -32,5 +36,22 @@ void errorHandling(int errorNumber) {
         fprintf(stderr, "Division by zero!!!\n");
     } else if (errorNumber == 99) {
         fprintf(stderr, "Internal compiler error. Sorry :(\n");
+    } else if (errorNumber == 40) {
+        fprintf(stderr, "Error occurred during syntax analysis. Symbol doesn't occur in LL rule table.\n");
+        ERROR_TYPE = 2;
+    } else if (errorNumber == 41) {
+        fprintf(stderr, "Error occurred during syntax analysis. No such rule for given symbol.\n");
+        ERROR_TYPE = 2;
+    } else if (errorNumber == 42) {
+        fprintf(stderr, "Error occurred during syntax analysis. Cannot find the appropriate rule for current handle in operator precedence.\n");
+        ERROR_TYPE = 2;
+    } else if (errorNumber == 43) {
+        fprintf(stderr, "Error occurred during syntax analysis. Empty space in precedence table.\n");
+        ERROR_TYPE = 2;
+    } else if (errorNumber == 44) {
+        fprintf(stderr, "Error occurred during syntax analysis. Symbol doesn't occur in precedence table.\n");
+        ERROR_TYPE = 2;
     }
+
+    return errorNumber;
 }
