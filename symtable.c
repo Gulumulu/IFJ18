@@ -1,12 +1,28 @@
-//
-// Created by parek on 10/27/18.
-//
 /**
- * Implemented by Marek Varga, xvarga14
- * Table of symbols
+ * Table of symbols functions
+ *
+ * Implemented by Marek Varga           xvarga14
+ *                Gabriel Quirschfeld   xquirs00
  */
+
 #include "symtable.h"
 #include <string.h>
+
+/**
+ * Function generates a hash from the string
+ *
+ * @param str the identifier string
+ * @return hash integer
+ */
+unsigned int hash_id(char* str) {
+    int c = 0;
+    unsigned int hash = 5381;
+
+    while (c = *str++)
+        hash = ((hash << 5) + hash) + c;        /* hash * 33 + c */
+
+    return hash;
+}
 
 /**
  * Function initializes root node in BST.
@@ -14,9 +30,7 @@
  * @param root pointer to root BSTNode
  */
 void BSTInit(BSTNodePtr* root) {
-    (*root)->content = 0;
-    (*root)->LeftPtr = NULL;
-    (*root)->RightPtr = NULL;
+    *root = NULL;
 }
 
 /**
@@ -36,36 +50,35 @@ void BSTDispense(BSTNodePtr* root) {
     (*root) = NULL;
 }
 
-/*void BSTInsert(BSTNodePtr* root, char* insertedID) {
-    BSTNodePtr insertedNode;
-
-    if ((insertedNode = malloc(sizeof(struct BSTNode))) != NULL) {
-        insertedNode->content = insertedID;
-        insertedNode->LeftPtr = NULL;
-        insertedNode->RightPtr = NULL;
-
-        if ((*root) == NULL) {                                      // assigning new root
-            (*root) = insertedNode;
+/**
+ * Function insetrs content into BT depending on the ID
+ *
+ * @param root pointer to the binary tree
+ * @param content the content we want to insert
+ * @param ID hash integer serving as a key
+ */
+void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr *content, unsigned int ID) {
+        if (*root == NULL) {
+            BSTNodePtr tmp = malloc(sizeof(struct BSTNode));
+            if (tmp != NULL) {
+                tmp->ID = ID;
+                tmp->content = content;
+                tmp->LeftPtr = NULL;
+                tmp->RightPtr = NULL;
+                *root = tmp;
+            }
         } else {
-            BSTNodePtr descendant = *root;
-            while (descendant != NULL) {
-                if (insertedID < descendant->content) {
-                    if (descendant->LeftPtr != NULL) {
-                        descendant = descendant->LeftPtr;
-                    } else {
-                        descendant->LeftPtr = insertedNode;
-                    }
-                } else {
-                    if (descendant->RightPtr != NULL) {
-                        descendant = descendant->RightPtr;
-                    } else {
-                        descendant->RightPtr = insertedNode;
-                    }
-                }
+            if ((*root)->ID == ID) {
+                (*root)->content = content;
+            }
+            else if ((*root)->ID < ID) {
+                BSTInsert(&(*root)->RightPtr, content, ID);
+            }
+            else if ((*root)->ID > ID) {
+                BSTInsert(&(*root)->LeftPtr, content, ID);
             }
         }
-    }
-}*/
+}
 
 /**
  * Function searches BST for node with matching ID.
@@ -78,7 +91,7 @@ BSTNodeContentPtr* BSTsearch(BSTNodePtr* root, char* searchedID) {
     if (root == NULL) {
         return NULL;
     }
-
+/*
     BSTNodeContentPtr* content = (*root)->content;
     if (strcmp(content->ID,searchedID) == 0) {                  // searched node is current node
         return content;
@@ -93,7 +106,7 @@ BSTNodeContentPtr* BSTsearch(BSTNodePtr* root, char* searchedID) {
             return tmpReturn;
         }
     }
-
+*/
     return NULL;
 }
 

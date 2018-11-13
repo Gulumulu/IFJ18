@@ -365,7 +365,7 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
         errorHandling(99);
     } else {
         tmpNode->type = "int";
-        tmpNode->value = 3;
+        tmpNode->name = "3";
         tmpNode->defined = 1;
     }
 
