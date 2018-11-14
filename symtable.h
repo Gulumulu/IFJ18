@@ -11,7 +11,7 @@
 #include <string.h>
 
 typedef struct BSTNodeContent {
-    int defined;        //
+    int defined;        // true if defined, otherwise false
     char* type;         //
     char* name;         // the string of the identifier
 } BSTNodeContentPtr;
