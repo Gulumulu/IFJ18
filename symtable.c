@@ -14,12 +14,12 @@
  * @param str the identifier string
  * @return hash integer
  */
-unsigned int hash_id(char* str) {
+unsigned long hash_id(char* str) {
     int c = 0;
-    unsigned int hash = 5381;
+    unsigned long hash = 5381;
 
     while (c = *str++)
-        hash = ((hash << 5) + hash) + c;        /* hash * 33 + c */
+        hash = ((hash << 5) + hash) + c;        // hash * 33 + c
 
     return hash;
 }
@@ -38,16 +38,13 @@ void BSTInit(BSTNodePtr* root) {
  *
  * @param root pointer to root BSTNode
  */
-void BSTDispense(BSTNodePtr* root) {
-    if (root == NULL) {
-        return;
+void BSTDispose(BSTNodePtr* root) {
+    if (*root != NULL) {
+        BSTDispose(&(*root)->LeftPtr);
+        BSTDispose(&(*root)->RightPtr);
+        free(*root);
+        *root = NULL;
     }
-
-    BSTNodePtr disposedNode = *root;
-    BSTDispense(&disposedNode->LeftPtr);
-    BSTDispense(&disposedNode->RightPtr);
-    free(disposedNode);
-    (*root) = NULL;
 }
 
 /**
@@ -56,32 +53,32 @@ void BSTDispense(BSTNodePtr* root) {
  * @param root pointer to the binary tree
  * @param content the content we want to insert
  * @param ID hash integer serving as a key
+ * @param func_id id of the function the local id belongs to, 0 if function id
  */
-void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr *content, unsigned int ID) {
-        if (*root == NULL) {
-            BSTNodePtr tmp = malloc(sizeof(struct BSTNode));
-            if (tmp != NULL) {
-                tmp->ID = ID;
-                tmp->content = content;
-                tmp->LeftPtr = NULL;
-                tmp->RightPtr = NULL;
-                *root = tmp;
-            }
-        } else {
-            if ((*root)->ID == ID) {
-                (*root)->content = content;
-            }
-            else if ((*root)->ID < ID) {
-                BSTInsert(&(*root)->RightPtr, content, ID);
-            }
-            else if ((*root)->ID > ID) {
-                BSTInsert(&(*root)->LeftPtr, content, ID);
-            }
+void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned int ID, unsigned long func_id) {
+    if (*root == NULL) {    // if the tree is empty we need to create a new root
+        BSTNodePtr tmp = malloc(sizeof(struct BSTNode));
+        if (tmp != NULL) {
+            tmp->ID = ID;
+            tmp->func_id = func_id;
+            tmp->content = content;
+            tmp->LeftPtr = NULL;
+            tmp->RightPtr = NULL;
+            *root = tmp;
         }
+    } else {
+        if ((*root)->ID == ID) {    // if there already is a root with this id we just update the content
+            (*root)->content = content;
+        } else if ((*root)->ID < ID) {  // if the id is higher than the id of the root we are in we move to the right subtree
+            BSTInsert(&(*root)->RightPtr, content, ID, func_id);
+        } else if ((*root)->ID > ID) {  // if the id is lower than the id of the root we are in we move to the right subtree
+            BSTInsert(&(*root)->LeftPtr, content, ID, func_id);
+        }
+    }
 }
 
 /**
- * Function searches BST for node with matching ID.
+ * Function searches BST for node with matching ID
  *
  * @param root pointer to root BSTNode
  * @param searchedID pointer to char (string) for searching ID

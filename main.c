@@ -21,7 +21,7 @@ int main() {
     }
     rewind(file);
     for (int i = 0; i <= count; i++) {
-        token_generate(file);
+//        token_generate(file);
     }
 
     fclose(file);

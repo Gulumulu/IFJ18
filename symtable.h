@@ -1,10 +1,8 @@
-//
-// Created by parek on 10/27/18.
-//
 /**
  * Implemented by Marek Varga, xvarga14
  * Header for table of symbols
  */
+
 #ifndef IFJ_SYMTABLE_H
 #define IFJ_SYMTABLE_H
 
@@ -13,23 +11,23 @@
 #include <string.h>
 
 typedef struct BSTNodeContent {
-    int declared;
-    int defined;
-    char* type;
-    char* name;
+    int defined;        //
+    char* type;         //
+    char* name;         // the string of the identifier
 } BSTNodeContentPtr;
 
 typedef struct BSTNode {
-    int ID;
-    BSTNodeContentPtr* content;
-    struct BSTNode* LeftPtr;
-    struct BSTNode* RightPtr;
+    unsigned long ID;               // hash id of the identifier
+    unsigned long func_id;          // if the identifier is function -> 0, otherwise the hash id of the function the identifier belongs under
+    BSTNodeContentPtr* content;     // the contents (string, status)
+    struct BSTNode* LeftPtr;        // pointer to the left identifier
+    struct BSTNode* RightPtr;       // pointer to the right identifier
 } *BSTNodePtr;
 
-unsigned int hash_id(char* str);
+unsigned long hash_id(char* str);
 void BSTInit(BSTNodePtr* root);
-void BSTDispense(BSTNodePtr* root);
-void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr *content, unsigned int ID);
+void BSTDispose(BSTNodePtr* root);
+void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr *content, unsigned int ID, unsigned long func_id);
 BSTNodeContentPtr* BSTsearch(BSTNodePtr* root, char* searchedID);
 
 #endif //IFJ_SYMTABLE_H

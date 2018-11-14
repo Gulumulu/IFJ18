@@ -2,7 +2,8 @@
 // Created by parek on 11/6/18.
 //
 /**
- * Source file for syntax driven compilation.
+ * Source file for syntax driven compilation
+ *
  * Implemented by Gabriel Quirschfeld, xquirs00
  *                Marek Varga, xvarga14
  */
@@ -14,46 +15,48 @@
 void doMagic() {
 
     FILE *file = fopen("..\\test.txt", "r");
-    int is_func = 0;
-    char* func_num = NULL;
-    BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));               // global symtable storing the function ids
+
+    int is_func = 0;            // true if token was def and next token is a function id
+    int arr_id = 0;             // id for the array holding local symtables
+    unsigned long func_id = 0;  // function id to be put into local id content
+
+    BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));       // global symtable storing the function ids
     BSTInit(global_symtable);
-    BSTNodePtr *local_symtable;                                                 // local symtable storing the param ids inside a function
+
+    struct BSTNode **array;         // array storing local symtables
+    array = malloc(10000 * sizeof(struct BSTNode *));
+
     BSTNodeContentPtr* cnt;
 
     // first transit of compiler -- filling out symtable
     Token tmpToken = global_token;
     while (global_token.type != ss_eof) {
-        token_generate(file);
+        token_generate(file);   // calling lexical analysis to get another token
         cnt = malloc(sizeof(struct BSTNodeContent));
-        if (global_token.type == kw_def) {                                      // after the def keyword we get a function id
+        if (global_token.type == kw_def) {  // after the def keyword we get a function id
             is_func = 1;
         }
-        if ((is_func == 1) && (global_token.type == s_id)) {                    // push the function id into the global symtable
-            cnt->type = NULL;
-            cnt->declared = 1;
+        if ((is_func == 1) && (global_token.type == s_id)) {    // push the function id into the global symtable
+            cnt->type = "function";
             cnt->defined = 1;
             cnt->name = global_token.content;
-            BSTInsert(global_symtable, cnt, hash_id(global_token.content));
-   //         BSTNodePtr *local_symtable = malloc(sizeof(struct BSTNode));        // local symtable storing the param ids inside a function
-   //         BSTInit(local_symtable);
-            func_num = global_token.content;
-            is_func = 0;
+            BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
+            BSTNodePtr* local_symtable = malloc(sizeof(struct BSTNode));    // allocating memory for a new local symtable storing local identifiers
+            BSTInit(local_symtable);    // initialization of the local symtable
+            array[arr_id] = *local_symtable;    // storing the local symtable into the array of local symtables
+            arr_id++;
+            func_id = hash_id(global_token.content);    // storing the hash of function id for later use
+            is_func = 0;    // no longer expecting a function id
         }
-        else if (global_token.type == s_id) {                                   // push the id into the local symtable for the specific function
-            puts("local hey:");
-            puts(func_num);
-
+        else if (global_token.type == s_id) {   // push the id into the local symtable for the specific function
             cnt->type = NULL;
-            cnt->declared = 1;
             cnt->defined = 1;
             cnt->name = global_token.content;
-   //         BSTInsert(local_symtable, cnt, hash_id(global_token.content));
-
+            BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
         }
     }
 
-    rewind(file);
+    rewind(file);   // rewinding the file for another transit
 
     // second transit of compiler -- passing tokens to parser
     tASTPointer* AST = malloc(sizeof(struct tAST)*10);
