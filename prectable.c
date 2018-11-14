@@ -354,11 +354,10 @@ TokenType decideID(Token nextToken) {
  * Function simulates operator precedence look up for given token.
  *
  * @param Token token is given token from lexical analysis
- * @param AST
  * @param expendedStack
  * @param stackAST
  */
-void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedStack, tStackASTPtr* stackAST) {
+void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST) {
     // todo: delete this
     BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
     if (tmpNode == NULL) {
@@ -369,40 +368,27 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
         tmpNode->defined = 1;
     }
 
-    // initialize needed stacks
-
-
-
     if (expendedStack == NULL || stackAST == NULL) {                        // expendedStack error
         errorHandling(99);
     } else {
-
-        //tStackASTInit(stackAST);
-
-        //int tokenOffset = 0;                    // offset by which to look into the input token
         char* a;
-        //char* b;
         char* c;
         char* emptyString = "";
         int end = 0;
+
         if (token.type == ss_eol || token.type == kw_then || token.type == ss_eof) {
             precedence = 0;                     // precedence SA has finished, need to do predictive SA with the same token
         }
         do {
             a = "";
-            //b = "";
             c = "";
             char tmp1 = getTop(expendedStack);
-            //char tmp2 = inputToken[tokenOffset];
             char tmp3 = changeTokenTypeToChar(token.type);
 
             a = appendChar(a, tmp1);
-            //b = appendChar(b, tmp2);
             c = appendChar(c, tmp3);
 
             int row = getTableOffset(a);
-            //int col = getTableOffset(b);
-            //int col = getTableColOffset(token.type);
             int col = getTableOffset(c);
 
             if (row == 13 && col == 13) {
@@ -415,6 +401,7 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
                 char *handle;
 
                 switch (prec) {
+                // decide what to do based on precedence operator obtained from precedence table
                     case '=' :
                         push(expendedStack, appendChar(emptyString, tmp3));
                         //tokenOffset++;
@@ -457,12 +444,4 @@ void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedS
             }
         } while ((strcmp(a, "$") != 0 || strcmp(c, "$") != 0 ) && end != 1);
     }
-
-    // assign newly created AST
-    /*if (stackAST != NULL && ERROR_TYPE == 0) {              // semantic analysis did not result in error
-        *AST = *stackAST->body[stackAST->top];
-    }*/
-
-    // free allocated stacks
-    //tStackASTDispose(stackAST);
 }

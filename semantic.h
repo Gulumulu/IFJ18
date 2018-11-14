@@ -10,6 +10,7 @@
 
 #include "symtable.h"
 #include "errors.h"
+#include "scanner.h"
 #include <string.h>
 #define MAX 50
 
@@ -36,6 +37,7 @@ typedef struct tStackAST{
 // function for working with AST
 void tASTInit(tASTPointer* AST);
 void tASTDispose(tASTPointer* AST);
+BSTNodeContentPtr* findVariable(Token* token);
 tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer);
 tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPointer);
 

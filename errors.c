@@ -9,7 +9,7 @@
 #include "errors.h"
 
 /**
- * Function displays appropriate error message according to error number.
+ * Function sets ERROR_TYPE according to error number.
  *
  * @param errorNumber error number occurred during compilation
  */
@@ -19,6 +19,12 @@ void errorHandling(int errorNumber) {
     }
 }
 
+/**
+ * Function displays appropriate error message according to error number.
+ *
+ * @param errorNumber error number occurred during compilation
+ * @return error code for compilation result
+ */
 int showErrorMessage(int errorNumber) {
     if (errorNumber == 1) {
         fprintf(stderr, "Error occurred during lexical analysis.\n");
@@ -53,5 +59,5 @@ int showErrorMessage(int errorNumber) {
         ERROR_TYPE = 2;
     }
 
-    return errorNumber;
+    return ERROR_TYPE;
 }

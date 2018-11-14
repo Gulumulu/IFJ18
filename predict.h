@@ -9,7 +9,7 @@
 #define IFJ_PREDICT_H
 
 #include "errors.h"
-#include "sematnic.h"
+#include "semantic.h"
 #include "prectable.h"
 #include "scanner.h"
 #include <string.h>
@@ -18,6 +18,8 @@ typedef struct {
     int top;
     char* content[];
 } tStackPredictive;
+
+int rulesApplied[50];
 
 // functions for working with stack
 void tStackPredictiveInit(tStackPredictive* stack);
@@ -28,10 +30,11 @@ char* tStackPredictiveGetTop(tStackPredictive* stack);
 void tStackPredictiveChangeTop(tStackPredictive* stack, int ruleNumber);
 
 // main function
-void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predictiveStack);
+void simulatePredictive(Token token, tStackPredictive* predictiveStack);
 
 // helper functions
 int rowOffset(char* symbol);
 int colOffset(TokenType symbol);
 int isTerminal(char* symbol);
+void fillRulesApplied(int rule);
 #endif //IFJ_PREDICT_H

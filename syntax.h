@@ -13,7 +13,7 @@
 #include "prectable.h"
 #include "symtable.h"
 #include "predict.h"
-#include "sematnic.h"
+#include "semantic.h"
 #include <string.h>
 
 // function that does all the work
