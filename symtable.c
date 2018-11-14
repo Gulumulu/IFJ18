@@ -55,7 +55,7 @@ void BSTDispose(BSTNodePtr* root) {
  * @param ID hash integer serving as a key
  * @param func_id id of the function the local id belongs to, 0 if function id
  */
-void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned int ID, unsigned long func_id) {
+void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned long ID, unsigned long func_id) {
     if (*root == NULL) {    // if the tree is empty we need to create a new root
         BSTNodePtr tmp = malloc(sizeof(struct BSTNode));
         if (tmp != NULL) {

@@ -27,7 +27,7 @@ typedef struct BSTNode {
 unsigned long hash_id(char* str);
 void BSTInit(BSTNodePtr* root);
 void BSTDispose(BSTNodePtr* root);
-void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr *content, unsigned int ID, unsigned long func_id);
+void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr *content, unsigned long ID, unsigned long func_id);
 BSTNodeContentPtr* BSTsearch(BSTNodePtr* root, char* searchedID);
 
 #endif //IFJ_SYMTABLE_H
