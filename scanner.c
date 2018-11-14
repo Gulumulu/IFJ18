@@ -1,6 +1,8 @@
 /**
- * Implemented by Gabriel Quirschfeld, xquirs00
  * Scanner
+ *
+ * Implemented by Gabriel Quirschfeld   xquirs00
+ *                Marek Imrich          ximric01
  */
 
 #include "scanner.h"
@@ -704,7 +706,7 @@ int token_generate(FILE *file)
             break;
 
             case s_string: {
-                int value = (int) c; // getting ascii value of char
+                int value = (int) c; // getting ascii name of char
 
                 if ((c == EOF) || (c == '\n')) {
                     fprintf(stderr, "LEX -> Error, string must end with the \" character!\n");

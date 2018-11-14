@@ -54,8 +54,8 @@ typedef enum {
 /*35*/  s_rbrac,        // right bracket )
 /*36*/  s_lbrac_c,      // left bracket curly {
 /*37*/  s_rbrac_c,      // right bracket curly }
-/*38*/  s_int,          // integer value
-/*39*/  s_float,        // float value
+/*38*/  s_int,          // integer name
+/*39*/  s_float,        // float name
 /*40*/  s_exp_int,      // exp of integer
 /*41*/  s_exp_f,        // exp of float
 /*42*/  s_exp_int_s,    // sign of exp of integer

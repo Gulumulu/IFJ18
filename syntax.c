@@ -6,22 +6,49 @@
  * Implemented by Gabriel Quirschfeld, xquirs00
  *                Marek Varga, xvarga14
  */
-//#include <memory.h>
-//#include <mem.h>
+
 #include "syntax.h"
 #include "scanner.h"
+#include "symtable.h"
 
 void doMagic() {
 
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("..\\test.txt", "r");
+    int is_func = 0;
+    char* func_num = NULL;
+    BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));               // global symtable storing the function ids
+    BSTInit(global_symtable);
+    BSTNodePtr *local_symtable;                                                 // local symtable storing the param ids inside a function
+    BSTNodeContentPtr* cnt;
 
     // first transit of compiler -- filling out symtable
     Token tmpToken = global_token;
     while (global_token.type != ss_eof) {
-        // call lexical anal
         token_generate(file);
-        // put symbol into symtable
-        if (global_token.type == s_id) {
+        cnt = malloc(sizeof(struct BSTNodeContent));
+        if (global_token.type == kw_def) {                                      // after the def keyword we get a function id
+            is_func = 1;
+        }
+        if ((is_func == 1) && (global_token.type == s_id)) {                    // push the function id into the global symtable
+            cnt->type = NULL;
+            cnt->declared = 1;
+            cnt->defined = 1;
+            cnt->name = global_token.content;
+            BSTInsert(global_symtable, cnt, hash_id(global_token.content));
+   //         BSTNodePtr *local_symtable = malloc(sizeof(struct BSTNode));        // local symtable storing the param ids inside a function
+   //         BSTInit(local_symtable);
+            func_num = global_token.content;
+            is_func = 0;
+        }
+        else if (global_token.type == s_id) {                                   // push the id into the local symtable for the specific function
+            puts("local hey:");
+            puts(func_num);
+
+            cnt->type = NULL;
+            cnt->declared = 1;
+            cnt->defined = 1;
+            cnt->name = global_token.content;
+   //         BSTInsert(local_symtable, cnt, hash_id(global_token.content));
 
         }
     }
