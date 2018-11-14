@@ -42,32 +42,47 @@ void tASTDispose(tASTPointer* AST) {
  * @param token
  * @return
  */
-/*BSTNodeContentPtr* findVariable(BSTNodePtr node) {
-    if (node == NULL) {
+BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token) {
+    if (node == NULL || token == NULL) {
         errorHandling(99);
         return NULL;
     } else {
-        *//*if (token->type == s_id) {                              // find variable in symtable
-            return BSTsearch(, token->content);
-        } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float) {
-            // leaf will be a constant therefore creating new BSTNode is needed
+        if (token->type == s_id) {
+            // find variable in symtable
+            return BSTSearch(&node, hash_id(token->content));
+        } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float || token->type == s_exp_f) {
+            // leaf will be a constant therefore creation of new BSTNode is needed
             BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
             if (tmpNode == NULL) {
                 errorHandling(99);
                 return NULL;
             } else {
-                tmpNode->type = "int";
-                tmpNode->value = 3;
+                tmpNode->name = malloc(strlen(token->content)+1);
+                tmpNode->name = token->content;
+                switch (token->type) {
+                    case s_int:
+                    case s_exp_int:
+                    case s_exp_int_s:
+                        tmpNode->type = "int";
+                        break;
+                    case s_float:
+                    case s_exp_f:
+                    case s_exp_f_s:
+                        tmpNode->type = "float";
+                        break;
+                    default:
+                        tmpNode->type = "string";
+                        break;
+                }
                 tmpNode->defined = 1;
                 return tmpNode;
             }
         } else {                                                // attempting to create wrong leaf
             errorHandling(99);
             return NULL;
-        }*//*
-
+        }
     }
-}*/
+}
 
 /**
  * Function creates new leaf for AST.
@@ -105,8 +120,12 @@ int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightConten
         errorHandling(99);
         return 0;
     } else {
-        if (strcmp(leftContent->type,rightContent->type) == 0) {
-            return 1;
+        if (leftContent->type != NULL && rightContent->type != NULL) {
+            if (strcmp(leftContent->type, rightContent->type) == 0) {
+                return 1;
+            } else {
+                return 0;
+            }
         } else {
             return 0;
         }
@@ -141,10 +160,10 @@ int definedVariables(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightCon
  * @return non-zero value when semantics are correct otherwise zero value is returned
  */
 int correctSemantics(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent) {
-    if (matchingTypes(leftContent, rightContent) == 0) {
+    /*if (matchingTypes(leftContent, rightContent) == 0) {
         errorHandling(4);
         return 0;
-    }
+    }*/
     if (definedVariables(leftContent, rightContent) == 0) {
         errorHandling(3);
         return 0;

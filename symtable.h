@@ -29,5 +29,5 @@ void BSTInit(BSTNodePtr* root);
 void BSTDispose(BSTNodePtr* root);
 void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr *content, unsigned long ID, unsigned long func_id);
 BSTNodeContentPtr* BSTSearch(BSTNodePtr* root, unsigned long ID);
-BSTNodePtr* findNode(BSTNodePtr** array, char* functionName);
+BSTNodePtr* findNode(struct BSTNode** array, char* functionName);
 #endif //IFJ_SYMTABLE_H

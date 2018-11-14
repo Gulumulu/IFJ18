@@ -103,15 +103,15 @@ BSTNodeContentPtr* BSTSearch(BSTNodePtr* root, unsigned long ID) {
     }
 }
 
-BSTNodePtr* findNode(BSTNodePtr** array, char* functionName) {
+BSTNodePtr* findNode(struct BSTNode** array, char* functionName) {
     if ((*array) == NULL || strcmp(functionName, "") == 0) {
         return NULL;
     } else {
         unsigned long f_id = hash_id(functionName);
         for (int i = 0; i < 10000; i++) {
             if (array[i] != NULL) {
-                if ((*array)[i]->func_id== f_id) {
-                    return array[i];
+                if (array[i]->func_id== f_id) {
+                    return &array[i];
                 }
             }
         }
