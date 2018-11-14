@@ -11,7 +11,7 @@
 #include <string.h>
 
 typedef struct BSTNodeContent {
-    int defined;        //
+    int defined;        // true if defined, otherwise false
     char* type;         //
     char* name;         // the string of the identifier
 } BSTNodeContentPtr;
@@ -30,4 +30,5 @@ void BSTDispose(BSTNodePtr* root);
 void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr *content, unsigned long ID, unsigned long func_id);
 BSTNodeContentPtr* BSTSearch(BSTNodePtr* root, unsigned long ID);
 BSTNodePtr* findNode(BSTNodePtr** array, char* functionName);
+
 #endif //IFJ_SYMTABLE_H

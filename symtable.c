@@ -57,8 +57,8 @@ void BSTDispose(BSTNodePtr* root) {
  */
 void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned long ID, unsigned long func_id) {
     if (*root == NULL) {    // if the tree is empty we need to create a new root
-        BSTNodePtr tmp = malloc(sizeof(struct BSTNode));
-        if (tmp != NULL) {
+        BSTNodePtr tmp = malloc(sizeof(struct BSTNode));    // allocating space for the node
+        if (tmp != NULL) {  // filling the node with information
             tmp->ID = ID;
             tmp->func_id = func_id;
             tmp->content = content;
@@ -85,17 +85,17 @@ void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned long ID, u
  * @return BSTNodeContentPtr pointer to matched node or NULL if node was not found
  */
 BSTNodeContentPtr* BSTSearch(BSTNodePtr* root, unsigned long ID) {
-    if ((*root) == NULL) {
+    if ((*root) == NULL) {      // if root is empty returns NULL
         return NULL;
     }
 
-    if ((*root)->ID == ID) {
+    if ((*root)->ID == ID) {        // if ID is the same as the node returns node
         return (*root)->content;
     }
-    else if ((*root)->ID < ID) {
+    else if ((*root)->ID < ID) {    // if id we are searching for is higher than node id we move to the right
         return BSTSearch(&(*root)->RightPtr, ID);
     }
-    else if ((*root)->ID > ID) {
+    else if ((*root)->ID > ID) {    // if id we are searching for is lower than node id we move to the left
         return BSTSearch(&(*root)->LeftPtr, ID);
     }
     else {
