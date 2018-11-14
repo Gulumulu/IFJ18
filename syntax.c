@@ -13,7 +13,8 @@ void doMagic() {
 
     FILE *file = fopen("..\\test.txt", "r");
 
-    int is_func = 0;            // true if token was def and next token is a function id
+    int is_func = 0;            // true if token was def, expecting function id next
+    int undef = 0;              // true if token was equals sign, expecting only defined identifiers
     int arr_id = 0;             // id for the array holding local symtables
     unsigned long func_id = 0;  // function id to be put into local id content
 
@@ -30,7 +31,7 @@ void doMagic() {
     while (global_token.type != ss_eof) {
         token_generate(file);   // calling lexical analysis to get another token
         cnt = malloc(sizeof(struct BSTNodeContent));
-        if (global_token.type == kw_def) {  // after the def keyword we get a function id
+        if (global_token.type == kw_def) {  // after the def keyword we are expecting the function id
             is_func = 1;
         }
         if ((is_func == 1) && (global_token.type == s_id)) {    // push the function id into the global symtable
@@ -44,6 +45,26 @@ void doMagic() {
             arr_id++;
             func_id = hash_id(global_token.content);    // storing the hash of function id for later use
             is_func = 0;    // no longer expecting a function id
+        }
+        else if (global_token.type == ss_eol) { // the undefined region resets after eol
+            undef = 0;
+        }
+        else if (global_token.type == s_eq) {   // after an equals sign only already defined ids can be used
+            undef = 1;
+        }
+        else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign are defined
+            if (BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) {   // if the identifier was not used before, it is not defined
+                cnt->type = NULL;
+                cnt->defined = 0;
+                cnt->name = global_token.content;
+                BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+            }
+            else {  // if the identifier was used before, it is defined
+                cnt->type = NULL;
+                cnt->defined = 1;
+                cnt->name = global_token.content;
+                BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+            }
         }
         else if (global_token.type == s_id) {   // push the id into the local symtable for the specific function
             cnt->type = NULL;
