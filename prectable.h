@@ -30,7 +30,7 @@ void applyRule(tExpendedStack* stack, char* handle,char* rule);
 // helper functions
 void checkMalloc(const char* checkedString);
 int getTableOffset(char* terminal);
-void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST);
+void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST, BSTNodePtr* node);
 char getTop(tExpendedStack* stack);
 char* appendChar(char *string, char addedChar);
 TokenType decideID(Token nextToken);

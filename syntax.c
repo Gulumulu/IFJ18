@@ -11,7 +11,7 @@
 
 void doMagic() {
 
-    FILE *file = fopen("..\\test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
     int is_func = 0;            // true if token was def and next token is a function id
     int arr_id = 0;             // id for the array holding local symtables
@@ -66,6 +66,7 @@ void doMagic() {
     tStackASTPtr* stackAST = malloc(sizeof(struct tStackAST)*10);
     tStackASTInit(stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
     global_token = tmpToken;
+    char* currentFunction = "";
 
     while (global_token.type != ss_eof) {
         // call lexical analysis
@@ -75,7 +76,7 @@ void doMagic() {
             if (precedence == 1 || global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) {
                 // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                 precedence = 1;
-                simulatePrecedence(global_token, expendedStack, stackAST);
+                simulatePrecedence(global_token, expendedStack, stackAST, findNode(&array, currentFunction));
                 if (precedence == 0) {
                     // precedence has finished => need to pop rule "<assign>" from predictive stack
                     tStackPredictivePop(predictiveStack);
@@ -106,10 +107,15 @@ void doMagic() {
                     tmpToken = global_token;
                     token_generate(file);
                     tmpToken.type = decideID(global_token);
-                    // simulate predictive SA for next token
+                    if (tmpToken.type == s_func_id) {
+                        // helper to keep track in which function we are in
+                        currentFunction = malloc(strlen(tmpToken.content)+1);
+                        strcpy(currentFunction, tmpToken.content);
+                    }
+                    // simulate predictive SA for current token
                     simulatePredictive(tmpToken, predictiveStack);
                 }
-                // simulate predictive SA for current token
+                // simulate predictive SA for next token
                 simulatePredictive(global_token, predictiveStack);
                 // todo: generate code
                 /*

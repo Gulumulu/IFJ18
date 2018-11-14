@@ -201,16 +201,6 @@ char changeTokenTypeToChar(TokenType tokenType) {
     }
 }
 
-int getTableColOffset(TokenType terminal) {
-    TokenType terminals[] = {s_add, s_sub, s_mul, s_mul, s_div, s_less, s_less_eq, s_great, s_great_eq, s_eqto, s_noteq, s_lbrac, s_rbrac, s_id, ss_eol};
-    for (int i = 0; i < 14; i++) {
-        if (terminal == terminals[i]){
-            return i;
-        }
-    }
-    return 14;
-}
-
 /**
  * Function returns first terminal from top of the stack.
  *
@@ -354,7 +344,7 @@ TokenType decideID(Token nextToken) {
  * @param expendedStack
  * @param stackAST
  */
-void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST) {
+void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST, BSTNodePtr* node) {
     // todo: delete this
     BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
     if (tmpNode == NULL) {

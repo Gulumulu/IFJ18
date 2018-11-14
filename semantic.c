@@ -42,12 +42,12 @@ void tASTDispose(tASTPointer* AST) {
  * @param token
  * @return
  */
-/*BSTNodeContentPtr* findVariable(Token* token) {
-    if (token == NULL) {
+/*BSTNodeContentPtr* findVariable(BSTNodePtr node) {
+    if (node == NULL) {
         errorHandling(99);
         return NULL;
     } else {
-        if (token->type == s_id) {                              // find variable in symtable
+        *//*if (token->type == s_id) {                              // find variable in symtable
             return BSTsearch(, token->content);
         } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float) {
             // leaf will be a constant therefore creating new BSTNode is needed
@@ -64,7 +64,8 @@ void tASTDispose(tASTPointer* AST) {
         } else {                                                // attempting to create wrong leaf
             errorHandling(99);
             return NULL;
-        }
+        }*//*
+
     }
 }*/
 
