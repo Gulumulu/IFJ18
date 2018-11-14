@@ -48,7 +48,7 @@ void BSTDispose(BSTNodePtr* root) {
 }
 
 /**
- * Function insetrs content into BT depending on the ID
+ * Function inserts content into BT depending on the ID
  *
  * @param root pointer to the binary tree
  * @param content the content we want to insert
@@ -81,30 +81,26 @@ void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned long ID, u
  * Function searches BST for node with matching ID
  *
  * @param root pointer to root BSTNode
- * @param searchedID pointer to char (string) for searching ID
+ * @param ID id of the node we are looking for
  * @return BSTNodeContentPtr pointer to matched node or NULL if node was not found
  */
-BSTNodeContentPtr* BSTsearch(BSTNodePtr* root, char* searchedID) {
-    if (root == NULL) {
+BSTNodeContentPtr* BSTSearch(BSTNodePtr* root, unsigned long ID) {
+    if ((*root) == NULL) {
         return NULL;
     }
-/*
-    BSTNodeContentPtr* content = (*root)->content;
-    if (strcmp(content->ID,searchedID) == 0) {                  // searched node is current node
-        return content;
-    } else if (strcmp(content->ID, searchedID) < 0) {
-        BSTNodeContentPtr* tmpReturn = BSTsearch(&(*root)->LeftPtr, searchedID);
-        if (tmpReturn != NULL) {
-            return tmpReturn;
-        }
-    } else {
-        BSTNodeContentPtr* tmpReturn = BSTsearch(&(*root)->RightPtr, searchedID);
-        if (tmpReturn != NULL) {
-            return tmpReturn;
-        }
+
+    if ((*root)->ID == ID) {
+        return (*root)->content;
     }
-*/
-    return NULL;
+    else if ((*root)->ID < ID) {
+        return BSTSearch(&(*root)->RightPtr, ID);
+    }
+    else if ((*root)->ID > ID) {
+        return BSTSearch(&(*root)->LeftPtr, ID);
+    }
+    else {
+        return NULL;
+    }
 }
 
 BSTNodePtr* findNode(BSTNodePtr** array, char* functionName) {
