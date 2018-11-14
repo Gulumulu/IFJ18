@@ -1,6 +1,3 @@
-//
-// Created by parek on 11/2/18.
-//
 /**
  * Header for error types
  * Implemented by Marek Varga, xvarga14

@@ -1,6 +1,3 @@
-//
-// Created by parek on 10/31/18.
-//
 /**
  * Implemented by Marek Varga, xvarga14
  * Header for precedence table

@@ -1,6 +1,3 @@
-//
-// Created by parek on 11/6/18.
-//
 /**
  * Source file for syntax driven compilation
  *

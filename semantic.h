@@ -1,6 +1,3 @@
-//
-// Created by parek on 11/3/18.
-//
 /**
  *  Header for generating AST and appropriated semantic actions.
  *  Implemented by Marek Varga, xvarga14

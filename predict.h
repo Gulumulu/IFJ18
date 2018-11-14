@@ -1,6 +1,3 @@
-//
-// Created by parek on 11/5/18.
-//
 /**
  * Header file for predictive syntax analysis.
  * Implemented by Marek Varga, xvarga14
