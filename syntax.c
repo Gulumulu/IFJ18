@@ -54,10 +54,14 @@ void doMagic() {
         }
         else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign are defined
             if (BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) {   // if the identifier was not used before, it is not defined
+/*
                 cnt->type = NULL;
                 cnt->defined = 0;
                 cnt->name = global_token.content;
                 BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+*/
+                errorHandling(3);
+                return;
             }
             else {  // if the identifier was used before, it is defined
                 cnt->type = NULL;
