@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "sematnic.h"
+#include "semantic.h"
 
 /**
  * Function initializes AST.
@@ -38,6 +38,38 @@ void tASTDispose(tASTPointer* AST) {
         //AST = NULL;
     }
 }
+
+/**
+ * Function searches for variable in symtable based on given token.
+ *
+ * @param token
+ * @return
+ */
+/*BSTNodeContentPtr* findVariable(Token* token) {
+    if (token == NULL) {
+        errorHandling(99);
+        return NULL;
+    } else {
+        if (token->type == s_id) {                              // find variable in symtable
+            return BSTsearch(, token->content);
+        } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float) {
+            // leaf will be a constant therefore creating new BSTNode is needed
+            BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
+            if (tmpNode == NULL) {
+                errorHandling(99);
+                return NULL;
+            } else {
+                tmpNode->type = "int";
+                tmpNode->value = 3;
+                tmpNode->defined = 1;
+                return tmpNode;
+            }
+        } else {                                                // attempting to create wrong leaf
+            errorHandling(99);
+            return NULL;
+        }
+    }
+}*/
 
 /**
  * Function creates new leaf for AST.

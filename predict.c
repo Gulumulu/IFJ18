@@ -212,25 +212,38 @@ int isTerminal(char* symbol) {
 }
 
 /**
+ * Function stores applied rule in an array of applied rule rulesApplied.
+ *
+ * @param rule int number of rule currently being applied
+ */
+void fillRulesApplied(int rule) {
+    for (int i = 0; i < 50; i++) {
+        if (rulesApplied[i] == 0) {
+            rulesApplied[i] = rule;
+            break;
+        }
+    }
+}
+
+/**
  * Function simulates predictive syntax analysis for given token.
  *
  * @param token token is given token from lexical analysis
- * @param AST
  * @param predictiveStack
  */
-void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predictiveStack) {
+void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
     // allocated needed stacks
 
-    tStackASTPtr* stackAST;
-    stackAST = malloc(sizeof(struct tStackAST));
+    //tStackASTPtr* stackAST;
+    //stackAST = malloc(sizeof(struct tStackAST));
 
     int end = 0;
 
-    if (predictiveStack == NULL || stackAST == NULL) {                        // expendedStack error
+    if (predictiveStack == NULL) {                        // expendedStack error
         errorHandling(99);
     } else {
         //tStackPredictiveInit(predictiveStack);
-        tStackASTInit(stackAST);
+        //tStackASTInit(stackAST);
 
         //tStackPredictivePush(predictiveStack, "def");
         //tStackPredictivePush(predictiveStack, "function");
@@ -259,24 +272,30 @@ void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predict
             //char *handle;
 
             if (strcmp(predictiveStackTop, "$") == 0) {
+                // end of predictiveStack was reached
                 if (token.type == ss_eof) {
-                    end = 1;                            // success
+                    end = 1;                                // success
                     fprintf(stdout, "SUCCESS, YOU ARE AWESOME!");
                 } else if (token.type == kw_def) {
                     tStackPredictivePush(predictiveStack, "<start>");  // another function follows
                     rule = 1;
                 } else {
-                    end = -1;                           // failure
+                    end = -1;                               // failure
                 }
             } else if (isTerminal(predictiveStackTop) != 0) {
+                // terminal is on top of the predictiveStack
                 // todo: if top-most symbol in stack is id, if statement does not necessary mean true
                 if (strcmp(predictiveStackTop, token.content) == 0 || token.type == s_id  || token.type == s_func_id || (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eol)) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
-                } else {
+                } else if (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eof) {
+                    tStackPredictivePop(predictiveStack);
+                    rule = 2;
+                }else {
                     end = -1;
                 }
             } else if (strcmp(predictiveStackTop, "<expr>") != 0){
+                // non-terminal in on top of the predictiveStack && no need to calculate expression
                 int row = rowOffset(predictiveStackTop);
                 int col = colOffset(token.type);
                 if (row > 11 || col > 17) {
@@ -287,18 +306,22 @@ void simulatePredictive(Token token, tASTPointer* AST, tStackPredictive* predict
                         errorHandling(41);                      // no such rule
                         end = -1;
                     } else {
+                        // change non-terminal according to rule from LL grammar
                         tStackPredictiveChangeTop(predictiveStack, rule);
                         fprintf(stdout, "Applying rule number: %d\n", rule);
+                        fillRulesApplied(rule);
                     }
                 }
             } else {
+                // need to calculate expression
                 precedence = 1;
-                end = 3;                                    // need to calculate expression
+                end = 3;
             }
 
         } while (rule != 0 && end == 0);
 
         if (strcmp(predictiveStack->content[predictiveStack->top-1],"<expr>") == 0) {
+            // expression will be calculated next
             precedence = 1;
         }
     }

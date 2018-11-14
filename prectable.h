@@ -8,7 +8,7 @@
 #ifndef IFJ_PRECTABLE_H
 #define IFJ_PRECTABLE_H
 
-#include "sematnic.h"
+#include "semantic.h"
 #include "errors.h"
 #include "scanner.h"
 
@@ -33,7 +33,7 @@ void applyRule(tExpendedStack* stack, char* handle,char* rule);
 // helper functions
 void checkMalloc(const char* checkedString);
 int getTableOffset(char* terminal);
-void simulatePrecedence(Token token, tASTPointer* AST, tExpendedStack* expendedStack, tStackASTPtr* stackAST);
+void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST);
 char getTop(tExpendedStack* stack);
 char* appendChar(char *string, char addedChar);
 TokenType decideID(Token nextToken);

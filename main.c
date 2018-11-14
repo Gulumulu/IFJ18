@@ -3,14 +3,15 @@
 #include "errors.h"
 #include "scanner.h"
 #include "symtable.h"
-#include "sematnic.h"
+#include "semantic.h"
 #include "prectable.h"
 #include "predict.h"
 #include "syntax.h"
 
 int main() {
     printf("Hello, World!\n");
-    FILE *file = fopen("..\\test.txt", "r");
+
+    /*FILE *file = fopen("../test.txt", "r");
 
     int count = 0;
     char c;
@@ -24,8 +25,9 @@ int main() {
 //        token_generate(file);
     }
 
-    fclose(file);
+    fclose(file);*/
+
     doMagic();
 
-    return ERROR_TYPE;
+    return showErrorMessage(ERROR_TYPE);
 }
