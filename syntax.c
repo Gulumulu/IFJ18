@@ -9,10 +9,38 @@
 #include "scanner.h"
 #include "symtable.h"
 
-void doMagic() {
+#define BUF_SIZE 1024
 
+void doMagic() {
+/*
+    if (feof(file))
+        printf("file reached eof\n");
+
+    void *content = malloc(BUF_SIZE);
+
+    FILE *fp = fopen("../test.txt", "w");
+
+    if (fp == 0)
+        printf("...something went wrong opening file...\n");
+
+    printf("About to write\n");
+    int read;
+    while ((read = fread(content, 1, BUF_SIZE, file))) {
+        printf("Read %d bytes", read);
+        fwrite(content, read, 1, fp);
+        printf("Writing %d\n", read);
+    }
+    if (ferror(file))
+        printf("There was an error reading from file");
+
+    printf("Done writing\n");
+
+    fclose(fp);
+*/
     FILE *file = fopen("../test.txt", "r");
 
+    int is_stat = 0;
+    int is_global = 1;
     int is_func = 0;            // true if token was def, expecting function id next
     int undef = 0;              // true if token was equals sign, expecting only defined identifiers
     int arr_id = 0;             // id for the array holding local symtables
@@ -31,8 +59,18 @@ void doMagic() {
     while (global_token.type != ss_eof) {
         token_generate(file);   // calling lexical analysis to get another token
         cnt = malloc(sizeof(struct BSTNodeContent));
-        if (global_token.type == kw_def) {  // after the def keyword we are expecting the function id
+        if (global_token.type == kw_def) {  // after the def keyword we are expecting the function id, all id in function are local
             is_func = 1;
+            is_global = 0;
+        }
+        else if (global_token.type == kw_if || global_token.type == kw_while) {  // we are inside an if or while statement until we get an end
+            is_stat = 1;
+        }
+        else if (global_token.type == kw_end && is_stat == 0) {  // ending the function
+            is_global = 1;
+        }
+        else if (global_token.type == kw_end && is_stat == 1) {  // ending the if or while statements
+            is_stat = 0;
         }
         if ((is_func == 1) && (global_token.type == s_id)) {    // push the function id into the global symtable
             cnt->type = "function";
@@ -46,6 +84,14 @@ void doMagic() {
             func_id = hash_id(global_token.content);    // storing the hash of function id for later use
             is_func = 0;    // no longer expecting a function id
         }
+        else if ((is_global == 1) && (global_token.type == s_id)) {
+            if (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL) {
+                cnt->type = "variable";
+                cnt->defined = 1;
+                cnt->name = global_token.content;
+                BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
+            }
+        }
         else if (global_token.type == ss_eol) { // the undefined region resets after eol
             undef = 0;
         }
@@ -53,7 +99,7 @@ void doMagic() {
             undef = 1;
         }
         else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign, if and while statements are defined
-            if (BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) {   // if the identifier was not used before, it is not defined
+            if ((BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) && (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL)) {   // if the identifier was not used before, it is not defined
                 errorHandling(3);
                 return;
             }
@@ -73,6 +119,7 @@ void doMagic() {
     }
 
     rewind(file);   // rewinding the file for another transit
+
     //if (ERROR_TYPE == 0) {
         // second transit of compiler -- passing tokens to parser
         // helper stacks
