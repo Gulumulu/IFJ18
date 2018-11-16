@@ -49,10 +49,10 @@ void doMagic() {
         else if (global_token.type == ss_eol) { // the undefined region resets after eol
             undef = 0;
         }
-        else if (global_token.type == s_eq) {   // after an equals sign only already defined ids can be used
+        else if (global_token.type == s_eq || global_token.type == kw_if || global_token.type == kw_while) {   // after an equals sign only already defined ids can be used
             undef = 1;
         }
-        else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign are defined
+        else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign, if and while statements are defined
             if (BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) {   // if the identifier was not used before, it is not defined
 /*
                 cnt->type = NULL;
