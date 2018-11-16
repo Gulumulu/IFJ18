@@ -3,5 +3,6 @@ def nasobeni(a)
 end
 
 def krat(b)
+    a=1
     b=a*3
 end

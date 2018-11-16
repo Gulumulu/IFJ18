@@ -199,8 +199,8 @@ tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPoint
                     errorHandling(99);
                     return NULL;
                 } else {
-                    tmpContent->type = malloc(strlen(leftPointer->content->type)+1);
-                    memcpy(tmpContent->type, leftPointer->content->type, strlen(leftPointer->content->type));
+                    //tmpContent->type = malloc(strlen(leftPointer->content->type)+1);
+                    //memcpy(tmpContent->type, leftPointer->content->type, strlen(leftPointer->content->type));
                     tmpContent->defined = 1;
                     newTree->content = tmpContent;
                     return newTree;

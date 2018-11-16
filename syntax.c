@@ -90,8 +90,7 @@ void doMagic() {
         tExpendedStack *expendedStack = malloc(sizeof(tExpendedStack) * 10);
         init(expendedStack);                    // contains symbols meant to be simplified in precedence SA
         tStackASTPtr *stackAST = malloc(sizeof(struct tStackAST) * 10);
-        tStackASTInit(
-                stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
+        tStackASTInit(stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
         global_token = tmpToken;
         char *currentFunction = "";
 
@@ -100,9 +99,7 @@ void doMagic() {
             token_generate(file);
             // call syntax analysis
             //if (ERROR_TYPE == 0) {
-                if (precedence == 1 || global_token.type == s_int || global_token.type == s_float ||
-                    global_token.type == s_exp_int || global_token.type == s_exp_int_s ||
-                    global_token.type == s_exp_f || global_token.type == s_exp_f_s) {
+                if (precedence == 1 || global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
                     simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, currentFunction));
