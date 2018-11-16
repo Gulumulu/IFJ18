@@ -345,15 +345,6 @@ TokenType decideID(Token nextToken) {
  * @param stackAST
  */
 void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST, BSTNodePtr* node) {
-    // todo: delete this
-    /*BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
-    if (tmpNode == NULL) {
-        errorHandling(99);
-    } else {
-        tmpNode->type = "int";
-        tmpNode->name = "3";
-        tmpNode->defined = 1;
-    }*/
 
     if (expendedStack == NULL || stackAST == NULL) {                        // expendedStack error
         errorHandling(99);

@@ -79,7 +79,7 @@ void doMagic() {
     }
 
     rewind(file);   // rewinding the file for another transit
-    if (ERROR_TYPE == 0) {
+    //if (ERROR_TYPE == 0) {
         // second transit of compiler -- passing tokens to parser
         // helper stacks
         tASTPointer *AST = malloc(sizeof(struct tAST) * 10);
@@ -95,11 +95,11 @@ void doMagic() {
         global_token = tmpToken;
         char *currentFunction = "";
 
-        while (global_token.type != ss_eof) {
+        while (global_token.type != ss_eof && ERROR_TYPE == 0) {
             // call lexical analysis
             token_generate(file);
             // call syntax analysis
-            if (ERROR_TYPE == 0) {
+            //if (ERROR_TYPE == 0) {
                 if (precedence == 1 || global_token.type == s_int || global_token.type == s_float ||
                     global_token.type == s_exp_int || global_token.type == s_exp_int_s ||
                     global_token.type == s_exp_f || global_token.type == s_exp_f_s) {
@@ -168,7 +168,7 @@ void doMagic() {
                     // current token was if-condition => expression will follow => need to simulate precedence
                     precedence = 1;
                 }
-            }
+            //}
         }
 
         if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
@@ -180,6 +180,6 @@ void doMagic() {
         dispose(expendedStack);
         tStackPredictiveDispose(predictiveStack);
         tASTDispose(AST);
-    }
+    //}
     fclose(file);
 }
