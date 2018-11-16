@@ -79,7 +79,7 @@ void tStackPredictivePop(tStackPredictive* stack) {
     }
 }
 
-char* rightSides[19][10] = {
+char* rightSides[23][10] = {
         /*1. <start> -> */    {"<function>", "<st-list>", "", "", "", "", "", "", "", ""},
         /*2. <function> -> */ {"def", "<function-head>", "<st-list>", "<function-tail>", "<function>", "", "", "", "", ""},
         /*3. <function> -> */ {"", "", "", "", "", "", "", "", "", ""},
@@ -105,7 +105,11 @@ char* rightSides[19][10] = {
         //{"id", "<call-par>", "", "", "", "", "", "", "", ""},
         //{"", "", "", "", "", "", "", "", "", ""},
         /*18. <stat> -> */ {"if", "<expr>", "then", "EOL", "<st-list>", "else", "EOL", "<st-list>", "end", "EOL"},
-        /*19. <stat> -> */ {"while", "<expr>", "do", "EOL", "<st-list>", "end", "EOL", "", "", ""}
+        /*19. <stat> -> */ {"while", "<expr>", "do", "EOL", "<st-list>", "end", "EOL", "", "", ""},
+        /*20. <stat> -> */ {"print", "<print-expr>", "", "", "", "", "", "", "", ""},
+        /*21. <print-expr> -> */ {"(", "<expr>", ")", "", "", "", "", "", "", ""},
+        /*22. <print-expr> -> */ {"<expr>", "", "", "", "", "", "", "", "", ""},
+        /*23. <print-expr> -> */ {"", "", "", "", "", "", "", "", "", ""}
 };
 
 /**
@@ -149,8 +153,8 @@ void tStackPredictiveChangeTop(tStackPredictive* stack, int ruleNumber) {
  * @return number row by which to look into the table
  */
 int rowOffset(char* symbol) {
-    char* row[] = {"<start>", "<function>", "<function-head>", "<function-tail>", "<par>", "<next-par>", "<st-list>", "<stat>", "<eval>", "<assign>"};
-    for (int i = 0; i < 10; ++i) {
+    char* row[] = {"<start>", "<function>", "<function-head>", "<function-tail>", "<par>", "<next-par>", "<st-list>", "<stat>", "<eval>", "<assign>", "<print-expr>"};
+    for (int i = 0; i < 11; ++i) {
         if (strcmp(symbol, row[i]) == 0) {
             return i;
         }
@@ -165,8 +169,8 @@ int rowOffset(char* symbol) {
  * @return column number by which to look into the table
  */
 int colOffset(TokenType symbol) {
-    TokenType col[] = {kw_def, ss_eol, kw_end, s_comma, s_eq, s_id, s_exp_int_s, s_lbrac, s_rbrac, kw_if, kw_then, kw_else, kw_while, kw_do, s_func_id, ss_eof};
-    for (int i = 0; i < 16; i++) {
+    TokenType col[] = {kw_def, ss_eol, kw_end, s_comma, s_eq, s_id, s_string, s_lbrac, s_rbrac, kw_if, kw_then, kw_else, kw_while, kw_do, s_func_id, ss_eof, kw_print};
+    for (int i = 0; i < 17; i++) {
         if (symbol == col[i]) {
             return i;
         }
@@ -177,18 +181,19 @@ int colOffset(TokenType symbol) {
     return 18;
 }
 
-int LLTable[10][16] = {
-        /*<start*/          {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<function>*/      {2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
-        /*<function-head>*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0},
-        /*<function-tail>*/ {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<next-par>*/      {0, 9, 0, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 9},
+int LLTable[11][17] = {
+        /*<start*/          {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<function>*/      {2, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0},
+        /*<function-head>*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0},
+        /*<function-tail>*/ {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0},
+        /*<next-par>*/      {0, 9, 0, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 9, },
         //{0, 0, 0, 0, 0, 0, 10, 11, 12, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<st-list>*/       {0, 11, 12, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12},
-        /*<stat>*/          {0, 0, 0, 0, 0, 13, 0, 0, 0, 18, 0, 0, 19, 0, 0, 0},
-        /*<eval>*/          {0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14},
-        /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 17, 0},
+        /*<st-list>*/       {0, 11, 12, 0, 0, 10, 0, 0, 0, 10, 0, 12, 10, 0, 0, 12, 10},
+        /*<stat>*/          {0, 0, 0, 0, 0, 13, 0, 0, 0, 18, 0, 0, 19, 0, 0, 0, 20},
+        /*<eval>*/          {0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0},
+        /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 17, 0, 0},
+        /*<print-expr*/     {0, 23, 0, 0, 0, 0, 22, 21, 0, 0, 0, 0, 0, 0, 0, 23, 0}
         //{0, 23, 0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
@@ -199,8 +204,8 @@ int LLTable[10][16] = {
  * @return non-zero value if symbol is terminal otherwise zero is returned
  */
 int isTerminal(char* symbol) {
-    char* terminals[] = {"def", "EOL", "(", ")", "end", "+", "-", "*", "/", ".", ",", "integer", "float", "string", "=", "if", "then", "else", "while", "do", "id", "function-id"};
-    for (int i = 0; i < 22; ++i) {
+    char* terminals[] = {"def", "EOL", "(", ")", "end", "+", "-", "*", "/", ".", ",", "integer", "float", "string", "=", "if", "then", "else", "while", "do", "id", "function-id", "print"};
+    for (int i = 0; i < 23; ++i) {
         if (strcmp(terminals[i], symbol) == 0) {
             return 1;
         }
@@ -250,7 +255,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
         //char* b;
         //char* emptyString = "";
         //fprintf(stdout, "predictiveStackTop is:%s\n", predictiveStackTop);
-        int rule = 0;
+        //int rule = 0;
 
         do {
             //b = "";
@@ -309,7 +314,11 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
                         fillRulesApplied(rule);
                     }
                 }
-            } else {
+            } else if (rule == 22 || rule == 21) {
+                // need to print
+                printing = 1;
+                end = 3;
+            }else {
                 // need to calculate expression
                 precedence = 1;
                 end = 3;
@@ -317,10 +326,10 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
 
         } while (rule != 0 && end == 0);
 
-        if (strcmp(predictiveStack->content[predictiveStack->top-1],"<expr>") == 0) {
+        /*if (strcmp(predictiveStack->content[predictiveStack->top-1],"<expr>") == 0 && printing != 1) {
             // expression will be calculated next
             precedence = 1;
-        }
+        }*/
     }
 
     // todo: do something for failure?

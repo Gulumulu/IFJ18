@@ -134,7 +134,7 @@ int getTableOffset(char* terminal) {
         return 2;
     } else if (strcmp(terminal, "/") == 0) {
         return 3;
-    } else if (strcmp(terminal, "<") == 0) {
+    } else if (strcmp(terminal, "<") == 0 || strcmp(terminal, "l") == 0) {
         return 4;
     } else if (strcmp(terminal, "<=") == 0 || strcmp(terminal, ".") == 0) {
         return 5;
@@ -195,6 +195,7 @@ char changeTokenTypeToChar(TokenType tokenType) {
             return 'i';
         case ss_eol:
         case ss_eof:
+        case kw_then:
             return '$';
         default:
             return '&';
@@ -314,6 +315,12 @@ int changeHandle(tExpendedStack* stack, char* handle) {
         } else if (strcmp(handle, "<(E)") == 0) {
             applyRule(stack, handle, bigE);
             rule = 3;
+        } else if (strcmp(handle, "<E/E") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 2;
+        } else if (strcmp(handle, "<ElE") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 2;
         } else {
             errorHandling(42);                  // no rule for this kind of handle
             return 0;
@@ -405,6 +412,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                                     break;
                                 case 4:
                                     //tStackASTPush(stackAST, makeLeaf(tmpNode));
+                                    // doing nothing, just changing handle
                                     break;
                                 default:
                                     break;

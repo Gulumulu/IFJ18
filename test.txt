@@ -1,8 +1,13 @@
-def nasobeni(a)
-	a=2*a
+def fakt(a)
+print "Zadejte cislo pro vypocet faktorialu: "
+if a < 0 then
+  print("\nFaktorial nelze spocitat\n")
+else
+  vysl = 1
+  while a > 0 do
+    vysl = vysl * a
+    a = a - 1
+  end
+  print "\nVysledek je:", vysl, "\n"
 end
-
-def krat(b)
-    a=1
-    b=a*3
 end

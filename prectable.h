@@ -11,6 +11,7 @@
 
 int rule;
 int precedence;
+int printing;
 
 // structure for extended stack
 typedef struct {

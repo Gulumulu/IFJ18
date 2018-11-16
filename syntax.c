@@ -82,14 +82,13 @@ void doMagic() {
     //if (ERROR_TYPE == 0) {
         // second transit of compiler -- passing tokens to parser
         // helper stacks
-        tASTPointer *AST = malloc(sizeof(struct tAST) * 10);
-        tASTInit(
-                AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
-        tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 10);
+        tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
+        tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
+        tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 30);
         tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
-        tExpendedStack *expendedStack = malloc(sizeof(tExpendedStack) * 10);
+        tExpendedStack *expendedStack = malloc(sizeof(tExpendedStack) * 30);
         init(expendedStack);                    // contains symbols meant to be simplified in precedence SA
-        tStackASTPtr *stackAST = malloc(sizeof(struct tStackAST) * 10);
+        tStackASTPtr *stackAST = malloc(sizeof(struct tStackAST) * 30);
         tStackASTInit(stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
         global_token = tmpToken;
         char *currentFunction = "";
@@ -104,7 +103,7 @@ void doMagic() {
                     precedence = 1;
                     simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, currentFunction));
                     if (precedence == 0) {
-                        // precedence has finished => need to pop rule "<assign>" from predictive stack
+                        // precedence has finished => need to pop rule from predictive stack
                         tStackPredictivePop(predictiveStack);
                         // assign newly created AST
                         if (stackAST != NULL && ERROR_TYPE == 0) {
@@ -126,7 +125,7 @@ void doMagic() {
                         }
                     }
                 }
-                if (precedence == 0) {
+                if (precedence == 0 ) {
                     // we are not dealing with expression => doing top down syntax analysis => need to simulate predictive SA
                     if (global_token.type == s_id) {
                         // if current token is id => need to call next token to decide whether current token is variable or function id
@@ -160,6 +159,17 @@ void doMagic() {
                      *
                      * P.S. maybe there is no need for checking applied rules
                      */
+                }
+                if (printing == 1) {
+                    // need to print this expression
+                    // todo: generate code
+                    /*
+                     * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
+                     */
+                    // pop <print-expr> rule from stack
+                    tStackPredictivePop(predictiveStack);
+                    // we will not be printing anymore
+                    printing = 0;
                 }
                 if (global_token.type == kw_if) {
                     // current token was if-condition => expression will follow => need to simulate precedence

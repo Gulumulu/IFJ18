@@ -17,6 +17,7 @@ typedef struct {
 } tStackPredictive;
 
 int rulesApplied[50];
+int rule;
 
 // functions for working with stack
 void tStackPredictiveInit(tStackPredictive* stack);

@@ -192,7 +192,11 @@ tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPoint
         } else {
             newTree->LeftPointer = leftPointer;
             newTree->RightPointer = rightPointer;
-            newTree->ID = ID;
+            if (ID == 'l') {
+                newTree->ID = '<';
+            } else {
+                newTree->ID = ID;
+            }
             if (correctSemantics(leftPointer->content, rightPointer->content) != 0) {
                 BSTNodeContentPtr* tmpContent = malloc(sizeof(struct BSTNodeContent));
                 if (tmpContent == NULL) {
