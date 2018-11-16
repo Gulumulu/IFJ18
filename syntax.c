@@ -1,8 +1,8 @@
 /**
  * Source file for syntax driven compilation
  *
- * Implemented by Gabriel Quirschfeld, xquirs00
- *                Marek Varga, xvarga14
+ * Implemented by Gabriel Quirschfeld   xquirs00
+ *                Marek Varga           xvarga14
  */
 
 #include "syntax.h"
@@ -49,17 +49,11 @@ void doMagic() {
         else if (global_token.type == ss_eol) { // the undefined region resets after eol
             undef = 0;
         }
-        else if (global_token.type == s_eq || global_token.type == kw_if || global_token.type == kw_while) {   // after an equals sign only already defined ids can be used
+        else if (global_token.type == s_eq || global_token.type == kw_if || global_token.type == kw_while) {   // after an equals sign, if and while only already defined ids can be used
             undef = 1;
         }
         else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign, if and while statements are defined
             if (BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) {   // if the identifier was not used before, it is not defined
-/*
-                cnt->type = NULL;
-                cnt->defined = 0;
-                cnt->name = global_token.content;
-                BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
-*/
                 errorHandling(3);
                 return;
             }
@@ -83,15 +77,13 @@ void doMagic() {
         // second transit of compiler -- passing tokens to parser
         // helper stacks
         tASTPointer *AST = malloc(sizeof(struct tAST) * 10);
-        tASTInit(
-                AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
+        tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
         tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 10);
         tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
         tExpendedStack *expendedStack = malloc(sizeof(tExpendedStack) * 10);
         init(expendedStack);                    // contains symbols meant to be simplified in precedence SA
         tStackASTPtr *stackAST = malloc(sizeof(struct tStackAST) * 10);
-        tStackASTInit(
-                stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
+        tStackASTInit(stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
         global_token = tmpToken;
         char *currentFunction = "";
 

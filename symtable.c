@@ -103,6 +103,13 @@ BSTNodeContentPtr* BSTSearch(BSTNodePtr* root, unsigned long ID) {
     }
 }
 
+/**
+ * Function finds the correct local symtable
+ *
+ * @param array array of local symtables we are searching in
+ * @param functionName function for which we wanna get the local symtable
+ * @return pointer to the local symtable
+ */
 BSTNodePtr* findNode(struct BSTNode** array, char* functionName) {
     if ((*array) == NULL || strcmp(functionName, "") == 0) {
         return NULL;

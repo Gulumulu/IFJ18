@@ -1,7 +1,8 @@
 /**
- * Header file for syntax driven compilation.
- * Implemented by Gabriel Quirschfeld, xquirs00
- *                Marek Varga, xvarga14
+ * Header file for syntax driven compilation
+ *
+ * Implemented by Gabriel Quirschfeld   xquirs00
+ *                Marek Varga           xvarga14
  */
 #ifndef IFJ_SYNTAX_H
 #define IFJ_SYNTAX_H

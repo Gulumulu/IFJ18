@@ -2,6 +2,11 @@ def nasobeni(a)
 	a=2*a
 end
 
+def plus
+end
+plus = 5
+
 def krat(b)
+    a=1
     b=a*3
 end
