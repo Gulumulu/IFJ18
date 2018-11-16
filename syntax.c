@@ -92,9 +92,7 @@ void doMagic() {
             token_generate(file);
             // call syntax analysis
             //if (ERROR_TYPE == 0) {
-                if (precedence == 1 || global_token.type == s_int || global_token.type == s_float ||
-                    global_token.type == s_exp_int || global_token.type == s_exp_int_s ||
-                    global_token.type == s_exp_f || global_token.type == s_exp_f_s) {
+                if (precedence == 1 || global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
                     simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, currentFunction));
