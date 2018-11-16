@@ -345,15 +345,6 @@ TokenType decideID(Token nextToken) {
  * @param stackAST
  */
 void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST, BSTNodePtr* node) {
-    // todo: delete this
-    BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
-    if (tmpNode == NULL) {
-        errorHandling(99);
-    } else {
-        tmpNode->type = "int";
-        tmpNode->name = "3";
-        tmpNode->defined = 1;
-    }
 
     if (expendedStack == NULL || stackAST == NULL) {                        // expendedStack error
         errorHandling(99);
@@ -398,6 +389,9 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                         pushEndRuleSign(expendedStack, tmp1);
                         push(expendedStack, appendChar(emptyString, tmp3));
                         //tokenOffset++;
+                        if (tmp3 == 'i') {
+                            tStackASTPush(stackAST, makeLeaf(findVariable(*node, &token)));
+                        }
                         end = 1;                            // need to get next token
                         break;
                     case '>' :
@@ -407,11 +401,10 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                                 case 1:
                                 case 2:
                                 case 3:
-                                    tStackASTPush(stackAST,
-                                                  makeTree(tmp1, tStackASTPop(stackAST), tStackASTPop(stackAST)));
+                                    tStackASTPush(stackAST, makeTree(tmp1, tStackASTPop(stackAST), tStackASTPop(stackAST)));
                                     break;
                                 case 4:
-                                    tStackASTPush(stackAST, makeLeaf(tmpNode));
+                                    //tStackASTPush(stackAST, makeLeaf(tmpNode));
                                     break;
                                 default:
                                     break;
