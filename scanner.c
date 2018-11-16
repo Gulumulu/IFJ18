@@ -1,5 +1,5 @@
 /**
- * Scanner
+ * Scanner - almighty creator of tokens
  *
  * Implemented by Gabriel Quirschfeld   xquirs00
  *                Marek Imrich          ximric01

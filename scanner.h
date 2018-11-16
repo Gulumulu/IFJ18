@@ -1,6 +1,7 @@
 /**
- * Implemented by Gabriel Quirschfeld, xquirs 00
  * Header for the scanner
+ *
+ * Implemented by Gabriel Quirschfeld xquirs00
  */
 
 #ifndef IFJ_SCANNER_H

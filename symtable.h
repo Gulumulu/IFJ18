@@ -1,6 +1,8 @@
 /**
- * Implemented by Marek Varga, xvarga14
  * Header for table of symbols
+ *
+ * Implemented by Marek Varga           xvarga14
+ *                Gabriel Quirschfeld   xquirs 00
  */
 
 #ifndef IFJ_SYMTABLE_H
@@ -30,4 +32,5 @@ void BSTDispose(BSTNodePtr* root);
 void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr *content, unsigned long ID, unsigned long func_id);
 BSTNodeContentPtr* BSTSearch(BSTNodePtr* root, unsigned long ID);
 BSTNodePtr* findNode(struct BSTNode** array, char* functionName);
+
 #endif //IFJ_SYMTABLE_H
