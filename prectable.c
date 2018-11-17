@@ -196,6 +196,7 @@ char changeTokenTypeToChar(TokenType tokenType) {
         case ss_eol:
         case ss_eof:
         case kw_then:
+        case kw_do:
             return '$';
         default:
             return '&';
@@ -309,6 +310,9 @@ int changeHandle(tExpendedStack* stack, char* handle) {
         } else if (strcmp(handle, "<E+E") == 0) {
             applyRule(stack, handle, bigE);
             rule = 1;
+        } else if (strcmp(handle, "<E-E") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 1;
         } else if (strcmp(handle, "<E*E") == 0) {
             applyRule(stack, handle, bigE);
             rule = 2;
@@ -319,6 +323,9 @@ int changeHandle(tExpendedStack* stack, char* handle) {
             applyRule(stack, handle, bigE);
             rule = 2;
         } else if (strcmp(handle, "<ElE") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 2;
+        } else if (strcmp(handle, "<EgE") == 0) {
             applyRule(stack, handle, bigE);
             rule = 2;
         } else {
@@ -361,7 +368,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
         char* emptyString = "";
         int end = 0;
 
-        if (token.type == ss_eol || token.type == kw_then || token.type == ss_eof) {
+        if (token.type == ss_eol || token.type == kw_then || token.type == ss_eof || token.type == kw_do) {
             precedence = 0;                     // precedence SA has finished, need to do predictive SA with the same token
         }
         do {
