@@ -194,6 +194,8 @@ tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPoint
             newTree->RightPointer = rightPointer;
             if (ID == 'l') {
                 newTree->ID = '<';
+            } else if (ID == 'g') {
+                newTree->ID = '>';
             } else {
                 newTree->ID = ID;
             }
