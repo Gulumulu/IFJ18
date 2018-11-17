@@ -79,7 +79,7 @@ void tStackPredictivePop(tStackPredictive* stack) {
     }
 }
 
-char* rightSides[23][10] = {
+char* rightSides[24][10] = {
         /*1. <start> -> */    {"<function>", "<st-list>", "", "", "", "", "", "", "", ""},
         /*2. <function> -> */ {"def", "<function-head>", "<st-list>", "<function-tail>", "<function>", "", "", "", "", ""},
         /*3. <function> -> */ {"", "", "", "", "", "", "", "", "", ""},
@@ -107,9 +107,10 @@ char* rightSides[23][10] = {
         /*18. <stat> -> */ {"if", "<expr>", "then", "EOL", "<st-list>", "else", "EOL", "<st-list>", "end", ""},
         /*19. <stat> -> */ {"while", "<expr>", "do", "EOL", "<st-list>", "end", "", "", "", ""},
         /*20. <stat> -> */ {"print", "<print-expr>", "", "", "", "", "", "", "", ""},
-        /*21. <print-expr> -> */ {"(", "<expr>", ")", "", "", "", "", "", "", ""},
-        /*22. <print-expr> -> */ {"<expr>", "", "", "", "", "", "", "", "", ""},
-        /*23. <print-expr> -> */ {"", "", "", "", "", "", "", "", "", ""}
+        /*21. <print-expr> -> */ {"(", "<expr>", "<next-print-expr>", ")", "", "", "", "", "", ""},
+        /*22. <print-expr> -> */ {"<expr>", "<next-print-expr>", "", "", "", "", "", "", "", ""},
+        /*23. <print-expr> -> */ {"", "", "", "", "", "", "", "", "", ""},
+        /*24. <next-print-expr> -> */ {",", "<print-expr>", "", "", "", "", "", "", "", ""}
 };
 
 /**
@@ -153,8 +154,8 @@ void tStackPredictiveChangeTop(tStackPredictive* stack, int ruleNumber) {
  * @return number row by which to look into the table
  */
 int rowOffset(char* symbol) {
-    char* row[] = {"<start>", "<function>", "<function-head>", "<function-tail>", "<par>", "<next-par>", "<st-list>", "<stat>", "<eval>", "<assign>", "<print-expr>"};
-    for (int i = 0; i < 11; ++i) {
+    char* row[] = {"<start>", "<function>", "<function-head>", "<function-tail>", "<par>", "<next-par>", "<st-list>", "<stat>", "<eval>", "<assign>", "<print-expr>", "<next-print-expr>"};
+    for (int i = 0; i < 12; ++i) {
         if (strcmp(symbol, row[i]) == 0) {
             return i;
         }
@@ -181,7 +182,7 @@ int colOffset(TokenType symbol) {
     return 18;
 }
 
-int LLTable[11][17] = {
+int LLTable[12][17] = {
         /*<start*/          {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         /*<function>*/      {2, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0},
         /*<function-head>*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0},
@@ -193,7 +194,8 @@ int LLTable[11][17] = {
         /*<stat>*/          {0, 0, 0, 0, 0, 13, 0, 0, 0, 18, 0, 0, 19, 0, 0, 0, 20},
         /*<eval>*/          {0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0},
         /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 17, 0, 0},
-        /*<print-expr*/     {0, 23, 0, 0, 0, 0, 22, 21, 0, 0, 0, 0, 0, 0, 0, 23, 0}
+        /*<print-expr*/     {0, 23, 0, 24, 0, 22, 22, 21, 0, 0, 0, 0, 0, 0, 0, 23, 0},
+        /*<next-print-expr>*/ {0, 23, 0, 24, 0, 22, 22, 0, 23, 0, 0, 0, 0, 0, 0, 23, 0}
         //{0, 23, 0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
