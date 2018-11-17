@@ -104,17 +104,33 @@ void doMagic() {
                 return;
             }
             else {  // if the identifier was used before, it is defined
-                cnt->type = NULL;
+                if (BSTSearch(global_symtable, hash_id(global_token.content)) != NULL) {    // if the identifier is a function id it is added as such
+                    cnt->type = "function";
+                    cnt->defined = 1;
+                    cnt->name = global_token.content;
+                    BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+                }
+                else {  // otherwise it is added as a variable
+                    cnt->type = "variable";
+                    cnt->defined = 1;
+                    cnt->name = global_token.content;
+                    BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+                }
+            }
+        }
+        else if (global_token.type == s_id) {   // push the id into the local symtable for the specific function
+            if (BSTSearch(global_symtable, hash_id(global_token.content)) != NULL) {    // if the identifier is a function id it is added as such
+                cnt->type = "function";
                 cnt->defined = 1;
                 cnt->name = global_token.content;
                 BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
             }
-        }
-        else if (global_token.type == s_id) {   // push the id into the local symtable for the specific function
-            cnt->type = NULL;
-            cnt->defined = 1;
-            cnt->name = global_token.content;
-            BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+            else {  // otherwise it is added as a variable
+                cnt->type = "variable";
+                cnt->defined = 1;
+                cnt->name = global_token.content;
+                BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+            }
         }
     }
 
