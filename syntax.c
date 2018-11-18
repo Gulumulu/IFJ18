@@ -12,31 +12,24 @@
 #define BUF_SIZE 1024
 
 void doMagic() {
-/*
-    if (feof(file))
+
+    if (feof(stdin))
         printf("file reached eof\n");
-
     void *content = malloc(BUF_SIZE);
-
     FILE *fp = fopen("../test.txt", "w");
-
     if (fp == 0)
         printf("...something went wrong opening file...\n");
 
-    printf("About to write\n");
     int read;
-    while ((read = fread(content, 1, BUF_SIZE, file))) {
+    while ((read = fread(content, 1, BUF_SIZE, stdin))) {
         printf("Read %d bytes", read);
         fwrite(content, read, 1, fp);
         printf("Writing %d\n", read);
     }
-    if (ferror(file))
+    if (ferror(stdin))
         printf("There was an error reading from file");
-
-    printf("Done writing\n");
-
     fclose(fp);
-*/
+
     FILE *file = fopen("../test.txt", "r");
 
     int is_stat = 0;
