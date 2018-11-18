@@ -14,15 +14,11 @@
 void doMagic() {
     /*if (feof(stdin))
         printf("file reached eof\n");
-
     void *content = malloc(BUF_SIZE);
-
     FILE *fp = fopen("../test.txt", "w");
-
     if (fp == 0)
         printf("...something went wrong opening file...\n");
 
-    printf("About to write\n");
     int read;
     while ((read = fread(content, 1, BUF_SIZE, stdin))) {
         printf("Read %d bytes", read);
