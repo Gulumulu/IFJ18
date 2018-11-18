@@ -240,13 +240,20 @@ void fillRulesApplied(int rule) {
     }
 }
 
+/**
+ * Function clears and array of applied rules
+ */
 void clearRulesApplied() {
     for (int i = 0; i < 50; i++) {
         rulesApplied[i] = 0;
     }
 }
 
-
+/**
+ * Function counts how many rules while loading arguments were used during function use.
+ *
+ * @return number of arguments that were input
+ */
 int checkRulesApplied() {
     int numberOfArgs = 0;
     for (int i = 1000; i > 0 && rulesApplied[i] != 17; i--) {
@@ -257,6 +264,13 @@ int checkRulesApplied() {
     return numberOfArgs;
 }
 
+/**
+ * Function checks whether of arguments are correct for build-in functions.
+ *
+ * @param inputFunction tokenType is input function
+ *
+ * @return non-zero value is returned if number of arguments is correct
+ */
 int checkNumberOfArgs(TokenType inputFunction) {
     switch (inputFunction) {
         case kw_length:
@@ -307,44 +321,16 @@ int checkNumberOfArgs(TokenType inputFunction) {
  * @param predictiveStack
  */
 void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
-    // allocated needed stacks
-
-    //tStackASTPtr* stackAST;
-    //stackAST = malloc(sizeof(struct tStackAST));
-
     int end = 0;
 
     if (predictiveStack == NULL) {                        // expendedStack error
         errorHandling(99);
     } else {
-        //tStackPredictiveInit(predictiveStack);
-        //tStackASTInit(stackAST);
-
-        //tStackPredictivePush(predictiveStack, "def");
-        //tStackPredictivePush(predictiveStack, "function");
-
-        //int tokenOffset = 0;                    // offset by which to look into the input token
-        char* predictiveStackTop;
-        //char* b;
-        //char* emptyString = "";
-        //fprintf(stdout, "predictiveStackTop is:%s\n", predictiveStackTop);
-        //int rule = 0;
+        char* predictiveStackTop;                           // top rule in stack
 
         do {
-            //b = "";
-            //predictiveStackTop = malloc(sizeof(strlen(tStackPredictiveGetTop(predictiveStack))));
             predictiveStackTop = malloc(10);
             predictiveStackTop = tStackPredictiveGetTop(predictiveStack);
-            //char tmp2 = inputToken[tokenOffset];
-
-            //b = appendChar(b, tmp2);
-
-
-            /*if (rule == 0) {
-                errorHandling(3);                       // no such rule
-                break;
-            }*/
-            //char *handle;
 
             if (strcmp(predictiveStackTop, "$") == 0) {
                 // end of predictiveStack was reached
@@ -432,13 +418,4 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
     /*if (end  == -1) {
 
     }*/
-
-    // assign AST
-    /*if (stackAST != NULL && ERROR_TYPE == 0) {
-        *AST = *stackAST->body[stackAST->top];
-    }*/
-
-    // free allocated stacks
-    //tStackPredictiveDispose(predictiveStack);
-    //tStackASTDispose(stackAST);
 }

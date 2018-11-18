@@ -402,36 +402,37 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
             } else if (row > 13 || col > 13) {
                 errorHandling(44);                      // symbol doesn't occur in precedence table
             } else {
-                char prec = precTable[row][col];
+                char prec = precTable[row][col];        // get precedence operator from precedence table
                 char *handle;
 
                 switch (prec) {
                 // decide what to do based on precedence operator obtained from precedence table
                     case '=' :
+                        // copy token into the stack
                         push(expendedStack, appendChar(emptyString, tmp3));
-                        //tokenOffset++;
                         end = 1;                            // need to get next token
                         break;
                     case '<' :
+                        // put end rule sign into the stack and push token into the stack
                         pushEndRuleSign(expendedStack, tmp1);
                         push(expendedStack, appendChar(emptyString, tmp3));
-                        //tokenOffset++;
                         if (tmp3 == 'i') {
                             tStackASTPush(stackAST, makeLeaf(findVariable(*node, &token)));
                         }
                         end = 1;                            // need to get next token
                         break;
                     case '>' :
+                        // change expresion in the stack
                         handle = strrchr(expendedStack->content, '<');
                         if (handle != NULL && changeHandle(expendedStack, handle) != 0) {
                             switch (rule) {
                                 case 1:
                                 case 2:
                                 case 3:
+                                    // merging two operands - creating new tree
                                     tStackASTPush(stackAST, makeTree(a, tStackASTPop(stackAST), tStackASTPop(stackAST)));
                                     break;
                                 case 4:
-                                    //tStackASTPush(stackAST, makeLeaf(tmpNode));
                                     // doing nothing, just changing handle
                                     break;
                                 default:
@@ -445,6 +446,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                         }
                         break;
                     default:
+                        // error occurred
                         errorHandling(43);                     // empty space in precedence table
                         end = 1;
                         break;
