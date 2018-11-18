@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "errors.h"
 
 typedef struct BSTNodeContent {
     int defined;        // true if defined, otherwise false

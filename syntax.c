@@ -11,6 +11,82 @@
 
 #define BUF_SIZE 1024
 
+/**
+ * Function initializes stack for function tracking.
+ *
+ * @param stack
+ */
+void tFunctionTrackerInit(tFunctionTracker* stack) {
+    stack->top = 1;
+    stack->function[0] = malloc(5);
+    stack->function[0] = "Main";
+}
+
+/**
+ * Function disposes stack.
+ *
+ * @param stack
+ */
+void tFunctionTrackerDispose(tFunctionTracker* stack) {
+    if (stack == NULL) {
+        errorHandling(99);
+    } else {
+        while (stack->top != 0) {
+            stack->function[stack->top] = NULL;
+            stack->top--;
+        }
+    }
+}
+
+/**
+ * Function pushes new function in the stack.
+ *
+ * @param stack
+ * @param pushedFunction
+ */
+void tFunctionTrackerPush(tFunctionTracker* stack, char* pushedFunction) {
+    if (stack == NULL) {
+        errorHandling(99);
+    } else {
+        stack->function[stack->top] = malloc(sizeof(strlen(pushedFunction))+1);
+        checkMalloc(stack->function[stack->top]);
+        stack->function[stack->top] = pushedFunction;
+        stack->top++;
+    }
+}
+
+/**
+ * Function pops function from stack.
+ *
+ * @param stack
+ */
+void tFunctionTrackerPop(tFunctionTracker* stack) {
+    if (stack == NULL) {
+        errorHandling(99);
+    } else {
+        stack->function[stack->top-1] = NULL;
+        stack->top--;
+    }
+}
+
+/**
+ * Function gets top function from function tracker.
+ *
+ * @param stack
+ * @return pointer to char is name of top function in funciton tracker.
+ */
+char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
+    if (stack == NULL) {
+        errorHandling(99);
+        return NULL;
+    } else {
+        return stack->function[stack->top-1];
+    }
+}
+
+/**
+ * Function that does all the work - syntax driven compilation.
+ */
 void doMagic() {
     /*if (feof(stdin))
         printf("file reached eof\n");
@@ -142,7 +218,9 @@ void doMagic() {
         tStackASTPtr *stackAST = malloc(sizeof(struct tStackAST) * 30);
         tStackASTInit(stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
         global_token = tmpToken;
-        char *currentFunction = "";
+        //char *currentFunction = "";
+        tFunctionTracker* functionTracker = malloc(sizeof(struct tFT) * 30);            // helper stack to keep track of the function name we are currently in
+        tFunctionTrackerInit(functionTracker);
 
         while (global_token.type != ss_eof && ERROR_TYPE == 0) {
             // call lexical analysis
@@ -151,7 +229,8 @@ void doMagic() {
                 if ((precedence == 1 || global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
-                    simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
+                    simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+                    //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                     if (precedence == 0) {
                         // precedence has finished => need to pop rule from predictive stack
                         tStackPredictivePop(predictiveStack);
@@ -184,13 +263,15 @@ void doMagic() {
                         tmpToken.type = decideID(global_token);
                         if (tmpToken.type == s_func_id && strcmp(predictiveStack->content[predictiveStack->top-1], "<assign>") != 0) {
                             // helper to keep track in which function we are in
-                            currentFunction = malloc(strlen(tmpToken.content) + 1);
-                            strcpy(currentFunction, tmpToken.content);
+                            //currentFunction = malloc(strlen(tmpToken.content) + 1);
+                            //strcpy(currentFunction, tmpToken.content);
+                            tFunctionTrackerPush(functionTracker, tmpToken.content);
                         }
                         // simulate predictive SA for current token
                         simulatePredictive(tmpToken, predictiveStack);
                         if (precedence == 1) {
-                            simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
+                            simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+                            //simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                         }
                     }
                     if (printing == 1) {
@@ -209,7 +290,8 @@ void doMagic() {
                         simulatePredictive(global_token, predictiveStack);
                     }
                     if (precedence == 1){
-                        simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
+                        simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+                        //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                     }
                     // todo: generate code
                     /*
@@ -238,9 +320,10 @@ void doMagic() {
                     precedence = 1;
                 }
                 if (global_token.type == ss_eol) {
-                    if (checkMainFunction() == 1) {
+                    if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {
                         // we are in main function => rule 3 was applied => unset tracker of current function
-                        currentFunction = "";
+                        //currentFunction = "";
+                        tFunctionTrackerPop(functionTracker);
                     }
                     // clearing applied rules at the of one line
                     clearRulesApplied();
@@ -256,5 +339,6 @@ void doMagic() {
         dispose(expendedStack);
         tStackPredictiveDispose(predictiveStack);
         tASTDispose(AST);
+        tFunctionTrackerDispose(functionTracker);
     fclose(file);
 }

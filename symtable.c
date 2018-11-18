@@ -112,22 +112,27 @@ BSTNodeContentPtr* BSTSearch(BSTNodePtr* root, unsigned long ID) {
  */
 BSTNodePtr* findNode(struct BSTNode** array, BSTNodePtr* globalSymtable, char* functionName) {
     if (strcmp(functionName, "") == 0) {
-        // variable is defined in global symtable
-        return globalSymtable;
+        errorHandling(99);
+        return NULL;
     } else {
-        // variable is defined in local symtable
-        if ((*array) == NULL) {
-            return NULL;
+        if (strcmp(functionName, "Main") == 0) {
+            // variable is defined in global symtable
+            return globalSymtable;
         } else {
-            unsigned long f_id = hash_id(functionName);
-            for (int i = 0; i < 10000; i++) {
-                if (array[i] != NULL) {
-                    if (array[i]->func_id == f_id) {
-                        return &array[i];
+            // variable is defined in local symtable
+            if ((*array) == NULL) {
+                return NULL;
+            } else {
+                unsigned long f_id = hash_id(functionName);
+                for (int i = 0; i < 10000; i++) {
+                    if (array[i] != NULL) {
+                        if (array[i]->func_id == f_id) {
+                            return &array[i];
+                        }
                     }
                 }
+                return NULL;
             }
-            return NULL;
         }
     }
 }

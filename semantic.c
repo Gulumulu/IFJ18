@@ -193,7 +193,7 @@ tASTPointer* makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPoin
         } else {
             newTree->LeftPointer = leftPointer;
             newTree->RightPointer = rightPointer;
-            if (strcmp(ID, "") == 0) {
+            if (strcmp(ID, "l") == 0) {
                 newTree->ID = malloc(3);
                 strcpy(newTree->ID, "<");
             } else if (strcmp(ID, "g") == 0) {
