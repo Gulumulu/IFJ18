@@ -18,6 +18,8 @@ typedef struct {
 
 int rulesApplied[50];
 int rule;
+int checkingArgs;
+TokenType inputFunction;
 
 // functions for working with stack
 void tStackPredictiveInit(tStackPredictive* stack);
@@ -35,4 +37,6 @@ int rowOffset(char* symbol);
 int colOffset(TokenType symbol);
 int isTerminal(char* symbol);
 void fillRulesApplied(int rule);
+int checkRulesApplied();
+int checkNumberOfArgs(TokenType inputFunction);
 #endif //IFJ_PREDICT_H

@@ -192,6 +192,7 @@ char changeTokenTypeToChar(TokenType tokenType) {
         case s_int:
         case s_exp_int_s:
         case s_exp_int:
+        case s_string:
             return 'i';
         case ss_eol:
         case ss_eof:
@@ -328,6 +329,18 @@ int changeHandle(tExpendedStack* stack, char* handle) {
         } else if (strcmp(handle, "<EgE") == 0) {
             applyRule(stack, handle, bigE);
             rule = 2;
+        } else if (strcmp(handle, "<E.E") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 2;
+        } else if (strcmp(handle, "<E,E") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 2;
+        } else if (strcmp(handle, "<E?E") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 2;
+        } else if (strcmp(handle, "<E!E") == 0) {
+            applyRule(stack, handle, bigE);
+            rule = 2;
         } else {
             errorHandling(42);                  // no rule for this kind of handle
             return 0;
@@ -415,7 +428,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                                 case 1:
                                 case 2:
                                 case 3:
-                                    tStackASTPush(stackAST, makeTree(tmp1, tStackASTPop(stackAST), tStackASTPop(stackAST)));
+                                    tStackASTPush(stackAST, makeTree(a, tStackASTPop(stackAST), tStackASTPop(stackAST)));
                                     break;
                                 case 4:
                                     //tStackASTPush(stackAST, makeLeaf(tmpNode));

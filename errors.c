@@ -54,6 +54,9 @@ int showErrorMessage(int errorNumber) {
     } else if (errorNumber == 44) {
         fprintf(stderr, "Error occurred during syntax analysis. Symbol doesn't occur in precedence table.\n");
         ERROR_TYPE = 2;
+    } else if (errorNumber == 45) {
+        fprintf(stderr, "Error occurred during syntax analysis. Wrong number of function arguments.\n");
+        ERROR_TYPE = 2;
     }
 
     return ERROR_TYPE;

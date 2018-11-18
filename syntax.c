@@ -12,8 +12,7 @@
 #define BUF_SIZE 1024
 
 void doMagic() {
-/*
-    if (feof(file))
+    /*if (feof(stdin))
         printf("file reached eof\n");
 
     void *content = malloc(BUF_SIZE);
@@ -25,18 +24,18 @@ void doMagic() {
 
     printf("About to write\n");
     int read;
-    while ((read = fread(content, 1, BUF_SIZE, file))) {
+    while ((read = fread(content, 1, BUF_SIZE, stdin))) {
         printf("Read %d bytes", read);
         fwrite(content, read, 1, fp);
         printf("Writing %d\n", read);
     }
-    if (ferror(file))
+    if (ferror(stdin))
         printf("There was an error reading from file");
 
     printf("Done writing\n");
 
-    fclose(fp);
-*/
+    fclose(fp);*/
+
     FILE *file = fopen("../test.txt", "r");
 
     int is_stat = 0;
@@ -155,10 +154,10 @@ void doMagic() {
             token_generate(file);
             // call syntax analysis
             //if (ERROR_TYPE == 0) {
-                if (precedence == 1 || global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) {
+                if ((precedence == 1 || global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
-                    simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, currentFunction));
+                    simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                     if (precedence == 0) {
                         // precedence has finished => need to pop rule from predictive stack
                         tStackPredictivePop(predictiveStack);
@@ -197,7 +196,7 @@ void doMagic() {
                         // simulate predictive SA for current token
                         simulatePredictive(tmpToken, predictiveStack);
                         if (precedence == 1) {
-                            simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, currentFunction));
+                            simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                         }
                     }
                     if (printing == 1) {
@@ -214,8 +213,9 @@ void doMagic() {
                     if (precedence == 0) {
                         // simulate predictive SA for next token
                         simulatePredictive(global_token, predictiveStack);
-                    } else {
-                        simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, currentFunction));
+                    }
+                    if (precedence == 1){
+                        simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                     }
                     // todo: generate code
                     /*

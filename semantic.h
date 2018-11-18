@@ -18,7 +18,7 @@
 
 // structure for AST
 typedef struct tAST {
-    char ID;
+    char* ID;
     //tNodePointer* content;
     BSTNodeContentPtr* content;
     struct tAST* LeftPointer;
@@ -36,7 +36,7 @@ void tASTInit(tASTPointer* AST);
 void tASTDispose(tASTPointer* AST);
 BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token);
 tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer);
-tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPointer);
+tASTPointer* makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer);
 
 // functions for working with stack of ASTs
 void tStackASTInit(tStackASTPtr* stack);

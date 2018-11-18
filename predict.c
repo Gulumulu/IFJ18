@@ -79,7 +79,7 @@ void tStackPredictivePop(tStackPredictive* stack) {
     }
 }
 
-char* rightSides[24][10] = {
+char* rightSides[30][10] = {
         /*1. <start> -> */    {"<function>", "<st-list>", "", "", "", "", "", "", "", ""},
         /*2. <function> -> */ {"def", "<function-head>", "<st-list>", "<function-tail>", "<function>", "", "", "", "", ""},
         /*3. <function> -> */ {"", "", "", "", "", "", "", "", "", ""},
@@ -101,7 +101,7 @@ char* rightSides[24][10] = {
         /*15. <eval> -> */ {"=", "<assign>", "", "", "", "", "", "", "", ""},
         //{"id", "=", "<assign>", "", "", "", "", "", "", ""},
         /*16. <assign> -> */ {"<expr>", "", "", "", "", "", "", "", "", ""},
-        /*17. <assign> -> */ {"function-id", "(", "<call-par>", ")", "", "", "", "", "", ""},
+        /*17. <assign> -> */ {"function-id", "<f-params>", "", "", "", "", "", "", "", ""},
         //{"id", "<call-par>", "", "", "", "", "", "", "", ""},
         //{"", "", "", "", "", "", "", "", "", ""},
         /*18. <stat> -> */ {"if", "<expr>", "then", "EOL", "<st-list>", "else", "EOL", "<st-list>", "end", ""},
@@ -110,7 +110,13 @@ char* rightSides[24][10] = {
         /*21. <print-expr> -> */ {"(", "<expr>", "<next-print-expr>", ")", "", "", "", "", "", ""},
         /*22. <print-expr> -> */ {"<expr>", "<next-print-expr>", "", "", "", "", "", "", "", ""},
         /*23. <print-expr> -> */ {"", "", "", "", "", "", "", "", "", ""},
-        /*24. <next-print-expr> -> */ {",", "<print-expr>", "", "", "", "", "", "", "", ""}
+        /*24. <next-print-expr> -> */ {",", "<print-expr>", "", "", "", "", "", "", "", ""},
+        /*25. <stat> -> */ {"<function-id>", "<f-params>", "", "", "", "", "", "", "", "" },
+        /*26. <f-params> -> */ {"(", "id", "<next-f-params>", ")", "", "", "", "", "", ""},
+        /*27. <f-params> -> */ {"id", "<next-f-params>", "", "", "", "", "", "", "", ""},
+        /*28. <f-params> -> */ {"", "", "", "", "", "", "", "", "", ""},
+        /*29. <next-f-params> -> */ {",", "<f-params>", "", "", "", "", "", "", "", ""},
+        /*30. <next-f-params> -> */ {"", "", "", "", "", "", "", "", "", ""}
 };
 
 /**
@@ -154,13 +160,13 @@ void tStackPredictiveChangeTop(tStackPredictive* stack, int ruleNumber) {
  * @return number row by which to look into the table
  */
 int rowOffset(char* symbol) {
-    char* row[] = {"<start>", "<function>", "<function-head>", "<function-tail>", "<par>", "<next-par>", "<st-list>", "<stat>", "<eval>", "<assign>", "<print-expr>", "<next-print-expr>"};
-    for (int i = 0; i < 12; ++i) {
+    char* row[] = {"<start>", "<function>", "<function-head>", "<function-tail>", "<par>", "<next-par>", "<st-list>", "<stat>", "<eval>", "<assign>", "<print-expr>", "<next-print-expr>", "<f-params>", "<next-f-params>"};
+    for (int i = 0; i < 14; ++i) {
         if (strcmp(symbol, row[i]) == 0) {
             return i;
         }
     }
-    return 12;
+    return 15;
 }
 
 /**
@@ -179,10 +185,13 @@ int colOffset(TokenType symbol) {
     if (symbol == s_int || symbol == s_float || symbol == s_exp_int || symbol == s_exp_int_s || symbol == s_exp_f || symbol == s_exp_f_s) {
         return 6;
     }
+    if (symbol == kw_length || symbol == kw_substr || symbol == kw_ord || symbol == kw_chr || symbol == kw_inputf || symbol == kw_inputi || symbol == kw_inputs) {
+        return 14;
+    }
     return 18;
 }
 
-int LLTable[12][17] = {
+int LLTable[14][17] = {
         /*<start*/          {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         /*<function>*/      {2, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0},
         /*<function-head>*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0},
@@ -195,7 +204,9 @@ int LLTable[12][17] = {
         /*<eval>*/          {0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0},
         /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 17, 0, 0},
         /*<print-expr*/     {0, 23, 0, 24, 0, 22, 22, 21, 0, 0, 0, 0, 0, 0, 0, 23, 0},
-        /*<next-print-expr>*/ {0, 23, 0, 24, 0, 22, 22, 0, 23, 0, 0, 0, 0, 0, 0, 23, 0}
+        /*<next-print-expr>*/ {0, 23, 0, 24, 0, 22, 22, 0, 23, 0, 0, 0, 0, 0, 0, 23, 0},
+        /*<f-params>*/      {0, 28, 0, 29, 0, 27, 27, 26, 0, 0, 0, 0, 0, 0, 0, 28, 0},
+        /*<next-f-params>*/ {0, 28, 0, 29, 0, 27, 27, 0, 30, 0, 0, 0, 0, 0, 0, 28, 0}
         //{0, 23, 0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
@@ -227,6 +238,66 @@ void fillRulesApplied(int rule) {
             break;
         }
     }
+}
+
+void clearRulesApplied() {
+    for (int i = 0; i < 50; i++) {
+        rulesApplied[i] = 0;
+    }
+}
+
+
+int checkRulesApplied() {
+    int numberOfArgs = 0;
+    for (int i = 1000; i > 0 && rulesApplied[i] != 17; i--) {
+        if (rulesApplied[i] == 26 || rulesApplied[i] == 27) {
+            numberOfArgs++;
+        }
+    }
+    return numberOfArgs;
+}
+
+int checkNumberOfArgs(TokenType inputFunction) {
+    switch (inputFunction) {
+        case kw_length:
+            if (checkRulesApplied() == 1) {
+                return 1;
+            }
+            break;
+        case kw_substr:
+            if (checkRulesApplied() == 3) {
+                return 1;
+            }
+            break;
+        case kw_ord:
+            if (checkRulesApplied() == 2) {
+                return 1;
+            }
+            break;
+        case kw_chr:
+            if (checkRulesApplied() == 1) {
+                return 1;
+            }
+            break;
+        case kw_inputf:
+            if (checkRulesApplied() == 0) {
+                return 1;
+            }
+            break;
+        case kw_inputi:
+            if (checkRulesApplied() == 0) {
+                return 1;
+            }
+            break;
+        case kw_inputs:
+            if (checkRulesApplied() == 0) {
+                return 1;
+            }
+            break;
+        default:
+            return 0;
+    }
+    return 0;
 }
 
 /**
@@ -283,26 +354,44 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
                 } else if (token.type == kw_def) {
                     tStackPredictivePush(predictiveStack, "<start>");  // another function follows
                     rule = 1;
+                } else if (token.type == s_id) {
+                    tStackPredictivePush(predictiveStack, "<st-list>"); // statement not included in any function
+                    rule = 10;
                 } else {
                     end = -1;                               // failure
                 }
             } else if (isTerminal(predictiveStackTop) != 0) {
                 // terminal is on top of the predictiveStack
                 // todo: if top-most symbol in stack is id, if statement does not necessary mean true
-                if (strcmp(predictiveStackTop, token.content) == 0 || token.type == s_id  || token.type == s_func_id || (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eol)) {
+                if (strcmp(predictiveStackTop, token.content) == 0 || token.type == s_id  || token.type == s_func_id || (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eol) || token.type == kw_length || token.type == kw_substr || token.type == kw_ord || token.type == kw_chr || token.type == kw_inputf || token.type == kw_inputi || token.type == kw_inputs) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
                 } else if (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eof) {
                     tStackPredictivePop(predictiveStack);
                     rule = 2;
-                }else {
+                } else if (strcmp(predictiveStackTop, "id") == 0 && checkingArgs == 1) {
+                    tStackPredictivePop(predictiveStack);
+                    end = 2;
+                } else {
                     end = -1;
+                }
+                if (token.type == ss_eol) {
+                    // clearing applied rules at the of one line
+                    clearRulesApplied();
+                }
+                if (checkingArgs == 1 && (token.type == s_rbrac || token.type == ss_eol || token.type == ss_eof) ) {
+                    // need to check number of arguments of function
+                    checkingArgs = 0;
+                    if (checkNumberOfArgs(inputFunction) == 0) {
+                        errorHandling(45);
+                        end = -1;
+                    }
                 }
             } else if (strcmp(predictiveStackTop, "<expr>") != 0){
                 // non-terminal in on top of the predictiveStack && no need to calculate expression
                 int row = rowOffset(predictiveStackTop);
                 int col = colOffset(token.type);
-                if (row > 11 || col > 17) {
+                if (row > 14 || col > 17) {
                     errorHandling(40);                      // symbol doesn't occur in LL rule table
                 } else {
                     rule = LLTable[row][col];
@@ -315,12 +404,17 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
                         fprintf(stdout, "Applying rule number: %d\n", rule);
                         fillRulesApplied(rule);
                     }
+                    if (rule == 17 || rule == 25) {
+                        // need to check arguments of function
+                        checkingArgs = 1;
+                        inputFunction = token.type;
+                    }
                 }
             } else if (rule == 22 || rule == 21) {
                 // need to print
                 printing = 1;
                 end = 3;
-            }else {
+            } else {
                 // need to calculate expression
                 precedence = 1;
                 end = 3;

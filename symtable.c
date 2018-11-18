@@ -110,18 +110,24 @@ BSTNodeContentPtr* BSTSearch(BSTNodePtr* root, unsigned long ID) {
  * @param functionName function for which we wanna get the local symtable
  * @return pointer to the local symtable
  */
-BSTNodePtr* findNode(struct BSTNode** array, char* functionName) {
-    if ((*array) == NULL || strcmp(functionName, "") == 0) {
-        return NULL;
+BSTNodePtr* findNode(struct BSTNode** array, BSTNodePtr* globalSymtable, char* functionName) {
+    if (strcmp(functionName, "") == 0) {
+        // variable is defined in global symtable
+        return globalSymtable;
     } else {
-        unsigned long f_id = hash_id(functionName);
-        for (int i = 0; i < 10000; i++) {
-            if (array[i] != NULL) {
-                if (array[i]->func_id== f_id) {
-                    return &array[i];
+        // variable is defined in local symtable
+        if ((*array) == NULL) {
+            return NULL;
+        } else {
+            unsigned long f_id = hash_id(functionName);
+            for (int i = 0; i < 10000; i++) {
+                if (array[i] != NULL) {
+                    if (array[i]->func_id == f_id) {
+                        return &array[i];
+                    }
                 }
             }
+            return NULL;
         }
-        return NULL;
     }
 }

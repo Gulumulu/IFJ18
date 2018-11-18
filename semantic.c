@@ -14,7 +14,7 @@
  */
 void tASTInit(tASTPointer* AST) {
     AST->content = NULL;
-    AST->ID = '\0';
+    AST->ID = malloc(3);
     AST->LeftPointer = NULL;
     AST->RightPointer = NULL;
 }
@@ -50,7 +50,7 @@ BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token) {
         if (token->type == s_id) {
             // find variable in symtable
             return BSTSearch(&node, hash_id(token->content));
-        } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float || token->type == s_exp_f) {
+        } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float || token->type == s_exp_f || token->type == s_string) {
             // leaf will be a constant therefore creation of new BSTNode is needed
             BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
             if (tmpNode == NULL) {
@@ -102,7 +102,8 @@ tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer) {
         } else {
             newLeaf->RightPointer = newLeaf->LeftPointer = NULL;
             newLeaf->content = symtablePointer;
-            newLeaf->ID = 'E';
+            newLeaf->ID = malloc(3);
+            strcpy(newLeaf->ID,"E");
             return newLeaf;
         }
     }
@@ -180,7 +181,7 @@ int correctSemantics(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightCon
  * @param rightPointer pointer to AST structure is pointer to right sub tree/leaf
  * @return pointer to AST structure is newly created tree
  */
-tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPointer) {
+tASTPointer* makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer) {
     if (leftPointer == NULL || rightPointer == NULL) {
         errorHandling(99);
         return NULL;
@@ -192,12 +193,27 @@ tASTPointer* makeTree(char ID, tASTPointer* leftPointer, tASTPointer* rightPoint
         } else {
             newTree->LeftPointer = leftPointer;
             newTree->RightPointer = rightPointer;
-            if (ID == 'l') {
-                newTree->ID = '<';
-            } else if (ID == 'g') {
-                newTree->ID = '>';
+            if (strcmp(ID, "") == 0) {
+                newTree->ID = malloc(3);
+                strcpy(newTree->ID, "<");
+            } else if (strcmp(ID, "g") == 0) {
+                newTree->ID = malloc(3);
+                strcpy(newTree->ID, ">");
+            } else if (strcmp(ID, ".") == 0) {
+                newTree->ID = malloc(3);
+                strcpy(newTree->ID, "<=");
+            } else if (strcmp(ID, ",") == 0) {
+                newTree->ID = malloc(3);
+                strcpy(newTree->ID, ">=");
+            } else if (strcmp(ID, "?") == 0) {
+                newTree->ID = malloc(3);
+                strcpy(newTree->ID, "==");
+            } else if (strcmp(ID, "!") == 0) {
+                newTree->ID = malloc(3);
+                strcpy(newTree->ID, "!=");
             } else {
-                newTree->ID = ID;
+                newTree->ID = malloc(3);
+                strcpy(newTree->ID, ID);
             }
             if (correctSemantics(leftPointer->content, rightPointer->content) != 0) {
                 BSTNodeContentPtr* tmpContent = malloc(sizeof(struct BSTNodeContent));
