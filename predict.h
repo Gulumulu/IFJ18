@@ -37,6 +37,8 @@ int rowOffset(char* symbol);
 int colOffset(TokenType symbol);
 int isTerminal(char* symbol);
 void fillRulesApplied(int rule);
+void clearRulesApplied();
 int checkRulesApplied();
 int checkNumberOfArgs(TokenType inputFunction);
+int checkMainFunction();
 #endif //IFJ_PREDICT_H

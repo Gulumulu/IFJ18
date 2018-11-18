@@ -131,7 +131,6 @@ void doMagic() {
 
     rewind(file);   // rewinding the file for another transit
 
-    //if (ERROR_TYPE == 0) {
         // second transit of compiler -- passing tokens to parser
         // helper stacks
         tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
@@ -149,7 +148,6 @@ void doMagic() {
             // call lexical analysis
             token_generate(file);
             // call syntax analysis
-            //if (ERROR_TYPE == 0) {
                 if ((precedence == 1 || global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
@@ -184,7 +182,7 @@ void doMagic() {
                         tmpToken = global_token;
                         token_generate(file);
                         tmpToken.type = decideID(global_token);
-                        if (tmpToken.type == s_func_id) {
+                        if (tmpToken.type == s_func_id && strcmp(predictiveStack->content[predictiveStack->top-1], "<assign>") != 0) {
                             // helper to keep track in which function we are in
                             currentFunction = malloc(strlen(tmpToken.content) + 1);
                             strcpy(currentFunction, tmpToken.content);
@@ -239,7 +237,14 @@ void doMagic() {
                     // current token was if-condition => expression will follow => need to simulate precedence
                     precedence = 1;
                 }
-            //}
+                if (global_token.type == ss_eol) {
+                    if (checkMainFunction() == 1) {
+                        // we are in main function => rule 3 was applied => unset tracker of current function
+                        currentFunction = "";
+                    }
+                    // clearing applied rules at the of one line
+                    clearRulesApplied();
+                }
         }
 
         if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
@@ -251,6 +256,5 @@ void doMagic() {
         dispose(expendedStack);
         tStackPredictiveDispose(predictiveStack);
         tASTDispose(AST);
-    //}
     fclose(file);
 }

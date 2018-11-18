@@ -201,7 +201,7 @@ int LLTable[14][17] = {
         //{0, 0, 0, 0, 0, 0, 10, 11, 12, 0, 0, 0, 0, 0, 0, 0, 0},
         /*<st-list>*/       {0, 11, 12, 0, 0, 10, 0, 0, 0, 10, 0, 12, 10, 0, 0, 12, 10},
         /*<stat>*/          {0, 0, 0, 0, 0, 13, 0, 0, 0, 18, 0, 0, 19, 0, 0, 0, 20},
-        /*<eval>*/          {0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0},
+        /*<eval>*/          {0, 14, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0},
         /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 17, 0, 0},
         /*<print-expr*/     {0, 23, 0, 24, 0, 22, 22, 21, 0, 0, 0, 0, 0, 0, 0, 23, 0},
         /*<next-print-expr>*/ {0, 23, 0, 24, 0, 22, 22, 0, 23, 0, 0, 0, 0, 0, 0, 23, 0},
@@ -256,7 +256,7 @@ void clearRulesApplied() {
  */
 int checkRulesApplied() {
     int numberOfArgs = 0;
-    for (int i = 1000; i > 0 && rulesApplied[i] != 17; i--) {
+    for (int i = 50; i > 0 && rulesApplied[i] != 17; i--) {
         if (rulesApplied[i] == 26 || rulesApplied[i] == 27) {
             numberOfArgs++;
         }
@@ -308,8 +308,25 @@ int checkNumberOfArgs(TokenType inputFunction) {
                 return 1;
             }
             break;
+        case s_func_id:
+            // todo: check function declaration for number of args
+            return 1;
         default:
             return 0;
+    }
+    return 0;
+}
+
+/**
+ * Function checks wheter rule #3 was applied. If it was we are in main function
+ *
+ * @return non-zero value is returned if rule #3 was applied otherwise zero value is returned
+ */
+int checkMainFunction() {
+    for (int i = 0; i < 50; i++) {
+        if (rulesApplied[i] == 3) {
+            return 1;
+        }
     }
     return 0;
 }
@@ -360,10 +377,6 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
                     end = 2;
                 } else {
                     end = -1;
-                }
-                if (token.type == ss_eol) {
-                    // clearing applied rules at the of one line
-                    clearRulesApplied();
                 }
                 if (checkingArgs == 1 && (token.type == s_rbrac || token.type == ss_eol || token.type == ss_eof) ) {
                     // need to check number of arguments of function

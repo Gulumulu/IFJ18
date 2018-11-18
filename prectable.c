@@ -358,6 +358,7 @@ int changeHandle(tExpendedStack* stack, char* handle) {
 TokenType decideID(Token nextToken) {
     switch (nextToken.type) {
         case s_lbrac:
+        case s_id:
             return s_func_id;
         default:
             return s_id;
