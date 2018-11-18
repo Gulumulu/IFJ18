@@ -193,6 +193,17 @@ void doMagic() {
                             simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, currentFunction));
                         }
                     }
+                    if (printing == 1) {
+                        // need to print this expression
+                        // todo: generate code
+                        /*
+                         * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
+                         */
+                        // pop <print-expr> rule from stack
+                        tStackPredictivePop(predictiveStack);
+                        // we will not be printing anymore
+                        printing = 0;
+                    }
                     if (precedence == 0) {
                         // simulate predictive SA for next token
                         simulatePredictive(global_token, predictiveStack);
