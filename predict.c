@@ -111,7 +111,7 @@ char* rightSides[30][10] = {
         /*22. <print-expr> -> */ {"<expr>", "<next-print-expr>", "", "", "", "", "", "", "", ""},
         /*23. <print-expr> -> */ {"", "", "", "", "", "", "", "", "", ""},
         /*24. <next-print-expr> -> */ {",", "<print-expr>", "", "", "", "", "", "", "", ""},
-        /*25. <stat> -> */ {"<function-id>", "<f-params>", "", "", "", "", "", "", "", "" },
+        /*25. <stat> -> */ {"function-id", "<f-params>", "", "", "", "", "", "", "", "" },
         /*26. <f-params> -> */ {"(", "id", "<next-f-params>", ")", "", "", "", "", "", ""},
         /*27. <f-params> -> */ {"id", "<next-f-params>", "", "", "", "", "", "", "", ""},
         /*28. <f-params> -> */ {"", "", "", "", "", "", "", "", "", ""},
@@ -199,10 +199,10 @@ int LLTable[14][17] = {
         /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0},
         /*<next-par>*/      {0, 9, 0, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 9, },
         //{0, 0, 0, 0, 0, 0, 10, 11, 12, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<st-list>*/       {0, 11, 12, 0, 0, 10, 0, 0, 0, 10, 0, 12, 10, 0, 0, 12, 10},
-        /*<stat>*/          {0, 0, 0, 0, 0, 13, 0, 0, 0, 18, 0, 0, 19, 0, 0, 0, 20},
+        /*<st-list>*/       {0, 11, 12, 0, 0, 10, 0, 0, 0, 10, 0, 12, 10, 0, 10, 12, 10},
+        /*<stat>*/          {0, 0, 0, 0, 0, 13, 0, 0, 0, 18, 0, 0, 19, 0, 25, 0, 20},
         /*<eval>*/          {0, 14, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0},
-        /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 17, 0, 0},
+        /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 17, 0, 17},
         /*<print-expr*/     {0, 23, 0, 24, 0, 22, 22, 21, 0, 0, 0, 0, 0, 0, 0, 23, 0},
         /*<next-print-expr>*/ {0, 23, 0, 24, 0, 22, 22, 0, 23, 0, 0, 0, 0, 0, 0, 23, 0},
         /*<f-params>*/      {0, 28, 0, 29, 0, 27, 27, 26, 0, 0, 0, 0, 0, 0, 0, 28, 0},
@@ -311,6 +311,8 @@ int checkNumberOfArgs(TokenType inputFunction) {
         case s_func_id:
             // todo: check function declaration for number of args
             return 1;
+        case kw_print:
+            return 1;
         default:
             return 0;
     }
@@ -366,7 +368,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
             } else if (isTerminal(predictiveStackTop) != 0) {
                 // terminal is on top of the predictiveStack
                 // todo: if top-most symbol in stack is id, if statement does not necessary mean true
-                if (strcmp(predictiveStackTop, token.content) == 0 || token.type == s_id  || token.type == s_func_id || (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eol) || token.type == kw_length || token.type == kw_substr || token.type == kw_ord || token.type == kw_chr || token.type == kw_inputf || token.type == kw_inputi || token.type == kw_inputs) {
+                if (strcmp(predictiveStackTop, token.content) == 0 || token.type == s_id  || token.type == s_func_id || (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eol) || token.type == kw_length || token.type == kw_substr || token.type == kw_ord || token.type == kw_chr || token.type == kw_inputf || token.type == kw_inputi || token.type == kw_inputs || token.type == kw_print) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
                 } else if (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eof) {
