@@ -88,10 +88,10 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  * Function that does all the work - syntax driven compilation.
  */
 void doMagic() {
-    /*if (feof(stdin))
+    if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
-    FILE *fp = fopen("../test.txt", "w");
+    FILE *fp = fopen("./test.txt", "w");
     if (fp == 0)
         printf("...something went wrong opening file...\n");
 
@@ -106,9 +106,9 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);*/
+    fclose(fp);
 
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("./test.txt", "r");
 
     int is_stat = 0;
     int is_global = 1;

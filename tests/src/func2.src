@@ -1,3 +1,4 @@
 def krat(a)
-	a=c*a
+	b=1
+	a=a*b
 end
