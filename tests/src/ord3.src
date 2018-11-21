@@ -1,0 +1,3 @@
+def krat(a)
+	a = ord("ahoj", a)
+end
