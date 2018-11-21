@@ -56,7 +56,7 @@ int showErrorMessage(int errorNumber) {
         ERROR_TYPE = 2;
     } else if (errorNumber == 45) {
         fprintf(stderr, "Error occurred during syntax analysis. Wrong number of function arguments.\n");
-        ERROR_TYPE = 2;
+        ERROR_TYPE = 5;
     }
 
     return ERROR_TYPE;

@@ -93,7 +93,7 @@ char* rightSides[30][10] = {
         //{"float", "", "", "", "", "", "", "", "", ""},
         //{"string", "", "", "", "", "", "", "", "", ""},
         /*10. <st-list> -> */ {"<stat>", "EOL", "<st-list>", "", "", "", "", "", "", ""},
-        /*11. <st-list> -> */ {"EOL", "", "", "", "", "", "", "", "", ""},
+        /*11. <st-list> -> */ {"EOL", "<st-list>", "", "", "", "", "", "", "", ""},
         /*12. <st-list> -> */ {"", "", "", "", "", "", "", "", "", ""},
         /*--. <st-list> -> */ //{"EOL", "", "", "", "", "", "", "", "", ""},
         /*13. <stat> -> */ {"id", "<eval>", "", "", "", "", "", "", "", ""},
@@ -199,7 +199,7 @@ int LLTable[14][17] = {
         /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0},
         /*<next-par>*/      {0, 9, 0, 8, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 9, },
         //{0, 0, 0, 0, 0, 0, 10, 11, 12, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<st-list>*/       {0, 11, 12, 0, 0, 10, 0, 0, 0, 10, 0, 12, 10, 0, 10, 12, 10},
+        /*<st-list>*/       {1, 11, 12, 0, 0, 10, 0, 0, 0, 10, 0, 12, 10, 0, 10, 12, 10},
         /*<stat>*/          {0, 0, 0, 0, 0, 13, 0, 0, 0, 18, 0, 0, 19, 0, 25, 0, 20},
         /*<eval>*/          {0, 14, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0},
         /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 17, 0, 17},
@@ -355,7 +355,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
                 // end of predictiveStack was reached
                 if (token.type == ss_eof) {
                     end = 1;                                // success
-                    fprintf(stdout, "SUCCESS, YOU ARE AWESOME!");
+                    fprintf(stdout, "SUCCESS, YOU ARE AWESOME!\n");
                 } else if (token.type == kw_def) {
                     tStackPredictivePush(predictiveStack, "<start>");  // another function follows
                     rule = 1;
@@ -429,8 +429,8 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
         }*/
     }
 
-    // todo: do something for failure?
-    /*if (end  == -1) {
-
-    }*/
+    if (end  == -1) {
+        // finding rule resulted in failure
+        errorHandling(41);
+    }
 }

@@ -1,8 +1,0 @@
-def krat(a)
-	a=1
-	b=a*3
-end
-
-def nasobeni(b)
-	b=a*3
-end

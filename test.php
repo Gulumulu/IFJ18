@@ -183,7 +183,7 @@ function testParse()
         }
 
         # check return code value
-        if ($returnCode >= 0 && $returnCode < 32) {
+        if ($returnCode >= 0) {
             $tr = $html->createElement("tr");
             $td = $html->createElement("td", $testName[count($testName)-1]);
             $tr->appendChild($td);
