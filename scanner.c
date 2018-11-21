@@ -151,6 +151,7 @@ int token_generate(FILE *file)
     int error = 0;
     TokenType state = ss_new;
     int gen_fin = 0;
+    int esc_hex_count = 0;
 
     while (gen_fin != 1) {
         c = getc(file);
@@ -315,7 +316,6 @@ int token_generate(FILE *file)
                     state = ss_eof;
                 }
                 else {
-                    unget_char(c, file);
                     state = ss_error;
                     fprintf(stderr, "LEX -> Error, token unknown!\n");
                     break;
@@ -378,6 +378,11 @@ int token_generate(FILE *file)
                         break;
                     };
                     state = s_exp_int_s;
+                }
+                else if (isalpha(c)) {
+                    fprintf(stderr, "LEX -> Error, number cannot be followed by a character other than e/E!\n");
+                    unget_char(c, file);
+                    state = ss_error;
                 }
                 else { // integer loaded
                     global_token.type = state;
@@ -803,10 +808,11 @@ int token_generate(FILE *file)
             break;
 
             case ss_esc_hex: {
+                esc_hex_count++;
                 if (isalpha(c)) {
                     c = tolower(c);
                 }
-                if ((strlen(global_token.content) < 4) && ((isdigit(c)) || (c <= 'f'))) { // loading the hex values
+                if ((esc_hex_count < 2) && ((isdigit(c)) || (c <= 'f'))) { // loading the hex values
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
@@ -861,6 +867,16 @@ int token_generate(FILE *file)
                         break;
                     };
                     state = s_string;
+                }
+                else if (c == '"') {
+                    error = append_token(&global_token, c);
+                    if (error) {
+                        destroy_token(&global_token);
+                        state = ss_error;
+                        break;
+                    };
+                    global_token.type = state;
+                    state = ss_final;
                 }
                 else {
                     fprintf(stderr, "LEX -> Error, escape sequence incorrect!\n");

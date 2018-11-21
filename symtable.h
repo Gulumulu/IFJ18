@@ -2,7 +2,7 @@
  * Header for table of symbols
  *
  * Implemented by Marek Varga           xvarga14
- *                Gabriel Quirschfeld   xquirs 00
+ *                Gabriel Quirschfeld   xquirs00
  */
 
 #ifndef IFJ_SYMTABLE_H
@@ -17,6 +17,7 @@ typedef struct BSTNodeContent {
     int defined;        // true if defined, otherwise false
     char* type;         //
     char* name;         // the string of the identifier
+    int func_params;    // number of parameters a function has
 } BSTNodeContentPtr;
 
 typedef struct BSTNode {
