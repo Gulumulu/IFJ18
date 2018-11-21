@@ -1,3 +1,6 @@
-def krat(a)
-	a=c*a
+def func(a,b)
+end
+def func2(c)
+    a = 1
+    c = func(a)
 end

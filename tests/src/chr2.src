@@ -1,4 +1,4 @@
 def krat(a)
 	a=2*a
-	length("ahoj")
+	chr(5, a)
 end
