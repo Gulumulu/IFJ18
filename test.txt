@@ -1,3 +1,1 @@
-def krat(a)
-	a=c*a
-end
+"Ahoj\nSve'te\s\\\x22"

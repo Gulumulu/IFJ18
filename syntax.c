@@ -88,7 +88,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  * Function that does all the work - syntax driven compilation.
  */
 void doMagic() {
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("./test.txt", "w");
@@ -106,12 +106,15 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *file = fopen("./test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
-    int is_stat = 0;
-    int is_global = 1;
+    BSTNodeContentPtr* tmp;
+    int num_of_func_params = 0; // stores the numbers of called params a function has
+    int func_params = 0;        // true if function has params
+    int is_stat = 0;            // true if we are inside of a statement
+    int is_global = 1;          // true if we are outside of a function
     int is_func = 0;            // true if token was def, expecting function id next
     int undef = 0;              // true if token was equals sign, expecting only defined identifiers
     int arr_id = 0;             // id for the array holding local symtables
@@ -147,6 +150,7 @@ void doMagic() {
             cnt->type = "function";
             cnt->defined = 1;
             cnt->name = global_token.content;
+            cnt->func_params = 0;
             BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
             BSTNodePtr* local_symtable = malloc(sizeof(struct BSTNode));    // allocating memory for a new local symtable storing local identifiers
             BSTInit(local_symtable);    // initialization of the local symtable
@@ -154,14 +158,35 @@ void doMagic() {
             arr_id++;
             func_id = hash_id(global_token.content);    // storing the hash of function id for later use
             is_func = 0;    // no longer expecting a function id
+            func_params = 1;
+            num_of_func_params = 0;
         }
-        else if ((is_global == 1) && (global_token.type == s_id)) {
+        else if ((func_params == 1) && (global_token.type == s_id)) {   // pushes function params into local symtable and changes the number of params in global symtable
+            cnt->type = "func_parameter";
+            cnt->defined = 1;
+            cnt->name = global_token.content;
+            cnt->func_params = 0;
+            BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+            num_of_func_params++;
+            cnt = malloc(sizeof(struct BSTNodeContent));
+            cnt->type = "function";
+            cnt->defined = 1;
+            cnt->name = (*global_symtable)->content->name;
+            cnt->func_params = num_of_func_params;
+            BSTInsert(global_symtable, cnt, func_id, 0);
+        }
+        else if ((is_global == 1) && (global_token.type == s_id)) {     // pushes the global ids into global symtable
             if (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL) {
                 cnt->type = "variable";
                 cnt->defined = 1;
                 cnt->name = global_token.content;
+                cnt->func_params = 0;
                 BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
             }
+        }
+        else if ((func_params == 1) && (global_token.type == ss_eol)) {     // if there are no more function params
+            func_params = 0;
+            num_of_func_params = 0;
         }
         else if (global_token.type == ss_eol) { // the undefined region resets after eol
             undef = 0;
@@ -179,12 +204,17 @@ void doMagic() {
                     cnt->type = "function";
                     cnt->defined = 1;
                     cnt->name = global_token.content;
+                    cnt->func_params = 0;
                     BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+                }
+                else if ((tmp = BSTSearch(&array[arr_id-1], hash_id(global_token.content))) != NULL) {  // if the identifier is already in the local symtable
+                    BSTInsert(&array[arr_id-1], tmp, hash_id(global_token.content), func_id);
                 }
                 else {  // otherwise it is added as a variable
                     cnt->type = "variable";
                     cnt->defined = 1;
                     cnt->name = global_token.content;
+                    cnt->func_params = 0;
                     BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
                 }
             }
@@ -194,12 +224,17 @@ void doMagic() {
                 cnt->type = "function";
                 cnt->defined = 1;
                 cnt->name = global_token.content;
+                cnt->func_params = 0;
                 BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+            }
+            else if ((tmp = BSTSearch(&array[arr_id-1], hash_id(global_token.content))) != NULL) {  // if the identifier is already in the local symtable
+                BSTInsert(&array[arr_id-1], tmp, hash_id(global_token.content), func_id);
             }
             else {  // otherwise it is added as a variable
                 cnt->type = "variable";
                 cnt->defined = 1;
                 cnt->name = global_token.content;
+                cnt->func_params = 0;
                 BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
             }
         }
