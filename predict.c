@@ -265,13 +265,33 @@ int checkRulesApplied() {
 }
 
 /**
+ * Function checks whether user-defined function was called with the right number of args
+ *
+ * @param functionContent BSTNodeContentPtr* is pointer to node content in gloabl symtable
+ * @param numberOfArgs int number is number of arguments
+ *
+ * @return non-zero value is returned if arguments are matchings otherwise zero-value is returned
+ */
+int checkUserFunction(BSTNodeContentPtr* functionContent, int numberOfArgs) {
+    if (functionContent == NULL) {
+        return 0;
+    } else if (functionContent->func_params == numberOfArgs){
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
  * Function checks whether of arguments are correct for build-in functions.
  *
  * @param inputFunction tokenType is input function
+ * @param globalSymtable BSTNotePtr* is pointer to root of gloabl symtable
  *
  * @return non-zero value is returned if number of arguments is correct
  */
-int checkNumberOfArgs(TokenType inputFunction) {
+int checkNumberOfArgs(TokenType inputFunction, BSTNodePtr* globalSymtable) {
+    //BSTNodeContentPtr* functionContent = malloc(sizeof(struct BSTNodeContent));
     switch (inputFunction) {
         case kw_length:
             if (checkRulesApplied() == 1) {
@@ -309,8 +329,10 @@ int checkNumberOfArgs(TokenType inputFunction) {
             }
             break;
         case s_func_id:
-            // todo: check function declaration for number of args
-            return 1;
+            if (checkUserFunction(BSTSearch(globalSymtable, hash_id(inputFunctionName)), checkRulesApplied()) == 1) {
+                return 1;
+            }
+            break;
         case kw_print:
             return 1;
         default:
@@ -337,9 +359,10 @@ int checkMainFunction() {
  * Function simulates predictive syntax analysis for given token.
  *
  * @param token token is given token from lexical analysis
- * @param predictiveStack
+ * @param predictiveStack pointer to tStackPredictive structure is predictive stack
+ * @param globalSymtable BSTNodePtr* is pointer to root of global symtable
  */
-void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
+void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodePtr* globalSymtable) {
     int end = 0;
 
     if (predictiveStack == NULL) {                        // expendedStack error
@@ -383,10 +406,11 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
                 if (checkingArgs == 1 && (token.type == s_rbrac || token.type == ss_eol || token.type == ss_eof) ) {
                     // need to check number of arguments of function
                     checkingArgs = 0;
-                    if (checkNumberOfArgs(inputFunction) == 0) {
+                    if (checkNumberOfArgs(inputFunction, globalSymtable) == 0) {
                         errorHandling(45);
                         end = -1;
                     }
+                    inputFunctionName = NULL;
                 }
             } else if (strcmp(predictiveStackTop, "<expr>") != 0){
                 // non-terminal in on top of the predictiveStack && no need to calculate expression
@@ -409,6 +433,10 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack) {
                         // need to check arguments of function
                         checkingArgs = 1;
                         inputFunction = token.type;
+                        inputFunctionName = "";
+                        inputFunctionName = malloc(strlen(token.content)+1);
+                        inputFunctionName = memcpy(inputFunctionName, token.content, strlen(token.content));
+                        inputFunctionName[strlen(token.content)] = '\0';
                     }
                 }
             } else if (rule == 22 || rule == 21) {

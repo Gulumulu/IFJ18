@@ -414,7 +414,7 @@ TokenType decideID(Token nextToken) {
  * @param stackAST
  * @param node
  */
-void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST, BSTNodePtr* node) {
+void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST, BSTNodePtr* node, BSTNodePtr* globalSymtable) {
 
     if (expendedStack == NULL || stackAST == NULL) {                        // expendedStack error
         errorHandling(99);
@@ -446,6 +446,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
             c = appendChar(c, tmp3);
 
             if (strcmp(c, "f") != 0 && isFunction == 0) {
+                // normal expression => not dealing with assigning a function
                 functionName = NULL;
                 int row = getTableOffset(a);
                 int col = getTableOffset(c);
@@ -512,6 +513,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                     }
                 }
             } else if (strcmp(c, "f") == 0) {
+                // assigning a function in expression => need to load other tokens as well
                 char* tmpFuncName = malloc(strlen(functionName));
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
@@ -523,10 +525,11 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 functionName = strcat(functionName, token.content);
                 functionName[strlen(tmpFuncName)+strlen(token.content)] = '\0';
                 isFunction = 1;
-                simulatePredictive(token, stackPredictive);
+                simulatePredictive(token, stackPredictive, globalSymtable);
                 end = 1;
                 free(tmpFuncName);
             } else if (token.type == s_lbrac || token.type == s_comma || token.type == s_id || token.type == s_int || token.type == s_float || token.type == s_exp_int || token.type == s_exp_int_s || token.type == s_exp_f || token.type == s_exp_f_s || token.type == s_string) {
+                // assigning a function in expression => need to load other tokens as well
                 char* tmpFuncName = malloc(strlen(functionName));
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
@@ -537,10 +540,11 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 functionName[strlen(tmpFuncName)] = '\0';
                 functionName = strcat(functionName, token.content);
                 functionName[strlen(tmpFuncName)+strlen(token.content)] = '\0';
-                simulatePredictive(token, stackPredictive);
+                simulatePredictive(token, stackPredictive, globalSymtable);
                 end = 1;
                 free(tmpFuncName);
             } else if (token.type == s_rbrac || token.type == ss_eol || token.type == ss_eof) {
+                // assigning a function in expression => need to load other tokens as well
                 char* tmpFuncName = malloc(strlen(functionName));
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
@@ -551,7 +555,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 functionName[strlen(tmpFuncName)] = '\0';
                 functionName = strcat(functionName, token.content);
                 functionName[strlen(tmpFuncName)+strlen(token.content)] = '\0';
-                simulatePredictive(token, stackPredictive);
+                simulatePredictive(token, stackPredictive, globalSymtable);
                 isFunction = 0;
                 tStackPredictiveDispose(stackPredictive);
                 if (token.type == ss_eol || token.type == ss_eof) {
@@ -560,7 +564,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                     tmpToken.content = malloc(strlen(functionName)+1);
                     tmpToken.content = strcpy(tmpToken.content, functionName);
                     tmpToken.content[strlen(functionName)] = '\0';
-                    simulatePrecedence(tmpToken, expendedStack, stackAST, node);
+                    simulatePrecedence(tmpToken, expendedStack, stackAST, node, globalSymtable);
                     end = 0;
                 } else {
                     token.type = s_func_expr;
@@ -570,6 +574,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 free(functionName);
                 free(tmpFuncName);
             } else {
+                // something went wrong
                 errorHandling(2);
                 end = 1;
             }

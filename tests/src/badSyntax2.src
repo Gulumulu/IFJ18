@@ -1,0 +1,2 @@
+def krat(a)
+	a=2*a

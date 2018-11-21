@@ -1,0 +1,4 @@
+def func(a, b)
+end
+a = 1
+func(a)

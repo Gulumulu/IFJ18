@@ -88,7 +88,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  * Function that does all the work - syntax driven compilation.
  */
 void doMagic() {
-    /*if (feof(stdin))
+    if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("./test.txt", "w");
@@ -106,9 +106,9 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);*/
+    fclose(fp);
 
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("./test.txt", "r");
 
     BSTNodeContentPtr* tmp;
     int num_of_func_params = 0; // stores the numbers of called params a function has
@@ -264,7 +264,7 @@ void doMagic() {
                 if (precedence == 1 || ((global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0)) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
-                    simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+                    simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                     //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                     if (precedence == 0) {
                         // precedence has finished => need to pop rule from predictive stack
@@ -303,9 +303,9 @@ void doMagic() {
                             tFunctionTrackerPush(functionTracker, tmpToken.content);
                         }
                         // simulate predictive SA for current token
-                        simulatePredictive(tmpToken, predictiveStack);
+                        simulatePredictive(tmpToken, predictiveStack, global_symtable);
                         if (precedence == 1) {
-                            simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+                            simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                             //simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                         }
                     }
@@ -322,10 +322,10 @@ void doMagic() {
                     }
                     if (precedence == 0) {
                         // simulate predictive SA for next token
-                        simulatePredictive(global_token, predictiveStack);
+                        simulatePredictive(global_token, predictiveStack, global_symtable);
                     }
                     if (precedence == 1){
-                        simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+                        simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                     }
                     // todo: generate code

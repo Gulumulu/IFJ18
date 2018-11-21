@@ -1,0 +1,3 @@
+def krat(a)
+	a=length(a)*2
+end
