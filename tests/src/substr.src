@@ -1,0 +1,5 @@
+def krat(a)
+	a = 2 * a
+	b = 0
+	substr("ahoj", b, 4)
+end

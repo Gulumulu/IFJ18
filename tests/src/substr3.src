@@ -1,0 +1,3 @@
+def krat(a)
+	a=substr("ahoj", 2, 1)
+end

@@ -1,0 +1,3 @@
+def krat(a)
+	substr("ahoj", "H", 5)
+end
