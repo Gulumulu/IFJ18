@@ -8,10 +8,12 @@
 #include "semantic.h"
 #include "errors.h"
 #include "scanner.h"
+#include "predict.h"
 
 int rule;
-int precedence;
-int printing;
+int isFunction;
+char* functionName;
+tStackPredictive* stackPredictive;
 
 // structure for extended stack
 typedef struct {

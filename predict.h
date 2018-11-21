@@ -7,7 +7,7 @@
 
 #include "errors.h"
 #include "semantic.h"
-#include "prectable.h"
+//#include "prectable.h"
 #include "scanner.h"
 #include <string.h>
 // stack for predictive SA
@@ -19,6 +19,7 @@ typedef struct {
 int rulesApplied[50];
 int rule;
 int checkingArgs;
+int printing;
 TokenType inputFunction;
 
 // functions for working with stack

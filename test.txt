@@ -1,3 +1,4 @@
-def krat(a)
-	a=c*a
+def func(a, b)
 end
+a = 1
+func(a)

@@ -88,7 +88,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  * Function that does all the work - syntax driven compilation.
  */
 void doMagic() {
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("./test.txt", "w");
@@ -106,9 +106,9 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *file = fopen("./test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
     int is_stat = 0;
     int is_global = 1;
@@ -209,24 +209,24 @@ void doMagic() {
 
         // second transit of compiler -- passing tokens to parser
         // helper stacks
-        tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
+        tASTPointer *AST = malloc(sizeof(struct tAST) * 2);
         tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
         tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 30);
         tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
         tExpendedStack *expendedStack = malloc(sizeof(tExpendedStack) * 30);
         init(expendedStack);                    // contains symbols meant to be simplified in precedence SA
-        tStackASTPtr *stackAST = malloc(sizeof(struct tStackAST) * 30);
+        tStackASTPtr *stackAST = malloc(sizeof(struct tStackAST) * 20);
         tStackASTInit(stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
         global_token = tmpToken;
         //char *currentFunction = "";
-        tFunctionTracker* functionTracker = malloc(sizeof(struct tFT) * 30);            // helper stack to keep track of the function name we are currently in
+        tFunctionTracker* functionTracker = malloc(sizeof(struct tFT) * 12);            // helper stack to keep track of the function name we are currently in
         tFunctionTrackerInit(functionTracker);
 
         while (global_token.type != ss_eof && ERROR_TYPE == 0) {
             // call lexical analysis
             token_generate(file);
             // call syntax analysis
-                if ((precedence == 1 || global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0) {
+                if (precedence == 1 || ((global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0)) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
                     simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
@@ -250,7 +250,7 @@ void doMagic() {
                              * Generated code: mul a 2 b    -- still need to figure out how to pass variable a
                              */
                             // clear tree after generating
-                            AST = malloc(sizeof(struct tAST) * 10);
+                            AST = malloc(sizeof(struct tAST) * 2);
                         }
                     }
                 }
@@ -304,7 +304,7 @@ void doMagic() {
                      * P.S. maybe there is no need for checking applied rules
                      */
                 }
-                if (printing == 1) {
+                if (printing == 1 && strcmp(tStackPredictiveGetTop(predictiveStack), "<expr>") != 0) {
                     // need to print this expression
                     // todo: generate code
                     /*
@@ -338,7 +338,7 @@ void doMagic() {
         tStackASTDispose(stackAST);
         dispose(expendedStack);
         tStackPredictiveDispose(predictiveStack);
-        tASTDispose(AST);
+        //tASTDispose(AST);
         tFunctionTrackerDispose(functionTracker);
     fclose(file);
 }

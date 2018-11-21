@@ -2,15 +2,16 @@
  *  Header for generating AST and appropriated semantic actions.
  *  Implemented by Marek Varga, xvarga14
  */
-#ifndef IFJ_SEMATNIC_H
-#define IFJ_SEMATNIC_H
+#ifndef IFJ_SEMANTIC_H
+#define IFJ_SEMANTIC_H
 
 #include "symtable.h"
 #include "errors.h"
 #include "scanner.h"
 #include <string.h>
+#include <regex.h>
 #define MAX 50
-
+int precedence;
 // structure for node
 /*typedef struct tNode {
     BSTNodeContentPtr content;

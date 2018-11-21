@@ -43,9 +43,9 @@ void tStackPredictivePush(tStackPredictive* stack, char* symbol) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        stack->content[stack->top] = malloc(sizeof(strlen(symbol)));
-        checkMalloc(stack->content[stack->top]);
-        stack->content[stack->top] = symbol;
+        stack->content[stack->top] = malloc(sizeof(strlen(symbol)+1));
+        //checkMalloc(stack->content[stack->top]);
+        stack->content[stack->top] = strcpy(stack->content[stack->top], symbol);
         stack->top++;
     }
 }
@@ -202,7 +202,7 @@ int LLTable[14][17] = {
         /*<st-list>*/       {1, 11, 12, 0, 0, 10, 0, 0, 0, 10, 0, 12, 10, 0, 10, 12, 10},
         /*<stat>*/          {0, 0, 0, 0, 0, 13, 0, 0, 0, 18, 0, 0, 19, 0, 25, 0, 20},
         /*<eval>*/          {0, 14, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0},
-        /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 17, 0, 17},
+        /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 16, 0, 16},
         /*<print-expr*/     {0, 23, 0, 24, 0, 22, 22, 21, 0, 0, 0, 0, 0, 0, 0, 23, 0},
         /*<next-print-expr>*/ {0, 23, 0, 24, 0, 22, 22, 0, 23, 0, 0, 0, 0, 0, 0, 23, 0},
         /*<f-params>*/      {0, 28, 0, 29, 0, 27, 27, 26, 0, 0, 0, 0, 0, 0, 0, 28, 0},

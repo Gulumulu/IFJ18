@@ -456,7 +456,8 @@ function saveHTML()
 
     $root->appendChild($body);
     $html->appendChild($root);
-    echo $html->saveHTML();
+    echo "Wrote: " . $html->saveHTMLFile("testResults.html") . " bytes\n";
+    #echo $html->saveHTML();
 
 }
 

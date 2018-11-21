@@ -79,7 +79,8 @@ typedef enum {
 /*57*/  ss_final,       // end of scanning
 
     /*  VERY SPECIFIC SPECIAL STATE */
-/*58*/  s_func_id       // function id
+/*58*/  s_func_id,      // function id
+/*59*/  s_func_expr     // function in expression
 
 } TokenType;
 

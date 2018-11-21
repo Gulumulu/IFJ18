@@ -37,6 +37,116 @@ void tASTDispose(tASTPointer* AST) {
 }
 
 /**
+ * Function searches for pattern in a string
+ *
+ * @param string
+ * @param pattern
+ * @return
+ */
+int match(const char *string, const char *pattern)
+{
+    regex_t re;
+    if (regcomp(&re, pattern, REG_EXTENDED|REG_NOSUB) != 0) return 0;
+    int status = regexec(&re, string, 0, NULL, 0);
+    regfree(&re);
+    if (status != 0) return 0;
+    return 1;
+}
+
+char* getArguments(const char* functionDeclaration) {
+    char* arguments = "";
+    arguments = strrchr(functionDeclaration, '(');
+    if (arguments == NULL) {
+        arguments = strchr(functionDeclaration, ' ');
+        if (arguments == NULL) {
+            return NULL;
+        } else {
+            return arguments;
+        }
+    } else {
+        return arguments;
+    }
+}
+
+/**
+ * Function resolves function name based on given function name whether it is a build-in or user-defined one
+ *
+ * @param functionName
+ * @return
+ */
+char* getFunctionName(const char* functionName) {
+    //char* arguments = "";
+    if (match(functionName, "(print)+") == 1) {
+        return "print";
+    } else if (match(functionName, "(length)+") == 1) {
+        /*if ((arguments = getArguments(functionName)) == NULL) {
+            return NULL;
+        } else {
+            if (match(arguments, "\\([a-z]+\\)") != 1) {
+                return NULL;
+            }
+        }*/
+        return "length";
+    } else if (match(functionName, "(inputs)+") == 1) {
+        /*if ((arguments = getArguments(functionName)) == NULL) {
+            return NULL;
+        } else {
+            if (match(arguments, "\\(\\)") != 1) {
+                return NULL;
+            }
+        }*/
+        return "inputs";
+    } else if (match(functionName, "(inputi)+") == 1) {
+        /*if ((arguments = getArguments(functionName)) == NULL) {
+            return NULL;
+        } else {
+            if (match(arguments, "\\(\\)") != 1) {
+                return NULL;
+            }
+        }*/
+        return "inputi";
+    } else if (match(functionName, "(inputf)+") == 1) {
+        /*if ((arguments = getArguments(functionName)) == NULL) {
+            return NULL;
+        } else {
+            if (match(arguments, "\\(\\)") != 1) {
+                return NULL;
+            }
+        }*/
+        return "inputf";
+    } else if (match(functionName, "(substr)+") == 1) {
+        /*if ((arguments = getArguments(functionName)) == NULL) {
+            return NULL;
+        } else {
+            if (match(arguments, "\\([a-z]+, ?[a-z]+, ?[a-z]+\\)") != 1) {
+                return NULL;
+            }
+        }*/
+        return "substr";
+    } else if (match(functionName, "(ord)+") == 1) {
+        /*if ((arguments = getArguments(functionName)) == NULL) {
+            return NULL;
+        } else {
+            if (match(arguments, "\\([a-z]+, ?[a-z]+\\)") != 1) {
+                return NULL;
+            }
+        }*/
+        return "ord";
+    } else if (match(functionName, "(chr)+") == 1) {
+        /*if ((arguments = getArguments(functionName)) == NULL) {
+            return NULL;
+        } else {
+            if (match(arguments, "\\(([0-1]*[0-9]*[0-9]+|2[0-5]+[0-5]+)\\)") != 1) {
+                return NULL;
+            }
+        }*/
+        return "chr";
+    } else {
+        return "sth else";
+    }
+}
+
+/**
  * Function searches for variable in symtable based on given token.
  *
  * @param token
@@ -50,7 +160,7 @@ BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token) {
         if (token->type == s_id) {
             // find variable in symtable
             return BSTSearch(&node, hash_id(token->content));
-        } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float || token->type == s_exp_f || token->type == s_string) {
+        } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float || token->type == s_exp_f || token->type == s_string || token->type == kw_length || token->type == s_func_expr) {
             // leaf will be a constant therefore creation of new BSTNode is needed
             BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
             if (tmpNode == NULL) {
@@ -63,12 +173,20 @@ BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token) {
                     case s_int:
                     case s_exp_int:
                     case s_exp_int_s:
+                    case kw_length:
                         tmpNode->type = "int";
                         break;
                     case s_float:
                     case s_exp_f:
                     case s_exp_f_s:
                         tmpNode->type = "float";
+                        break;
+                    case s_func_expr:
+                        tmpNode->type = getFunctionName(token->content);
+                        if (tmpNode->type == NULL) {
+                            errorHandling(5);
+                            return NULL;
+                        }
                         break;
                     default:
                         tmpNode->type = "string";
@@ -251,7 +369,7 @@ void tStackASTInit(tStackASTPtr* stack) {
  * @param AST pointer to tAST structure is AST that is pushed onto the stack
  */
 void tStackASTPush(tStackASTPtr* stack, tASTPointer* AST) {
-    if (stack == NULL || stack->top == MAX) {
+    if (stack == NULL || stack->top == MAX || AST == NULL) {
         errorHandling(99);
     } else {
         stack->top++;
