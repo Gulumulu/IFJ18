@@ -1,6 +1,2 @@
-def func(a,b)
-end
-def func2(c)
-    a = 1
-    c = func(a)
-end
+a=2
+b=a

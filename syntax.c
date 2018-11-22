@@ -88,7 +88,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  * Function that does all the work - syntax driven compilation.
  */
 void doMagic() {
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("./test.txt", "w");
@@ -106,9 +106,9 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *file = fopen("./test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
     BSTNodeContentPtr* tmp;
     int num_of_func_params = 0; // stores the numbers of called params a function has
@@ -244,7 +244,7 @@ void doMagic() {
 
         // second transit of compiler -- passing tokens to parser
         // helper stacks
-        tASTPointer *AST = malloc(sizeof(struct tAST) * 2);
+        tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
         tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
         tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 30);
         tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
@@ -285,7 +285,7 @@ void doMagic() {
                              * Generated code: mul a 2 b    -- still need to figure out how to pass variable a
                              */
                             // clear tree after generating
-                            AST = malloc(sizeof(struct tAST) * 2);
+                            AST = malloc(sizeof(struct tAST) * 30);
                         }
                     }
                 }
@@ -320,13 +320,39 @@ void doMagic() {
                         // we will not be printing anymore
                         printing = 0;
                     }
-                    if (precedence == 0) {
+                    if (precedence == 0 && global_token.type != ss_eof) {
                         // simulate predictive SA for next token
                         simulatePredictive(global_token, predictiveStack, global_symtable);
                     }
                     if (precedence == 1){
                         simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
+                    }
+                    if (precedence == 0 && global_token.type == ss_eof) {
+                        if (strcmp(tStackPredictiveGetTop(predictiveStack), "<expr>") == 0 && stackAST->top != 0) {
+                            // precedence has finished => need to pop rule from predictive stack
+                            tStackPredictivePop(predictiveStack);
+                            // assign newly created AST
+                            if (stackAST != NULL && ERROR_TYPE == 0) {
+                                // result of precedence will be stored in AST - abstract syntax tree
+                                *AST = *stackAST->body[stackAST->top];
+                                // todo: generate expression
+                                /*
+                                 * Create function generateExpression(tASTPointer* AST) and pass newly created AST.
+                                 * Generate code for expression stored in AST.
+                                 * For example a = 2*b   => 2*b will be stored in AST as:
+                                 *      *
+                                 *     | |
+                                 *     2 b
+                                 *
+                                 * Generated code: mul a 2 b    -- still need to figure out how to pass variable a
+                                 */
+                                // clear tree after generating
+                                AST = malloc(sizeof(struct tAST) * 30);
+                            }
+                        }
+                        // simulate predictive SA for next token
+                        simulatePredictive(global_token, predictiveStack, global_symtable);
                     }
                     // todo: generate code
                     /*
