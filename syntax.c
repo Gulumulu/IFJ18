@@ -4,12 +4,131 @@
  * Implemented by Gabriel Quirschfeld   xquirs00
  *                Marek Varga           xvarga14
  */
-
 #include "syntax.h"
 #include "scanner.h"
 #include "symtable.h"
+#include "queue.h"
 
 #define BUF_SIZE 1024
+
+static int counter = 100;
+
+void operation_assign(tASTPointer* Root) { // operace prirazeni do promenne, pro strom o velikosti 1 pouze
+    printf("DEFVAR %%assign\n");
+    printf("MOVE %%assign %s@%s\n",Root->content->type,Root->content->name);
+}
+
+void postorder(tASTPointer* Root, tQueue* q) { // rekurzivni postorder pro postupne generovani vyrazu v generate_expression(AST)
+
+	if (Root == NULL)
+		return;
+	postorder(Root->LeftPointer,q);
+	postorder(Root->RightPointer,q);
+
+	// PROCESSING NODE STARTS
+
+    if((!strcmp(Root->ID,"*")) || (!strcmp(Root->ID,"+"))) { // Root je operace
+
+        printf("DEFVAR LF@%%var%i\n", counter); // operace, chystam tedy novou promennou
+
+        int leftvar; // leva strana
+        int rightvar; // prava strana
+
+        // PREVED LEFTVAR A RIGHTVAR NA STRINGY A UKLADEJ PLNE NAZVY NOVYCH PROMENNYCH
+
+        /*
+        if(Root->LeftPointer->ID != NULL && Root->RightPointer->ID != NULL) { // ani jeden z L R neni operator, pridej do fronty
+            leftvar = Root->LeftPointer->content->name; // 1
+            rightvar = Root->RightPointer->content->name; // * 2
+            queueUp(q,counter); // var
+        }
+        else if(Root->LeftPointer->ID == NULL || Root->RightPointer->ID == NULL) { // jeden z L R je var
+            if(Root->LeftPointer->ID == NULL) { // L je operator
+                queueGet(q, leftvar);
+                rightvar = Root->RightPointer->content->name;
+            }
+            else { // R je operator
+                leftvar = Root->LeftPointer->content->name;
+                queueGet(q, rightvar);
+            }
+        }
+        else { // L R jsou operatory
+            queueGet(q, leftvar);
+            queueGet(q, rightvar);
+        }
+        */
+
+        if (!strcmp(Root->ID, "*")) { // nasobeni // TESTOVACI VYPIS ZATIM
+
+            if(Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name != NULL) { // ani jeden z L R neni operace
+                printf("MUL %%%i %s %s\n", counter, Root->LeftPointer->content->name, Root->RightPointer->content->name);
+            }
+            else if((Root->LeftPointer->content->name == NULL && Root->LeftPointer->content->name != NULL) || (Root->LeftPointer->content->name != NULL && Root->LeftPointer->content->name == NULL)) { // jeden z L R je operace
+                if(Root->LeftPointer->content->name == NULL) { // L je operator
+                    queueGet(q, &leftvar);
+                    printf("MUL %%%i %i %s\n", counter, leftvar,Root->RightPointer->content->name);
+                }
+                else { // R je operator
+                    queueGet(q, &rightvar);
+                    printf("MUL %%%i %s %i\n", counter, Root->LeftPointer->content->name,rightvar);
+                }
+            }
+            else { // L R jsou operatory
+                queueGet(q, &leftvar);
+                queueGet(q, &rightvar);
+                printf("MUL %%%i %i %i\n", counter, leftvar,rightvar);
+            }
+
+        }
+
+        else if (!strcmp(Root->ID, "+")) { // addendum // TESTOVACI VYPIS ZATIM
+
+            if(Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name != NULL) { // ani jeden z L R neni operace
+                printf("MUL %%%i %s %s\n", counter, Root->LeftPointer->content->name, Root->RightPointer->content->name);
+            }
+            else if((Root->LeftPointer->content->name == NULL && Root->LeftPointer->content->name != NULL) || (Root->LeftPointer->content->name != NULL && Root->LeftPointer->content->name == NULL)) { // jeden z L R je operace
+                if(Root->LeftPointer->content->name == NULL) { // L je operator
+                    queueGet(q, &leftvar);
+                    printf("MUL %%%i %i %s\n", counter, leftvar,Root->RightPointer->content->name);
+                }
+                else { // R je operator
+                    queueGet(q, &rightvar);
+                    printf("MUL %%%i %s %i\n", counter, Root->LeftPointer->content->name,rightvar);
+                }
+            }
+            else { // L R jsou operatory
+                queueGet(q, &leftvar);
+                queueGet(q, &rightvar);
+                printf("MUL %%%i %i %i\n", counter, leftvar,rightvar);
+            }
+        }
+
+        queueUp(q,counter); // nahravas do fronty pokazde kdyz delas vyraz, kde je root operator
+
+        counter++; // pricti 1 k promenne
+    }
+}
+
+
+void generateExpression(tASTPointer* AST) {
+
+    if(AST->LeftPointer == NULL && AST->RightPointer == NULL) {// jedna se pouze o assign, x = 1
+        operation_assign(AST);
+    }
+
+    tQueue* q = malloc(sizeof(tQueue)); // nova fronta pro generate_expression
+    queueInit(q);
+    // pokud zpracovavas uzel, co ma operand v ID, uloz novou promennou do fronty pomoci queueUp(q,var_znak);
+    // vyjmuti jmen promennych z fronty pomoci queueGet (q, &varname2) a vlozeni do varname
+
+    /* TEST PRINT FRONTY
+        for ( int i=0; i<QUEUE_SIZE; i++ )
+            printf("%c\n",q->arr[i]);
+    */
+
+	postorder(AST,q);
+
+}
 
 /**
  * Function initializes stack for function tracking.
@@ -88,10 +207,11 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  * Function that does all the work - syntax driven compilation.
  */
 void doMagic() {
+
     /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
-    FILE *fp = fopen("./test.txt", "w");
+    FILE *fp = fopen("test.txt", "w");
     if (fp == 0)
         printf("...something went wrong opening file...\n");
 
@@ -108,7 +228,7 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("test.txt", "r");
 
     BSTNodeContentPtr* tmp;
     int num_of_func_params = 0; // stores the numbers of called params a function has
@@ -244,7 +364,7 @@ void doMagic() {
 
         // second transit of compiler -- passing tokens to parser
         // helper stacks
-        tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
+        tASTPointer *AST = malloc(sizeof(struct tAST) * 2);
         tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
         tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 30);
         tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
@@ -265,7 +385,8 @@ void doMagic() {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
                     simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
-                    //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
+
+		    // PRECEDENCNI ANALYZA EXPRESSION (SEM  SE VOLA Z PREDIKTIVNI)
                     if (precedence == 0) {
                         // precedence has finished => need to pop rule from predictive stack
                         tStackPredictivePop(predictiveStack);
@@ -273,22 +394,18 @@ void doMagic() {
                         if (stackAST != NULL && ERROR_TYPE == 0) {
                             // result of precedence will be stored in AST - abstract syntax tree
                             *AST = *stackAST->body[stackAST->top];
-                            // todo: generate expression
-                            /*
-                             * Create function generateExpression(tASTPointer* AST) and pass newly created AST.
-                             * Generate code for expression stored in AST.
-                             * For example a = 2*b   => 2*b will be stored in AST as:
-                             *      *
-                             *     | |
-                             *     2 b
-                             *
-                             * Generated code: mul a 2 b    -- still need to figure out how to pass variable a
-                             */
+
+                            /* MP */
+
+                            generateExpression(AST);
+		
                             // clear tree after generating
-                            AST = malloc(sizeof(struct tAST) * 30);
+                            AST = malloc(sizeof(struct tAST) * 2);
                         }
                     }
                 }
+
+		// PREDIKTIVNI (AUTOMATICKA)
                 if (precedence == 0) {
                     // we are not dealing with expression => doing top down syntax analysis => need to simulate predictive SA
                     if (global_token.type == s_id) {
@@ -306,7 +423,6 @@ void doMagic() {
                         simulatePredictive(tmpToken, predictiveStack, global_symtable);
                         if (precedence == 1) {
                             simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
-                            //simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                         }
                     }
                     if (printing == 1) {
@@ -320,7 +436,7 @@ void doMagic() {
                         // we will not be printing anymore
                         printing = 0;
                     }
-                    if (precedence == 0 && global_token.type != ss_eof) {
+                    if (precedence == 0) {
                         // simulate predictive SA for next token
                         simulatePredictive(global_token, predictiveStack, global_symtable);
                     }
@@ -328,33 +444,8 @@ void doMagic() {
                         simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                     }
-                    if (precedence == 0 && global_token.type == ss_eof) {
-                        if (strcmp(tStackPredictiveGetTop(predictiveStack), "<expr>") == 0 && stackAST->top != 0) {
-                            // precedence has finished => need to pop rule from predictive stack
-                            tStackPredictivePop(predictiveStack);
-                            // assign newly created AST
-                            if (stackAST != NULL && ERROR_TYPE == 0) {
-                                // result of precedence will be stored in AST - abstract syntax tree
-                                *AST = *stackAST->body[stackAST->top];
-                                // todo: generate expression
-                                /*
-                                 * Create function generateExpression(tASTPointer* AST) and pass newly created AST.
-                                 * Generate code for expression stored in AST.
-                                 * For example a = 2*b   => 2*b will be stored in AST as:
-                                 *      *
-                                 *     | |
-                                 *     2 b
-                                 *
-                                 * Generated code: mul a 2 b    -- still need to figure out how to pass variable a
-                                 */
-                                // clear tree after generating
-                                AST = malloc(sizeof(struct tAST) * 30);
-                            }
-                        }
-                        // simulate predictive SA for next token
-                        simulatePredictive(global_token, predictiveStack, global_symtable);
-                    }
-                    // todo: generate code
+
+
                     /*
                      * Create function generateCode(char* predictiveStackTop) and pass top of predictiveStack.
                      * Look at the top of predictiveStack: predictiveStack->content[predictiveStack->top-1] =>
@@ -364,8 +455,30 @@ void doMagic() {
                      *
                      * P.S. maybe there is no need for checking applied rules
                      */
+
+                    int overrule = 0; // uz doslo ke generovani
+                    /*//DEBUGINFO START
+                    int i = 0;
+                    while(rulesApplied[i] != 0) {
+                        printf("PRAVIDLO: %i\n", rulesApplied[i]);
+                        i++;
+                    }
+                    printf("PRED STACK: %s\n",predictiveStack->content[predictiveStack->top-1]);
+                    // DEBUGINFO END
+*/
+                    if(!overrule && !strcmp(predictiveStack->content[predictiveStack->top-1],"<assign>")) { // predst = <assign>
+                        overrule = 1;
+                        printf("enlist: MOVE %s %%assign\n",tmpToken.content); // do seznamu vygener. uloz finalni vysledek assign k pozdejsimu vypsani
+                    }
+
+
+
+
+
                 }
-                if (printing == 1 && strcmp(tStackPredictiveGetTop(predictiveStack), "<expr>") != 0) {
+
+              	// NEJAKEJ PRINTING
+		if (printing == 1 && strcmp(tStackPredictiveGetTop(predictiveStack), "<expr>") != 0) {
                     // need to print this expression
                     // todo: generate code
                     /*
@@ -389,6 +502,8 @@ void doMagic() {
                     // clearing applied rules at the of one line
                     clearRulesApplied();
                 }
+
+
         }
 
         if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
@@ -403,3 +518,4 @@ void doMagic() {
         tFunctionTrackerDispose(functionTracker);
     fclose(file);
 }
+
