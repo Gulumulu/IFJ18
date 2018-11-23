@@ -378,7 +378,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 // end of predictiveStack was reached
                 if (token.type == ss_eof) {
                     end = 1;                                // success
-                    fprintf(stdout, "SUCCESS, YOU ARE AWESOME!\n");
+                    //fprintf(stdout, "SUCCESS, YOU ARE AWESOME!\n");
                 } else if (token.type == kw_def) {
                     tStackPredictivePush(predictiveStack, "<start>");  // another function follows
                     rule = 1;
@@ -426,7 +426,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                     } else {
                         // change non-terminal according to rule from LL grammar
                         tStackPredictiveChangeTop(predictiveStack, rule);
-                        fprintf(stdout, "Applying rule number: %d\n", rule);
+                        //fprintf(stdout, "Applying rule number: %d\n", rule);
                         fillRulesApplied(rule);
                     }
                     if (rule == 17 || rule == 25) {

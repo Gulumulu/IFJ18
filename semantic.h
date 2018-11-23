@@ -5,6 +5,8 @@
 #ifndef IFJ_SEMANTIC_H
 #define IFJ_SEMANTIC_H
 
+#include <stdbool.h>
+
 #include "symtable.h"
 #include "errors.h"
 #include "scanner.h"
@@ -20,6 +22,7 @@ int precedence;
 // structure for AST
 typedef struct tAST {
     char* ID;
+    char* changed;
     //tNodePointer* content;
     BSTNodeContentPtr* content;
     struct tAST* LeftPointer;

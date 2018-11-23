@@ -498,7 +498,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                                         break;
                                 }
                                 // also check if rule exists
-                                fprintf(stdout, "%s\n", handle);    // write rule to stdout
+                                //fprintf(stdout, "%s\n", handle);    // write rule to stdout
                             } else {
                                 errorHandling(42);                 // cannot find the right rule
                                 end = 1;

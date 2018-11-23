@@ -933,6 +933,6 @@ int token_generate(FILE *file)
             break;
         }
     }
-    printf("token: %d -> %s \n", global_token.type, global_token.content);
+    //printf("token: %d -> %s \n", global_token.type, global_token.content);
     return error;
 }

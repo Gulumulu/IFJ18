@@ -4,7 +4,7 @@
 
 CC=gcc
 CFLAGS= -std=c99 -Wall -Wextra -pedantic 
-SRC=scanner.c syntax.c predict.c errors.c symtable.c prectable.c semantic.c main.c
+SRC=scanner.c syntax.c predict.c errors.c symtable.c prectable.c semantic.c main.c queue.c
 OUT=compiler
 
 all:
