@@ -3,7 +3,7 @@
 # makefile implemented by xvarga14
 
 CC=gcc
-CFLAGS= -std=c99 -Wall -Wextra -pedantic 
+CFLAGS= -std=c99 -Wall -Wextra -w -pedantic 
 SRC=scanner.c syntax.c predict.c errors.c symtable.c prectable.c semantic.c main.c
 OUT=compiler
 
