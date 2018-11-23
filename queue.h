@@ -3,7 +3,7 @@
 
 #define MAX_QUEUE 50
 
-#define QUEUE_SIZE 10
+#define QUEUE_SIZE 50
 
 typedef struct {
     int arr[MAX_QUEUE];

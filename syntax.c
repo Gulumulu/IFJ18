@@ -11,7 +11,7 @@
 
 #define BUF_SIZE 1024
 
-static int counter = 100;
+static int counter = 1; // zaciname var %1. Je rese tcounteru potreba, kdyz to pobezi cely program?
 
 void operation_assign(tASTPointer* Root) { // operace prirazeni do promenne, pro strom o velikosti 1 pouze
     printf("DEFVAR %%assign\n");
@@ -25,109 +25,59 @@ void postorder(tASTPointer* Root, tQueue* q) { // rekurzivni postorder pro postu
 	postorder(Root->LeftPointer,q);
 	postorder(Root->RightPointer,q);
 
-	// PROCESSING NODE STARTS
+	    // PROCESSING SINGLE NODE
 
-    if((!strcmp(Root->ID,"*")) || (!strcmp(Root->ID,"+"))) { // Root je operace
+        char* op;
+        if(!strcmp(Root->ID,"+"))
+            op = "ADD";
+        else if(!strcmp(Root->ID,"-"))
+            op = "SUB";
+        else if(!strcmp(Root->ID,"*"))
+            op = "MUL";
+        else if(!strcmp(Root->ID,"/"))
+            op = "DIV";
+        else
+            goto not_operator;
 
-        printf("DEFVAR LF@%%var%i\n", counter); // operace, chystam tedy novou promennou
-
+        printf("DEFVAR %%%i\n", counter); // operace, chystam tedy novou promennou
         int leftvar; // leva strana
         int rightvar; // prava strana
 
-        // PREVED LEFTVAR A RIGHTVAR NA STRINGY A UKLADEJ PLNE NAZVY NOVYCH PROMENNYCH
-
-        /*
-        if(Root->LeftPointer->ID != NULL && Root->RightPointer->ID != NULL) { // ani jeden z L R neni operator, pridej do fronty
-            leftvar = Root->LeftPointer->content->name; // 1
-            rightvar = Root->RightPointer->content->name; // * 2
-            queueUp(q,counter); // var
-        }
-        else if(Root->LeftPointer->ID == NULL || Root->RightPointer->ID == NULL) { // jeden z L R je var
-            if(Root->LeftPointer->ID == NULL) { // L je operator
-                queueGet(q, leftvar);
-                rightvar = Root->RightPointer->content->name;
-            }
-            else { // R je operator
-                leftvar = Root->LeftPointer->content->name;
-                queueGet(q, rightvar);
-            }
-        }
-        else { // L R jsou operatory
-            queueGet(q, leftvar);
-            queueGet(q, rightvar);
-        }
-        */
-
-        if (!strcmp(Root->ID, "*")) { // nasobeni // TESTOVACI VYPIS ZATIM
-
             if(Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name != NULL) { // ani jeden z L R neni operace
-                printf("MUL %%%i %s %s\n", counter, Root->LeftPointer->content->name, Root->RightPointer->content->name);
+                printf("%s @%%%i %s@%s %s@%s\n", op, counter, Root->LeftPointer->content->type, Root->LeftPointer->content->name, Root->RightPointer->content->type, Root->RightPointer->content->name);
             }
-            else if((Root->LeftPointer->content->name == NULL && Root->LeftPointer->content->name != NULL) || (Root->LeftPointer->content->name != NULL && Root->LeftPointer->content->name == NULL)) { // jeden z L R je operace
+            else if((Root->LeftPointer->content->name == NULL && Root->RightPointer->content->name != NULL) || (Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name == NULL)) { // jeden z L R je operace
                 if(Root->LeftPointer->content->name == NULL) { // L je operator
                     queueGet(q, &leftvar);
-                    printf("MUL %%%i %i %s\n", counter, leftvar,Root->RightPointer->content->name);
+                    printf("%s @%%%i @%%%i %s@%s\n", op, counter, leftvar, Root->RightPointer->content->type, Root->RightPointer->content->name);
                 }
                 else { // R je operator
                     queueGet(q, &rightvar);
-                    printf("MUL %%%i %s %i\n", counter, Root->LeftPointer->content->name,rightvar);
+                    printf("%s @%%%i %s@%s @%%%i\n", op, counter, Root->LeftPointer->content->type, Root->LeftPointer->content->name,rightvar);
                 }
             }
             else { // L R jsou operatory
                 queueGet(q, &leftvar);
                 queueGet(q, &rightvar);
-                printf("MUL %%%i %i %i\n", counter, leftvar,rightvar);
+                printf("%s @%%%i @%%%i @%%%i\n", op, counter, leftvar,rightvar);
             }
-
-        }
-
-        else if (!strcmp(Root->ID, "+")) { // addendum // TESTOVACI VYPIS ZATIM
-
-            if(Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name != NULL) { // ani jeden z L R neni operace
-                printf("MUL %%%i %s %s\n", counter, Root->LeftPointer->content->name, Root->RightPointer->content->name);
-            }
-            else if((Root->LeftPointer->content->name == NULL && Root->LeftPointer->content->name != NULL) || (Root->LeftPointer->content->name != NULL && Root->LeftPointer->content->name == NULL)) { // jeden z L R je operace
-                if(Root->LeftPointer->content->name == NULL) { // L je operator
-                    queueGet(q, &leftvar);
-                    printf("MUL %%%i %i %s\n", counter, leftvar,Root->RightPointer->content->name);
-                }
-                else { // R je operator
-                    queueGet(q, &rightvar);
-                    printf("MUL %%%i %s %i\n", counter, Root->LeftPointer->content->name,rightvar);
-                }
-            }
-            else { // L R jsou operatory
-                queueGet(q, &leftvar);
-                queueGet(q, &rightvar);
-                printf("MUL %%%i %i %i\n", counter, leftvar,rightvar);
-            }
-        }
 
         queueUp(q,counter); // nahravas do fronty pokazde kdyz delas vyraz, kde je root operator
 
         counter++; // pricti 1 k promenne
-    }
+
+    not_operator: ; // KILL ME PLEASE :-D OPTIMALIZACE
+
 }
 
 
 void generateExpression(tASTPointer* AST) {
-
-    if(AST->LeftPointer == NULL && AST->RightPointer == NULL) {// jedna se pouze o assign, x = 1
+    if(AST->LeftPointer == NULL && AST->RightPointer == NULL) {// jedna se pouze o assign jednoducheho typu x = 1
         operation_assign(AST);
     }
-
     tQueue* q = malloc(sizeof(tQueue)); // nova fronta pro generate_expression
-    queueInit(q);
-    // pokud zpracovavas uzel, co ma operand v ID, uloz novou promennou do fronty pomoci queueUp(q,var_znak);
-    // vyjmuti jmen promennych z fronty pomoci queueGet (q, &varname2) a vlozeni do varname
-
-    /* TEST PRINT FRONTY
-        for ( int i=0; i<QUEUE_SIZE; i++ )
-            printf("%c\n",q->arr[i]);
-    */
-
-	postorder(AST,q);
-
+    queueInit(q); // inicializuj frontu
+	postorder(AST,q); // rekurzivni postorder stromem
 }
 
 /**
@@ -395,9 +345,7 @@ void doMagic() {
                             // result of precedence will be stored in AST - abstract syntax tree
                             *AST = *stackAST->body[stackAST->top];
 
-                            /* MP */
-
-                            generateExpression(AST);
+                            generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
 		
                             // clear tree after generating
                             AST = malloc(sizeof(struct tAST) * 2);
