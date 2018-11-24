@@ -12,6 +12,6 @@ void operation_assign(tASTPointer* Root);
 void postorder(tASTPointer* Root, tQueue* q);
 void generateExpression(tASTPointer* AST);
 
-void type_control(tASTPointer* Root);
+void type_control(tASTPointer* Root, char* operation);
 
 #endif //IFJ18_GENERATE_H

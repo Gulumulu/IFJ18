@@ -45,13 +45,22 @@ void type_control(tASTPointer* Root,char* operation) {
         if(!strcmp(operation,"*") || !strcmp(operation,"-")) { // pro MULL a SUB oba musi byt float/int
 
             if(left && right) { // obe strany jsou promenna
+                printf("JUMPIFNEQ $label_left_not_int $type_%s string@int\n",Root->LeftPointer->content->name); // skoc pokud je levy jiny nez int
+                printf("JUMPIFEQ $label_same_types $type_%s string@int\n",Root->RightPointer->content->name); // levy je int, otestuj pravy na int
+                printf("JUMPIFNEQ $label_error $type_%s string@float\n",Root->RightPointer->content->name); // pokud pravy neni ani float, chyba
+                printf("INT2FLOAT $temp_%s @%s\n",Root->LeftPointer->content->name, Root->LeftPointer->content->name); // pravy je float, levy preved na float
+                printf("JUMP $label_same_types\n"); // skoc na konec
 
-                // SITUACE VAR VAR: zjisti jestli je hodnota int. Pokud ne jump na label2. Pokud je zjisti jestli je druha int.
-                // Pokud jo proved operaci. Pokud neni druha int zjisti jestli je druha hodnota float. Pokud je preved prvni na float a proved operaci.
-                // Label2: Pokud prvni nebyla int otestuj jestli je prvni float. Pokud je prvni float otestuj jestli je druha float. Pokud ano proved operaci.
-                // Pokud neni druha float otestuj jestli je druha int. Pokud je druha int preved ji na float a proved operaci.
-                // Ted uz vyhod EXIT 4.
+                printf("LABEL $label_left_not_int\n"); // levy nebyl int
+                printf("JUMPIFNEQ $label_error $type_%s string@float\n",Root->LeftPointer->content->name); // zkus jestli neni float, jestli ne tak chyba
+                printf("JUMPIFEQ $label_same_types $type_%s string@float\n",Root->RightPointer->content->name); // je to float, otestuj jestli neni druha taky float
+                printf("JUMPIFNEQ $label_error $type_%s string@int\n",Root->RightPointer->content->name); // otestuj jestli neni druha int
+                printf("INT2FLOAT $temp_%s @%s\n",Root->RightPointer->content->name, Root->RightPointer->content->name); // druha je int, preved na float
+                printf("JUMP $label_same_types\n");
 
+                printf("LABEL $label_error\n"); // chyba typu
+                printf("ERROR int@4\n");
+                printf("LABEL $label_same_types\n"); // operaci je mozne provest
             }
 
             else if(!left && !right) { // obe jsou konstanty, gabriel: filtrem prosly jako float/int
@@ -149,7 +158,7 @@ void postorder(tASTPointer* Root, tQueue* q) { // rekurzivni postorder pro postu
 
     // situace: var op const, const op const, var op var
 
-    type_control(Root); // typova kontrola probehne v kazdem pripade.
+    type_control(Root, Root->ID); // typova kontrola probehne v kazdem pripade.
 
     if(Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name != NULL) { // ani jeden z L R neni operace
         printf("%s @%%%i %s@%s %s@%s\n", op, counter, Root->LeftPointer->content->type, Root->LeftPointer->content->name, Root->RightPointer->content->type, Root->RightPointer->content->name);
