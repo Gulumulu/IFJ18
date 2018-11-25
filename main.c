@@ -10,7 +10,7 @@
 
 int main() {
 
-    FILE *file = fopen("test.txt", "r");
+    /*FILE *file = fopen("test.txt", "r");
 
     int count = 0;
     char c;
@@ -24,7 +24,7 @@ int main() {
         token_generate(file);
     }
 
-    fclose(file);
+    fclose(file);*/
     doMagic();
 
     return showErrorMessage(ERROR_TYPE);

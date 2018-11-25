@@ -1,0 +1,1 @@
+a=length("ahoj")+ord("ahoj",1)

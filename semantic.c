@@ -142,7 +142,7 @@ char* getFunctionName(const char* functionName) {
         }*/
         return "chr";
     } else {
-        return "sth else";
+        return "function";
     }
 }
 
@@ -234,12 +234,12 @@ tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer) {
  * @param rightContent pointer to BSTNodeContent is pointer to content in BST
  * @return non-zero value when types are matching otherwise zero value is returned
  */
-int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent) {
+int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent, char* ID) {
     if (leftContent == NULL || rightContent == NULL) {
         errorHandling(99);
         return 0;
     } else {
-        if (leftContent->type != NULL && rightContent->type != NULL) {
+        /*if (leftContent->type != NULL && rightContent->type != NULL) {
             if (strcmp(leftContent->type, rightContent->type) == 0) {
                 return 1;
             } else {
@@ -247,8 +247,44 @@ int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightConten
             }
         } else {
             return 0;
+        }*/
+        if (leftContent->type == NULL || rightContent->type == NULL) {
+            return 1;
+        } else if (strcmp(leftContent->type, "variable") == 0 || strcmp(rightContent->type, "variable") == 0 || strcmp(leftContent->type, "function") == 0 || strcmp(rightContent->type, "function") == 0) {
+            return 1;
+        } else if (strcmp(ID, "+") != 0) {
+            if (strcmp(leftContent->type, "string") == 0 || strcmp(rightContent->type, "string") == 0 || strcmp(leftContent->type, "inputs") == 0 || strcmp(rightContent->type, "inputs") == 0 || strcmp(leftContent->type, "chr") == 0 || strcmp(rightContent->type, "chr") == 0 || strcmp(leftContent->type, "substr") == 0 || strcmp(rightContent->type, "substr") == 0) {
+                // operation with string(s)
+                errorHandling(4);
+                return 0;
+            }
+
+            // operation (except addition) with floats or ints
+            return 2;
         }
+
+        // addition or concatenation
+        return 3;
     }
+}
+
+char* decideType(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent, char* ID) {
+    if (leftContent == NULL || rightContent == NULL || ID == NULL) {
+        errorHandling(99);
+        return NULL;
+    } else if (strcmp(leftContent->type, "string") == 0 || strcmp(rightContent->type, "string") == 0 || strcmp(leftContent->type, "inputs") == 0 || strcmp(rightContent->type, "inputs") == 0 || strcmp(leftContent->type, "substr") == 0 || strcmp(rightContent->type, "substr") == 0 || strcmp(leftContent->type, "chr") == 0 || strcmp(rightContent->type, "chr") == 0) {
+        // result of operation will be of string type
+        return "string";
+    } else if (strcmp(leftContent->type, "float") == 0 || strcmp(rightContent->type, "float") == 0 || strcmp(leftContent->type, "inputf") == 0 || strcmp(rightContent->type, "inputf") == 0) {
+        // result of operation will be of float type
+        return "float";
+    } else if (strcmp(leftContent->type, "print") == 0 || strcmp(rightContent->type, "print") == 0) {
+        // attempting to create a tree with nill descedant
+        errorHandling(4);
+        return NULL;
+    }
+
+    return "int";
 }
 
 /**
@@ -339,8 +375,24 @@ tASTPointer* makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPoin
                     errorHandling(99);
                     return NULL;
                 } else {
-                    //tmpContent->type = malloc(strlen(leftPointer->content->type)+1);
-                    //memcpy(tmpContent->type, leftPointer->content->type, strlen(leftPointer->content->type));
+                    switch (matchingTypes(rightPointer->content, leftPointer->content, ID) ) {
+                        case 1:
+                            // either operand is variable or user-defined function => not changing type
+                            break;
+                        case 2:
+                        case 3:
+                            // every operation  => changing type
+                            if (decideType(leftPointer->content, rightPointer->content, ID) != NULL) {
+                                size_t typeLen = strlen(decideType(leftPointer->content, rightPointer->content, ID));
+                                tmpContent->type = malloc(typeLen + 1);
+                                memcpy(tmpContent->type, decideType(leftPointer->content, rightPointer->content, ID),typeLen);
+                                tmpContent->type[typeLen] = '\0';
+                            }
+                            break;
+                        default:
+                            // error
+                            break;
+                    }
                     tmpContent->defined = 1;
                     newTree->content = tmpContent;
                     return newTree;

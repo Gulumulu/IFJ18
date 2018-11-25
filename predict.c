@@ -12,8 +12,12 @@
  */
 void tStackPredictiveInit(tStackPredictive* stack) {
     stack->top = 2;
-    stack->content[0] = "$";
-    stack->content[1] = "<start>";
+    stack->content[0] = malloc(2);
+    stack->content[0] = strcpy(stack->content[0], "$");
+    stack->content[0][1] = '\0';
+    stack->content[1] = malloc(8);
+    stack->content[1] = strcpy(stack->content[1], "<start>");
+    stack->content[1][7] = '\0';
 }
 
 /**
@@ -43,9 +47,10 @@ void tStackPredictivePush(tStackPredictive* stack, char* symbol) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        stack->content[stack->top] = malloc(sizeof(strlen(symbol)+1));
+        stack->content[stack->top] = malloc((strlen(symbol)+1));
         //checkMalloc(stack->content[stack->top]);
         stack->content[stack->top] = strcpy(stack->content[stack->top], symbol);
+        stack->content[stack->top][strlen(symbol)] = '\0';
         stack->top++;
     }
 }
@@ -368,11 +373,13 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
     if (predictiveStack == NULL) {                        // expendedStack error
         errorHandling(99);
     } else {
-        char* predictiveStackTop;                           // top rule in stack
+        char* predictiveStackTop = NULL;                           // top rule in stack
 
         do {
-            predictiveStackTop = malloc(10);
-            predictiveStackTop = tStackPredictiveGetTop(predictiveStack);
+            size_t predictiveStackTopLen = strlen(tStackPredictiveGetTop(predictiveStack));
+            predictiveStackTop = malloc(predictiveStackTopLen+1);
+            predictiveStackTop = strcpy(predictiveStackTop, tStackPredictiveGetTop(predictiveStack));
+            predictiveStackTop[(int)predictiveStackTopLen] = '\0';
 
             if (strcmp(predictiveStackTop, "$") == 0) {
                 // end of predictiveStack was reached
@@ -418,6 +425,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 int col = colOffset(token.type);
                 if (row > 14 || col > 17) {
                     errorHandling(40);                      // symbol doesn't occur in LL rule table
+                    end = -1;
                 } else {
                     rule = LLTable[row][col];
                     if (rule == 0) {
@@ -449,6 +457,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 end = 3;
             }
 
+            predictiveStackTop = NULL;
         } while (rule != 0 && end == 0);
 
         /*if (strcmp(predictiveStack->content[predictiveStack->top-1],"<expr>") == 0 && printing != 1) {

@@ -90,7 +90,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    /*if (feof(stdin))
+    if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -108,9 +108,9 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);*/
+    fclose(fp);
 
-    FILE *file = fopen("test.txt", "r");
+    FILE *file = fopen("./test.txt", "r");
 
     BSTNodeContentPtr* tmp;
     int num_of_func_params = 0; // stores the numbers of called params a function has
@@ -277,7 +277,7 @@ void doMagic() {
                             // result of precedence will be stored in AST - abstract syntax tree
                             *AST = *stackAST->body[stackAST->top];
 
-                            generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
+                            //generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
 		
                             // clear tree after generating
                             AST = malloc(sizeof(struct tAST) * 2);
@@ -373,7 +373,7 @@ void doMagic() {
                     // current token was if-condition => expression will follow => need to simulate precedence
                     precedence = 1;
                 }
-                if (global_token.type == ss_eol) {
+                if (global_token.type == ss_eol || global_token.type == s_rbrac) {
                     if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {
                         // we are in main function => rule 3 was applied => unset tracker of current function
                         //currentFunction = "";
