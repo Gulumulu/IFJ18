@@ -14,13 +14,6 @@ void operation_assign(tASTPointer* Root) { // operace prirazeni do promenne, pro
     printf("MOVE %%assign %s@%s\n",Root->content->type,Root->content->name);
 }
 
-/*char* which_frame(tASTPointer* Root) { // zjednodusena funkce, ktery ramec zvolit
-    if(!strcmp(Root->content->type,"variable")) { // je to promenna
-        if(!strcmp(tFunctionTrackerGetTop(functionTracker2),"main"))
-            return "GF";
-    }
-}*/
-
 void type_control(tASTPointer* Root,char* operation) {
 
         bool left = false; // false = neni promenna
@@ -28,18 +21,18 @@ void type_control(tASTPointer* Root,char* operation) {
 
         if(!strcmp(Root->LeftPointer->content->type,"variable")) { // leva strana je VAR
             left = true;
-            printf("DEFVAR $type_%s\n", Root->LeftPointer->content->name);
-            printf("DEFVAR $temp_%s\n", Root->LeftPointer->content->name);
-            printf("TYPE $type_%s @%s,\n", Root->LeftPointer->content->name, Root->LeftPointer->content->name);
-            printf("MOVE $temp_%s @%s,\n", Root->LeftPointer->content->name, Root->LeftPointer->content->name);
+            printf("DEFVAR @$type_%s\n", Root->LeftPointer->content->name);
+            printf("DEFVAR @$temp_%s\n", Root->LeftPointer->content->name);
+            printf("TYPE @$type_%s @%s,\n", Root->LeftPointer->content->name, Root->LeftPointer->content->name);
+            printf("MOVE @$temp_%s @%s,\n", Root->LeftPointer->content->name, Root->LeftPointer->content->name);
         }
 
         if(!strcmp(Root->RightPointer->content->type,"variable")) { // prava strana je VAR
             right = true;
-            printf("DEFVAR $type_%s\n", Root->RightPointer->content->name);
-            printf("DEFVAR $temp_%s\n", Root->RightPointer->content->name);
-            printf("TYPE $type_%s @%s,\n", Root->RightPointer->content->name, Root->RightPointer->content->name);
-            printf("MOVE $temp_%s @%s,\n", Root->RightPointer->content->name, Root->RightPointer->content->name);
+            printf("DEFVAR @$type_%s\n", Root->RightPointer->content->name);
+            printf("DEFVAR @$temp_%s\n", Root->RightPointer->content->name);
+            printf("TYPE @$type_%s @%s,\n", Root->RightPointer->content->name, Root->RightPointer->content->name);
+            printf("MOVE @$temp_%s @%s,\n", Root->RightPointer->content->name, Root->RightPointer->content->name);
         }
 
         if(!strcmp(operation,"*") || !strcmp(operation,"-")) { // pro MULL a SUB oba musi byt float/int
@@ -47,15 +40,15 @@ void type_control(tASTPointer* Root,char* operation) {
             if(left && right) { // obe strany jsou promenna
                 printf("JUMPIFNEQ $label_left_not_int $type_%s string@int\n",Root->LeftPointer->content->name); // skoc pokud je levy jiny nez int
                 printf("JUMPIFEQ $label_same_types $type_%s string@int\n",Root->RightPointer->content->name); // levy je int, otestuj pravy na int
-                printf("JUMPIFNEQ $label_error $type_%s string@float\n",Root->RightPointer->content->name); // pokud pravy neni ani float, chyba
-                printf("INT2FLOAT $temp_%s @%s\n",Root->LeftPointer->content->name, Root->LeftPointer->content->name); // pravy je float, levy preved na float
+                printf("JUMPIFNEQ $label_error @$type_%s string@float\n",Root->RightPointer->content->name); // pokud pravy neni ani float, chyba
+                printf("INT2FLOAT @$temp_%s @%s\n",Root->LeftPointer->content->name, Root->LeftPointer->content->name); // pravy je float, levy preved na float
                 printf("JUMP $label_same_types\n"); // skoc na konec
 
                 printf("LABEL $label_left_not_int\n"); // levy nebyl int
-                printf("JUMPIFNEQ $label_error $type_%s string@float\n",Root->LeftPointer->content->name); // zkus jestli neni float, jestli ne tak chyba
-                printf("JUMPIFEQ $label_same_types $type_%s string@float\n",Root->RightPointer->content->name); // je to float, otestuj jestli neni druha taky float
-                printf("JUMPIFNEQ $label_error $type_%s string@int\n",Root->RightPointer->content->name); // otestuj jestli neni druha int
-                printf("INT2FLOAT $temp_%s @%s\n",Root->RightPointer->content->name, Root->RightPointer->content->name); // druha je int, preved na float
+                printf("JUMPIFNEQ $label_error @$type_%s string@float\n",Root->LeftPointer->content->name); // zkus jestli neni float, jestli ne tak chyba
+                printf("JUMPIFEQ $label_same_types @$type_%s string@float\n",Root->RightPointer->content->name); // je to float, otestuj jestli neni druha taky float
+                printf("JUMPIFNEQ $label_error @$type_%s string@int\n",Root->RightPointer->content->name); // otestuj jestli neni druha int
+                printf("INT2FLOAT @$temp_%s @%s\n",Root->RightPointer->content->name, Root->RightPointer->content->name); // druha je int, preved na float
                 printf("JUMP $label_same_types\n");
 
                 printf("LABEL $label_error\n"); // chyba typu
@@ -66,12 +59,12 @@ void type_control(tASTPointer* Root,char* operation) {
             else if(!left && !right) { // obe jsou konstanty, gabriel: filtrem prosly jako float/int
                 if(strcmp(Root->LeftPointer->content->type,Root->RightPointer->content->type)) { // pokud maji konstanty jiny typ
                     if(!strcmp(Root->LeftPointer->content->type,"int")) { // pokud je vlevo int, preved ho na float
-                        printf("DEFVAR $temp_const\n");
-                        printf("INT2FLOAT $temp_const %s@%s\n",Root->LeftPointer->content->type,Root->LeftPointer->content->name);
+                        printf("DEFVAR @$temp_const\n");
+                        printf("INT2FLOAT @$temp_const %s@%s\n",Root->LeftPointer->content->type,Root->LeftPointer->content->name);
                     }
                     else { // int je vpravo, preved ho na float
-                        printf("DEFVAR $temp_const\n");
-                        printf("INT2FLOAT $temp_const %s@%s\n",Root->RightPointer->content->type,Root->RightPointer->content->name);
+                        printf("DEFVAR @$temp_const\n");
+                        printf("INT2FLOAT @$temp_const %s@%s\n",Root->RightPointer->content->type,Root->RightPointer->content->name);
                     }
                 }
             }
@@ -90,26 +83,26 @@ void type_control(tASTPointer* Root,char* operation) {
                     cons = Root->LeftPointer;
                 }
 
-                printf("DEFVAR $type_%s\n", var);
-                printf("TYPE $type_%s %s,\n", var, var);
+                printf("DEFVAR @$type_%s\n", var);
+                printf("TYPE @$type_%s %s,\n", var, var);
 
-                printf("JUMPIFEQ $label_same_type $type_%s string@%s\n",var,cons->content->type); // porovnej typ s konstantou
-                printf("JUMPIFEQ $label_type_int $type_%s string@int\n", var); // porovnej typ s intem
-                printf("JUMPIFEQ $label_type_float $type_%s string@float\n", var); // porovnej typ s floatem
+                printf("JUMPIFEQ $label_same_type @$type_%s string@%s\n",var,cons->content->type); // porovnej typ s konstantou
+                printf("JUMPIFEQ $label_type_int @$type_%s string@int\n", var); // porovnej typ s intem
+                printf("JUMPIFEQ $label_type_float @$type_%s string@float\n", var); // porovnej typ s floatem
 
                 printf("EXIT int@4\n"); // chyba 4
 
                 printf("LABEL $label_type_int\n"); // je to int, preved ho na float
-                printf("INT2FLOAT $temp_%s %s\n",var,var);
+                printf("INT2FLOAT @$temp_%s %s\n",var,var);
                 printf("JUMP $label_same_type\n"); // prevedena hodnota promenne je ted v temp_
 
                 printf("LABEL $label_type_int\n"); // je to int, preved ho na float
-                printf("INT2FLOAT $temp_%s %s\n",var,var);
+                printf("INT2FLOAT @$temp_%s %s\n",var,var);
                 printf("JUMP $label_same_type\n"); // prevedena hodnota promenne je ted v temp_%s
 
                 printf("LABEL $label_type_float\n"); // je to float, preved const na float
-                printf("DEFVAR $temp_const\n"); // pro ulozeni nove hodnoty const
-                printf("INT2FLOAT $temp_const %s@%s\n",cons->content->type,cons->content->name); // vysledek prevodu do $temp_const
+                printf("DEFVAR @$temp_const\n"); // pro ulozeni nove hodnoty const
+                printf("INT2FLOAT @$temp_const %s@%s\n",cons->content->type,cons->content->name); // vysledek prevodu do $temp_const
 
                 printf("LABEL $label_same_type\n"); // proved operaci, jsou stejnyho typu
 
@@ -128,7 +121,7 @@ void type_control(tASTPointer* Root,char* operation) {
 void postorder(tASTPointer* Root, tQueue* q) { // rekurzivni postorder pro postupne generovani vyrazu v generate_expression(AST)
 
     if (Root == NULL)
-        return;
+        return ;
     postorder(Root->LeftPointer,q);
     postorder(Root->RightPointer,q);
 
@@ -144,26 +137,24 @@ void postorder(tASTPointer* Root, tQueue* q) { // rekurzivni postorder pro postu
     else if(!strcmp(Root->ID,"/"))
         op = "DIV";
     else
-        goto not_operator;
+        return ;
 
-    printf("DEFVAR %%%i\n", counter); // operace, chystam tedy novou promennou
+    printf("DEFVAR @%%%i\n", counter); // operace, chystam tedy novou promennou
     int leftvar; // leva strana
     int rightvar; // prava strana
 
-    // tady se musi spustit typova kontrola, pokud se jedna o alespon jednu promennou a ne o hodnotu
-
-    // typova kontrola vezme uzel a zkontroluje, jestli se do nej neprirazuje z druhe strany jiny typ
-
-    // v ADD SUB MUL musi byt oba int/float, v DIV oba float. v ADD mohou byt oba stringy
-
-    // situace: var op const, const op const, var op var
+    // RESENI PROBLEMU: v tom type control uz by to chtelo pouzivat uvnitr nejaky ty vygenerovany nazvy promennych->counter
+    // RESENI 2: udelat generovani hned v te funkci type, resp sloucit je
+    // nema bejt nahodou neco z toho co je v type control cislovany counterem?
 
     type_control(Root, Root->ID); // typova kontrola probehne v kazdem pripade.
 
-    if(Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name != NULL) { // ani jeden z L R neni operace
+    // TISK OPERACE START
+    if(Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name != NULL) { // ani jeden z L R neni operator, tisk operace
         printf("%s @%%%i %s@%s %s@%s\n", op, counter, Root->LeftPointer->content->type, Root->LeftPointer->content->name, Root->RightPointer->content->type, Root->RightPointer->content->name);
     }
     else if((Root->LeftPointer->content->name == NULL && Root->RightPointer->content->name != NULL) || (Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name == NULL)) { // jeden z L R je operace
+        // tisk operace kdyz je pouze jedna strana (L || R) operaator
         if(Root->LeftPointer->content->name == NULL) { // L je operator
             queueGet(q, &leftvar);
             printf("%s @%%%i @%%%i %s@%s\n", op, counter, leftvar, Root->RightPointer->content->type, Root->RightPointer->content->name);
@@ -173,17 +164,16 @@ void postorder(tASTPointer* Root, tQueue* q) { // rekurzivni postorder pro postu
             printf("%s @%%%i %s@%s @%%%i\n", op, counter, Root->LeftPointer->content->type, Root->LeftPointer->content->name,rightvar);
         }
     }
-    else { // L R jsou operatory
+    else { // tisk operace kdyz je operator L i R
         queueGet(q, &leftvar);
         queueGet(q, &rightvar);
         printf("%s @%%%i @%%%i @%%%i\n", op, counter, leftvar,rightvar);
     }
+    // TISK OPERACE END
 
     queueUp(q,counter); // nahravas do fronty pokazde kdyz delas vyraz, kde je root operator
 
     counter++; // pricti 1 k promenne
-
-    not_operator: ; // KILL ME PLEASE :-D OPTIMALIZACE
 
 }
 
