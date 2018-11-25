@@ -21,19 +21,29 @@ void type_control(tASTPointer* Root,char* operation) {
 
         if(!strcmp(Root->LeftPointer->content->type,"variable")) // leva strana je VAR
             left = true;
-
         printf("DEFVAR @$type_%s\n", Root->LeftPointer->content->name);
         printf("DEFVAR @$temp_%s\n", Root->LeftPointer->content->name);
-        printf("TYPE @$type_%s @%s,\n", Root->LeftPointer->content->name, Root->LeftPointer->content->name);
-        printf("MOVE @$temp_%s @%s,\n", Root->LeftPointer->content->name, Root->LeftPointer->content->name);
+        if(left) {
+            printf("TYPE @$type_%s @%s\n", Root->LeftPointer->content->name, Root->LeftPointer->content->name);
+            printf("MOVE @$temp_%s @%s\n", Root->LeftPointer->content->name, Root->LeftPointer->content->name);
+        }
+        else {
+            printf("TYPE @$type_%s %s@%s\n", Root->LeftPointer->content->name, Root->LeftPointer->content->type, Root->LeftPointer->content->name);
+            printf("MOVE @$temp_%s %s@%s\n", Root->LeftPointer->content->name, Root->LeftPointer->content->type, Root->LeftPointer->content->name);
+        }
 
         if(!strcmp(Root->RightPointer->content->type,"variable")) // prava strana je VAR
             right = true;
-
         printf("DEFVAR @$type_%s\n", Root->RightPointer->content->name);
         printf("DEFVAR @$temp_%s\n", Root->RightPointer->content->name);
-        printf("TYPE @$type_%s @%s,\n", Root->RightPointer->content->name, Root->RightPointer->content->name);
-        printf("MOVE @$temp_%s @%s,\n", Root->RightPointer->content->name, Root->RightPointer->content->name);
+        if(right) {
+            printf("TYPE @$type_%s @%s\n", Root->RightPointer->content->name, Root->RightPointer->content->name);
+            printf("MOVE @$temp_%s @%s\n", Root->RightPointer->content->name, Root->RightPointer->content->name);
+        }
+        else {
+            printf("TYPE @$type_%s %s@%s\n", Root->RightPointer->content->name, Root->RightPointer->content->type, Root->RightPointer->content->name);
+            printf("MOVE @$temp_%s %s@%s\n", Root->RightPointer->content->name, Root->RightPointer->content->type, Root->RightPointer->content->name);
+        }
 
         // NEXT - rozdel na templ a tempr, kdyby byly stejny hodnoty
         // bacha na stejne nazvy v ramci ramce, radsi bych na kazdy prubeh vytvoril solo ramec
@@ -62,10 +72,10 @@ void type_control(tASTPointer* Root,char* operation) {
             else if(!left && !right) { // obe jsou konstanty, gabriel: filtrem prosly jako float/int
                 if(strcmp(Root->LeftPointer->content->type,Root->RightPointer->content->type)) { // pokud maji konstanty jiny typ
                     if(!strcmp(Root->LeftPointer->content->type,"int")) { // pokud je vlevo int, preved ho na float
-                        printf("INT2FLOAT @$temp_%s %s@%s\n",Root->LeftPointer->content->type,Root->LeftPointer->content->name);
+                        printf("INT2FLOAT @$temp_%s %s@%s\n",Root->LeftPointer->content->name, Root->LeftPointer->content->type, Root->LeftPointer->content->name);
                     }
                     else { // int je vpravo, preved ho na float
-                        printf("INT2FLOAT @$temp_%s %s@%s\n",Root->RightPointer->content->type,Root->RightPointer->content->name);
+                        printf("INT2FLOAT @$temp_%s %s@%s\n",Root->RightPointer->content->name, Root->RightPointer->content->type, Root->RightPointer->content->name);
                     }
                 }
             } // operaci je mozne provest s $temp_%s na obou stranach
@@ -137,25 +147,25 @@ void postorder(tASTPointer* Root, tQueue* q) { // rekurzivni postorder pro postu
     else
         return ;
 
+    type_control(Root, Root->ID); // typova kontrola probehne v kazdem pripade.
+
     printf("DEFVAR @%%%i\n", counter); // operace, chystam tedy novou promennou
     int leftvar; // leva strana
     int rightvar; // prava strana
 
-    type_control(Root, Root->ID); // typova kontrola probehne v kazdem pripade.
-
     // TISK OPERACE START
     if(Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name != NULL) { // ani jeden z L R neni operator, tisk operace
-        printf("%s @%%%i $type_%s $type_%s\n", op, counter, Root->LeftPointer->content->name, Root->RightPointer->content->name);
+        printf("%s @%%%i $temp_%s $temp_%s\n", op, counter, Root->LeftPointer->content->name, Root->RightPointer->content->name);
     }
     else if((Root->LeftPointer->content->name == NULL && Root->RightPointer->content->name != NULL) || (Root->LeftPointer->content->name != NULL && Root->RightPointer->content->name == NULL)) { // jeden z L R je operace
         // tisk operace kdyz je pouze jedna strana (L || R) operaator
         if(Root->LeftPointer->content->name == NULL) { // L je operator
             queueGet(q, &leftvar);
-            printf("%s @%%%i @%%%i $type_%s\n", op, counter, leftvar, Root->RightPointer->content->name);
+            printf("%s @%%%i @%%%i $temp_%s\n", op, counter, leftvar, Root->RightPointer->content->name);
         }
         else { // R je operator
             queueGet(q, &rightvar);
-            printf("%s @%%%i $type_%s @%%%i\n", op, counter, Root->LeftPointer->content->name,rightvar);
+            printf("%s @%%%i $temp_%s @%%%i\n", op, counter, Root->LeftPointer->content->name,rightvar);
         }
     }
     else { // tisk operace kdyz je operator L i R
