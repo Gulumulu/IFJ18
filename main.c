@@ -9,9 +9,8 @@
 #include "syntax.h"
 
 int main() {
-    printf("Hello, World!\n");
 
-    /*FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("test.txt", "r");
 
     int count = 0;
     char c;
@@ -22,10 +21,10 @@ int main() {
     }
     rewind(file);
     for (int i = 0; i <= count; i++) {
-//        token_generate(file);
+        token_generate(file);
     }
 
-    fclose(file);*/
+    fclose(file);
     doMagic();
 
     return showErrorMessage(ERROR_TYPE);
