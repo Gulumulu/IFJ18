@@ -41,7 +41,16 @@ void queueFront ( const tQueue* q, int* c ) {
     *c = q->arr[q->f_index];
 }
 
-void queueRemove ( tQueue* q ) {
+void queuePreFront ( const tQueue* q, int* c ) {
+
+    if(queueEmpty(q)){
+        return;
+    }
+
+    *c = q->arr[q->f_index-1];
+}
+
+void queueRemove ( tQueue* q ) { // EDIT DODELAT
 
     if(queueEmpty(q)){
         return;

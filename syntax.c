@@ -348,7 +348,7 @@ void doMagic() {
 */
                     if(!overrule && !strcmp(predictiveStack->content[predictiveStack->top-1],"<assign>")) { // predst = <assign>
                         overrule = 1;
-                        printf("enlist: MOVE %s %%assign\n",tmpToken.content); // do seznamu vygener. uloz finalni vysledek assign k pozdejsimu vypsani
+                        printf("MOVE %s %%assign\n",tmpToken.content); // do seznamu vygener. uloz finalni vysledek assign k pozdejsimu vypsani
                     }
 
 
