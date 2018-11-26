@@ -1,4 +1,4 @@
-def retInt()
-	a=1
+def incVal(a)
+	a=a+1
 end
-a=retInt()<"ahoj"
+a=incVal(a)<"ahoj"
