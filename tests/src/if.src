@@ -1,0 +1,13 @@
+def incVal(a)
+	if a>5 then
+		a=a+1
+	else
+		a
+	end
+end
+a=1
+if incVal(a)==1 then
+	print "a is equal to 1"
+else
+	print "a ain't equal to 1"
+end

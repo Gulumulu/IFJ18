@@ -308,6 +308,15 @@ void doMagic() {
                 if (precedence == 1 || ((global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0)) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
+                    if (global_token.type == s_id) {
+                        // if current token is id => need to call next token to decide whether current token is variable or function id
+                        tmpToken = global_token;
+                        token_generate(file);
+                        tmpToken.type = decideID(global_token);
+                        // simulate predictive SA for previous token
+                        simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
+                    }
+                    // simulate predictive SA for current token
                     simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
 
 		    // PRECEDENCNI ANALYZA EXPRESSION (SEM  SE VOLA Z PREDIKTIVNI)
@@ -336,9 +345,7 @@ void doMagic() {
                         token_generate(file);
                         tmpToken.type = decideID(global_token);
                         if (tmpToken.type == s_func_id && strcmp(predictiveStack->content[predictiveStack->top-1], "<assign>") != 0) {
-                            // helper to keep track in which function we are in
-                            //currentFunction = malloc(strlen(tmpToken.content) + 1);
-                            //strcpy(currentFunction, tmpToken.content);
+                            // helper tracker stack of function names to keep track in which function we are in
                             tFunctionTrackerPush(functionTracker, tmpToken.content);
                         }
                         // simulate predictive SA for current token
@@ -411,8 +418,8 @@ void doMagic() {
                     // we will not be printing anymore
                     printing = 0;
                 }
-                if (global_token.type == kw_if) {
-                    // current token was if-condition => expression will follow => need to simulate precedence
+                if (global_token.type == kw_if || global_token.type == kw_while) {
+                    // current token was if-condition or while-loop => expression will follow => need to simulate precedence
                     precedence = 1;
                 }
                 if (global_token.type == ss_eol || global_token.type == s_rbrac) {

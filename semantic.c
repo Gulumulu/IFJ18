@@ -153,7 +153,7 @@ char* getFunctionName(const char* functionName) {
  * @return
  */
 BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token) {
-    if (node == NULL || token == NULL) {
+    if (token == NULL || (token->type == s_id && node == NULL) ) {
         errorHandling(99);
         return NULL;
     } else {
@@ -248,7 +248,7 @@ int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightConten
             return 1;
         } else if (strcmp(ID, "*") == 0 || strcmp(ID, "/") == 0 || strcmp(ID, "-") == 0) {
             // multiplication, division or subtraction with floats or ints
-            if (strcmp(ID, "/") == 0 && (rightContent->name != NULL && strcmp(rightContent->name, "0") == 0) ) {
+            if (strcmp(ID, "/") == 0 && (leftContent->name != NULL && strcmp(leftContent->name, "0") == 0) ) {
                 // division by zero constant
                 errorHandling(9);
                 return 0;

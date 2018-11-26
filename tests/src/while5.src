@@ -1,0 +1,5 @@
+a=""
+while a!="aaa"
+	print "a is ", a
+	a=a+"a"
+end

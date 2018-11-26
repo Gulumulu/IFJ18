@@ -181,7 +181,7 @@ char changeTokenTypeToChar(TokenType tokenType) {
         case s_great_eq:
             return ',';
         case s_eqto:
-            return '=';
+            return '?';
         case s_noteq:
             return '!';
         case s_lbrac:
