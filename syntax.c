@@ -199,31 +199,33 @@ void doMagic() {
             BSTInsert(global_symtable, cnt, func_id, 0);
         }
         else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign, if and while statements are defined
-            if (array[0] == NULL && *global_symtable == NULL) {
+            if (((array[0] == NULL) && (*global_symtable == NULL)) || ((array[0] == NULL) && (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL))) {
                 errorHandling(3);
                 return;
             }
-            else if ((BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) && (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL)) {   // if the identifier was not used before, it is not defined
-                errorHandling(3);
-                return;
-            }
-            else {  // if the identifier was used before, it is defined
-                if (BSTSearch(global_symtable, hash_id(global_token.content)) != NULL) {    // if the identifier is a function id it is added as such
-                    cnt->type = "function";
-                    cnt->defined = 1;
-                    cnt->name = global_token.content;
-                    cnt->func_params = 0;
-                    BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+            else if (arr_id > 0) {
+                if ((BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) && (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL)) {   // if the identifier was not used before, it is not defined
+                    errorHandling(3);
+                    return;
                 }
-                else if ((tmp = BSTSearch(&array[arr_id-1], hash_id(global_token.content))) != NULL) {  // if the identifier is already in the local symtable
-                    BSTInsert(&array[arr_id-1], tmp, hash_id(global_token.content), func_id);
-                }
-                else {  // otherwise it is added as a variable
-                    cnt->type = "variable";
-                    cnt->defined = 1;
-                    cnt->name = global_token.content;
-                    cnt->func_params = 0;
-                    BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+                else {  // if the identifier was used before, it is defined
+                    if (BSTSearch(global_symtable, hash_id(global_token.content)) != NULL) {    // if the identifier is a function id it is added as such
+                        cnt->type = "function";
+                        cnt->defined = 1;
+                        cnt->name = global_token.content;
+                        cnt->func_params = 0;
+                        BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+                    }
+                    else if ((tmp = BSTSearch(&array[arr_id-1], hash_id(global_token.content))) != NULL) {  // if the identifier is already in the local symtable
+                        BSTInsert(&array[arr_id-1], tmp, hash_id(global_token.content), func_id);
+                    }
+                    else {  // otherwise it is added as a variable
+                        cnt->type = "variable";
+                        cnt->defined = 1;
+                        cnt->name = global_token.content;
+                        cnt->func_params = 0;
+                        BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+                    }
                 }
             }
         }
