@@ -181,7 +181,7 @@ char changeTokenTypeToChar(TokenType tokenType) {
         case s_great_eq:
             return ',';
         case s_eqto:
-            return '=';
+            return '?';
         case s_noteq:
             return '!';
         case s_lbrac:
@@ -287,7 +287,7 @@ void pushEndRuleSign(tExpendedStack* stack, char firstChar) {
         memcpy(beginning, stack->content, (strlen(stack->content) - strlen(rest)) + 1);
         beginning[(strlen(stack->content) - strlen(rest)) + 1] = '\0';
         beginning = appendChar(beginning, '<');
-        for (int i = 0; i < strlen(rest) - 1; i++) {
+        for (int i = 0; i < (int) strlen(rest) - 1; i++) {
             rest[i] = rest[i + 1];
         }
         if (strlen(rest) != 1) {
@@ -425,7 +425,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
         int end = 0;
         if (functionName == NULL || strcmp(functionName, "") == 0) {
             functionName = "";
-            stackPredictive = malloc(sizeof(tStackPredictive)*5);
+            stackPredictive = malloc(sizeof(tStackPredictive)*15);
             tStackPredictiveInit(stackPredictive);
             tStackPredictivePop(stackPredictive);
             tStackPredictivePush(stackPredictive, "EOL");

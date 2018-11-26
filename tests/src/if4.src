@@ -1,0 +1,5 @@
+if "abd">"abc" then
+	print "abd is greater than abc"
+else
+	print "error"
+end

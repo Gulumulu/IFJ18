@@ -1,0 +1,4 @@
+def incVal(a)
+	a=a+1
+end
+a=incVal(a)<"ahoj"

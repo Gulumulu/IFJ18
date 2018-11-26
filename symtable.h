@@ -15,9 +15,10 @@
 
 typedef struct BSTNodeContent {
     int defined;        // true if defined, otherwise false
+    int func_params;    // number of parameters a function has
     char* type;         //
     char* name;         // the string of the identifier
-    int func_params;    // number of parameters a function has
+    char* var;
 } BSTNodeContentPtr;
 
 typedef struct BSTNode {

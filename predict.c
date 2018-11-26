@@ -12,8 +12,12 @@
  */
 void tStackPredictiveInit(tStackPredictive* stack) {
     stack->top = 2;
-    stack->content[0] = "$";
-    stack->content[1] = "<start>";
+    stack->content[0] = malloc(2);
+    stack->content[0] = strcpy(stack->content[0], "$");
+    stack->content[0][1] = '\0';
+    stack->content[1] = malloc(8);
+    stack->content[1] = strcpy(stack->content[1], "<start>");
+    stack->content[1][7] = '\0';
 }
 
 /**
@@ -43,9 +47,10 @@ void tStackPredictivePush(tStackPredictive* stack, char* symbol) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        stack->content[stack->top] = malloc(sizeof(strlen(symbol)+1));
+        stack->content[stack->top] = malloc((strlen(symbol)+1));
         //checkMalloc(stack->content[stack->top]);
         stack->content[stack->top] = strcpy(stack->content[stack->top], symbol);
+        stack->content[stack->top][strlen(symbol)] = '\0';
         stack->top++;
     }
 }
@@ -107,12 +112,12 @@ char* rightSides[30][10] = {
         /*18. <stat> -> */ {"if", "<expr>", "then", "EOL", "<st-list>", "else", "EOL", "<st-list>", "end", ""},
         /*19. <stat> -> */ {"while", "<expr>", "do", "EOL", "<st-list>", "end", "", "", "", ""},
         /*20. <stat> -> */ {"print", "<print-expr>", "", "", "", "", "", "", "", ""},
-        /*21. <print-expr> -> */ {"(", "<expr>", "<next-print-expr>", ")", "", "", "", "", "", ""},
+        /*21. <print-expr> -> */ {"(", "<print-expr>", ")", "", "", "", "", "", "", ""},
         /*22. <print-expr> -> */ {"<expr>", "<next-print-expr>", "", "", "", "", "", "", "", ""},
         /*23. <print-expr> -> */ {"", "", "", "", "", "", "", "", "", ""},
         /*24. <next-print-expr> -> */ {",", "<print-expr>", "", "", "", "", "", "", "", ""},
         /*25. <stat> -> */ {"function-id", "<f-params>", "", "", "", "", "", "", "", "" },
-        /*26. <f-params> -> */ {"(", "id", "<next-f-params>", ")", "", "", "", "", "", ""},
+        /*26. <f-params> -> */ {"(", "<f-params>", ")", "", "", "", "", "", "", ""},
         /*27. <f-params> -> */ {"id", "<next-f-params>", "", "", "", "", "", "", "", ""},
         /*28. <f-params> -> */ {"", "", "", "", "", "", "", "", "", ""},
         /*29. <next-f-params> -> */ {",", "<f-params>", "", "", "", "", "", "", "", ""},
@@ -192,8 +197,8 @@ int colOffset(TokenType symbol) {
 }
 
 int LLTable[14][17] = {
-        /*<start*/          {1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        /*<function>*/      {2, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0},
+        /*<start*/          {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0},
+        /*<function>*/      {2, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0},
         /*<function-head>*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0},
         /*<function-tail>*/ {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -203,9 +208,9 @@ int LLTable[14][17] = {
         /*<stat>*/          {0, 0, 0, 0, 0, 13, 0, 0, 0, 18, 0, 0, 19, 0, 25, 0, 20},
         /*<eval>*/          {0, 14, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0},
         /*<assign>*/        {0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, 0, 0, 0, 16, 0, 16},
-        /*<print-expr*/     {0, 23, 0, 24, 0, 22, 22, 21, 0, 0, 0, 0, 0, 0, 0, 23, 0},
+        /*<print-expr*/     {0, 23, 0, 24, 0, 22, 22, 21, 23, 0, 0, 0, 0, 0, 0, 23, 0},
         /*<next-print-expr>*/ {0, 23, 0, 24, 0, 22, 22, 0, 23, 0, 0, 0, 0, 0, 0, 23, 0},
-        /*<f-params>*/      {0, 28, 0, 29, 0, 27, 27, 26, 0, 0, 0, 0, 0, 0, 0, 28, 0},
+        /*<f-params>*/      {0, 28, 0, 29, 0, 27, 27, 26, 28, 0, 0, 0, 0, 0, 0, 28, 0},
         /*<next-f-params>*/ {0, 28, 0, 29, 0, 27, 27, 0, 30, 0, 0, 0, 0, 0, 0, 28, 0}
         //{0, 23, 0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
@@ -257,7 +262,7 @@ void clearRulesApplied() {
 int checkRulesApplied() {
     int numberOfArgs = 0;
     for (int i = 50; i > 0 && rulesApplied[i] != 17; i--) {
-        if (rulesApplied[i] == 26 || rulesApplied[i] == 27) {
+        if (rulesApplied[i] == 27) {
             numberOfArgs++;
         }
     }
@@ -348,7 +353,7 @@ int checkNumberOfArgs(TokenType inputFunction, BSTNodePtr* globalSymtable) {
  */
 int checkMainFunction() {
     for (int i = 0; i < 50; i++) {
-        if (rulesApplied[i] == 3) {
+        if (rulesApplied[i] == 3 || rulesApplied[i] == 5) {
             return 1;
         }
     }
@@ -368,11 +373,13 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
     if (predictiveStack == NULL) {                        // expendedStack error
         errorHandling(99);
     } else {
-        char* predictiveStackTop;                           // top rule in stack
+        char* predictiveStackTop = NULL;                           // top rule in stack
 
         do {
-            predictiveStackTop = malloc(10);
-            predictiveStackTop = tStackPredictiveGetTop(predictiveStack);
+            size_t predictiveStackTopLen = strlen(tStackPredictiveGetTop(predictiveStack));
+            predictiveStackTop = malloc(predictiveStackTopLen+1);
+            predictiveStackTop = strcpy(predictiveStackTop, tStackPredictiveGetTop(predictiveStack));
+            predictiveStackTop[(int)predictiveStackTopLen] = '\0';
 
             if (strcmp(predictiveStackTop, "$") == 0) {
                 // end of predictiveStack was reached
@@ -418,6 +425,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 int col = colOffset(token.type);
                 if (row > 14 || col > 17) {
                     errorHandling(40);                      // symbol doesn't occur in LL rule table
+                    end = -1;
                 } else {
                     rule = LLTable[row][col];
                     if (rule == 0) {
@@ -449,6 +457,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 end = 3;
             }
 
+            predictiveStackTop = NULL;
         } while (rule != 0 && end == 0);
 
         /*if (strcmp(predictiveStack->content[predictiveStack->top-1],"<expr>") == 0 && printing != 1) {

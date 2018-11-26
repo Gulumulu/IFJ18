@@ -1,0 +1,4 @@
+def retInt()
+	a=1
+end
+a=retInt()+5
