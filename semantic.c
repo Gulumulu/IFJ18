@@ -232,59 +232,118 @@ tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer) {
  *
  * @param leftContent pointer to BSTNodeContent is pointer to content in BST
  * @param rightContent pointer to BSTNodeContent is pointer to content in BST
- * @return non-zero value when types are matching otherwise zero value is returned
+ * @param ID pointer to char is operation type
+ * @return zero-value is returned if types are wrong, value 1 returned if either of the types is variable or user-defined function, value 2 is returned if types are correct
  */
 int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent, char* ID) {
     if (leftContent == NULL || rightContent == NULL) {
         errorHandling(99);
         return 0;
     } else {
-        /*if (leftContent->type != NULL && rightContent->type != NULL) {
-            if (strcmp(leftContent->type, rightContent->type) == 0) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else {
-            return 0;
-        }*/
         if (leftContent->type == NULL || rightContent->type == NULL) {
+            // variable or user-defined function
             return 1;
         } else if (strcmp(leftContent->type, "variable") == 0 || strcmp(rightContent->type, "variable") == 0 || strcmp(leftContent->type, "function") == 0 || strcmp(rightContent->type, "function") == 0) {
+            // variable or user-defined function
             return 1;
-        } else if (strcmp(ID, "+") != 0) {
+        } else if (strcmp(ID, "*") == 0 || strcmp(ID, "/") == 0 || strcmp(ID, "-") == 0) {
+            // multiplication, division or subtraction with floats or ints
+            if (strcmp(ID, "/") == 0 && (rightContent->name != NULL && strcmp(rightContent->name, "0") == 0) ) {
+                // division by zero constant
+                errorHandling(9);
+                return 0;
+            }
             if (strcmp(leftContent->type, "string") == 0 || strcmp(rightContent->type, "string") == 0 || strcmp(leftContent->type, "inputs") == 0 || strcmp(rightContent->type, "inputs") == 0 || strcmp(leftContent->type, "chr") == 0 || strcmp(rightContent->type, "chr") == 0 || strcmp(leftContent->type, "substr") == 0 || strcmp(rightContent->type, "substr") == 0) {
                 // operation with string(s)
                 errorHandling(4);
                 return 0;
             }
 
-            // operation (except addition) with floats or ints
+            return 2;
+        } else if (strcmp(ID, "+") != 0) {
+            if (strcmp(ID, "!=") != 0 && strcmp(ID, "==") != 0) {
+                // <, >, <=, >= need to have either of the number types or strings
+                char* numberTypes[6] = {"int", "float", "length", "ord", "inputi", "inputf"};
+                char* stringTypes[4] = {"string", "inputs", "substr", "chr"};
+                for (int i = 0; i < 6; i++) {
+                    for (int j = 0; j < 4; j++) {
+                        if ((strcmp(leftContent->type, numberTypes[i]) == 0 && strcmp(rightContent->type, stringTypes[j]) == 0) || (strcmp(rightContent->type, numberTypes[i]) == 0 && strcmp(leftContent->type, stringTypes[j]) == 0) ){
+                            errorHandling(4);
+                            return 0;
+                        }
+                    }
+                }
+                /*if (strcmp(leftContent->type, "int") == 0 && (strcmp(rightContent->type, "int") != 0 && strcmp(rightContent->type, "float") != 0 && strcmp(rightContent->type, "length") != 0 && strcmp(rightContent->type, "ord") != 0)) {
+                    errorHandling(4);
+                    return 0;
+                }
+                if (strcmp(leftContent->type, "float") == 0 && (strcmp(rightContent->type, "int") != 0 && strcmp(rightContent->type, "float") != 0 && strcmp(rightContent->type, "length") != 0 && strcmp(rightContent->type, "ord") != 0)) {
+                    errorHandling(4);
+                    return 0;
+                }
+                if (strcmp(rightContent->type, "int") == 0 && (strcmp(leftContent->type, "int") != 0 && strcmp(leftContent->type, "float") != 0 && strcmp(leftContent->type, "length") != 0 && strcmp(leftContent->type, "ord") != 0)) {
+                    errorHandling(4);
+                    return 0;
+                }
+                if (strcmp(rightContent->type, "float") == 0 && (strcmp(leftContent->type, "int") != 0 && strcmp(leftContent->type, "float") != 0 && strcmp(leftContent->type, "length") != 0 && strcmp(leftContent->type, "ord") != 0)) {
+                    errorHandling(4);
+                    return 0;
+                }*/
+                return 2;
+            } else {
+                // !=, == don't need to check types, typecast will be done
+                return 2;
+            }
+        } else {
+            // addition or concatenation
+            char* numberTypes[6] = {"int", "float", "inputi", "inputs", "length", "ord"};
+            char* stringTypes[4] = {"string", "inputs", "substr", "chr"};
+            for (int i = 0; i < 6; i++) {
+                for (int j = 0; j < 4; j++) {
+                    if ((strcmp(leftContent->type, numberTypes[i]) == 0 && strcmp(rightContent->type, stringTypes[j]) == 0) || (strcmp(rightContent->type, numberTypes[i]) == 0 && strcmp(leftContent->type, stringTypes[j]) == 0) ){
+                        errorHandling(4);
+                        return 0;
+                    }
+                }
+            }
             return 2;
         }
-
-        // addition or concatenation
-        return 3;
     }
 }
 
+/**
+ * Function decides resulting type from expression.
+ *
+ * @param leftContent pointer to BSTNodeContent is pointer to content in BST
+ * @param rightContent pointer to BSTNodeContent is pointer to content in BST
+ * @param ID pointer to char is operation type
+ * @return int, float, string, boolean or NULL type is returned
+ */
 char* decideType(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightContent, char* ID) {
     if (leftContent == NULL || rightContent == NULL || ID == NULL) {
         errorHandling(99);
         return NULL;
-    } else if (strcmp(leftContent->type, "string") == 0 || strcmp(rightContent->type, "string") == 0 || strcmp(leftContent->type, "inputs") == 0 || strcmp(rightContent->type, "inputs") == 0 || strcmp(leftContent->type, "substr") == 0 || strcmp(rightContent->type, "substr") == 0 || strcmp(leftContent->type, "chr") == 0 || strcmp(rightContent->type, "chr") == 0) {
-        // result of operation will be of string type
-        return "string";
-    } else if (strcmp(leftContent->type, "float") == 0 || strcmp(rightContent->type, "float") == 0 || strcmp(leftContent->type, "inputf") == 0 || strcmp(rightContent->type, "inputf") == 0) {
-        // result of operation will be of float type
-        return "float";
-    } else if (strcmp(leftContent->type, "print") == 0 || strcmp(rightContent->type, "print") == 0) {
-        // attempting to create a tree with nill descedant
-        errorHandling(4);
-        return NULL;
-    }
+    } else if (strcmp(ID, "+") == 0 || strcmp(ID, "-") == 0 || strcmp(ID, "*") == 0 || strcmp(ID, "/") == 0) {
+        if (strcmp(leftContent->type, "string") == 0 || strcmp(leftContent->type, "inputs") == 0 || strcmp(leftContent->type, "substr") == 0 || strcmp(leftContent->type, "chr") == 0) {
+            // result of operation will be of string type
+            return "string";
+        } else if (strcmp(rightContent->type, "string") == 0 || strcmp(rightContent->type, "inputs") == 0 || strcmp(rightContent->type, "substr") == 0 || strcmp(rightContent->type, "chr") == 0) {
+            return "string";
+        } else if (strcmp(leftContent->type, "float") == 0 || strcmp(rightContent->type, "float") == 0 || strcmp(leftContent->type, "inputf") == 0 || strcmp(rightContent->type, "inputf") == 0) {
+            // result of operation will be of float type
+            return "float";
+        } else if (strcmp(leftContent->type, "print") == 0 || strcmp(rightContent->type, "print") == 0) {
+            // attempting to create a tree with nill descedant
+            errorHandling(4);
+            return NULL;
+        }
 
-    return "int";
+        // result will be int
+        return "int";
+    } else {
+        // <, <=, >, >=, !=, == operations
+        return "boolean";
+    }
 }
 
 /**
@@ -380,7 +439,6 @@ tASTPointer* makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPoin
                             // either operand is variable or user-defined function => not changing type
                             break;
                         case 2:
-                        case 3:
                             // every operation  => changing type
                             if (decideType(leftPointer->content, rightPointer->content, ID) != NULL) {
                                 size_t typeLen = strlen(decideType(leftPointer->content, rightPointer->content, ID));
