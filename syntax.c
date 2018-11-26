@@ -90,7 +90,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -108,9 +108,9 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *file = fopen("./test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
     BSTNodeContentPtr* tmp;
     int not_int = 0;            // true if variable is float or string
@@ -130,6 +130,9 @@ void doMagic() {
 
     struct BSTNode **array;         // array storing local symtables
     array = malloc(10000 * sizeof(struct BSTNode *));
+    for (int i = 0; i < 10000; i++) {
+        array[i] = NULL;
+    };
 
     BSTNodeContentPtr* cnt;
 
@@ -196,7 +199,7 @@ void doMagic() {
             BSTInsert(global_symtable, cnt, func_id, 0);
         }
         else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign, if and while statements are defined
-            if (arr_id == 0) {
+            if (array[0] == NULL && *global_symtable == NULL) {
                 errorHandling(3);
                 return;
             }
