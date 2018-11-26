@@ -90,7 +90,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -108,11 +108,13 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *file = fopen("./test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
     BSTNodeContentPtr* tmp;
+    int not_int = 0;            // true if variable is float or string
+    int after_eq = 0;           // true if we are assigning something to a variable
     int num_of_func_params = 0; // stores the numbers of called params a function has
     int func_params = 0;        // true if function has params
     int is_stat = 0;            // true if we are inside of a statement
@@ -121,6 +123,7 @@ void doMagic() {
     int undef = 0;              // true if token was equals sign, expecting only defined identifiers
     int arr_id = 0;             // id for the array holding local symtables
     unsigned long func_id = 0;  // function id to be put into local id content
+    unsigned long var_id = 0;   // variable id to be used when assigning variable a type (int, float or string)
 
     BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));       // global symtable storing the function ids
     BSTInit(global_symtable);
@@ -184,6 +187,7 @@ void doMagic() {
                 cnt->name = global_token.content;
                 cnt->func_params = 0;
                 BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
+                var_id = hash_id(global_token.content);
             }
         }
         else if ((func_params == 1) && (global_token.type == ss_eol)) {     // if there are no more function params
@@ -192,9 +196,14 @@ void doMagic() {
         }
         else if (global_token.type == ss_eol) { // the undefined region resets after eol
             undef = 0;
+            after_eq = 0;
+            not_int = 0;
         }
         else if (global_token.type == s_eq || global_token.type == kw_if || global_token.type == kw_while) {   // after an equals sign, if and while only already defined ids can be used
             undef = 1;
+            if (global_token.type == s_eq) {
+                after_eq = 1;
+            }
         }
         else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign, if and while statements are defined
             if ((BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) && (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL)) {   // if the identifier was not used before, it is not defined
@@ -238,6 +247,39 @@ void doMagic() {
                 cnt->name = global_token.content;
                 cnt->func_params = 0;
                 BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+                var_id = hash_id(global_token.content);
+            }
+        }
+        else if ((after_eq == 1) && (global_token.type == s_string)) {
+            if ((tmp = BSTSearch(global_symtable, var_id)) != NULL) {
+                tmp->var = "string";
+                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            }
+            else if ((tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
+                tmp->var = "string";
+                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            }
+            not_int = 1;
+        }
+        else if ((after_eq == 1) && (global_token.type == s_float || global_token.type == s_exp_f)) {
+            if ((tmp = BSTSearch(global_symtable, var_id)) != NULL) {
+                tmp->var = "float";
+                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            }
+            else if ((tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
+                tmp->var = "float";
+                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            }
+            not_int = 1;
+        }
+        else if ((after_eq == 1) && (not_int != 1) && (global_token.type == s_int || global_token.type == s_exp_int)) {
+            if ((tmp = BSTSearch(global_symtable, var_id)) != NULL) {
+                tmp->var = "integer";
+                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            }
+            else if ((tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
+                tmp->var = "integer";
+                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
             }
         }
     }
