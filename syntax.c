@@ -166,30 +166,6 @@ void doMagic() {
             func_params = 1;
             num_of_func_params = 0;
         }
-        else if ((func_params == 1) && (global_token.type == s_id)) {   // pushes function params into local symtable and changes the number of params in global symtable
-            cnt->type = "func_parameter";
-            cnt->defined = 1;
-            cnt->name = global_token.content;
-            cnt->func_params = 0;
-            BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
-            num_of_func_params++;
-            cnt = malloc(sizeof(struct BSTNodeContent));
-            cnt->type = "function";
-            cnt->defined = 1;
-            cnt->name = (*global_symtable)->content->name;
-            cnt->func_params = num_of_func_params;
-            BSTInsert(global_symtable, cnt, func_id, 0);
-        }
-        else if ((is_global == 1) && (global_token.type == s_id)) {     // pushes the global ids into global symtable
-            if (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL) {
-                cnt->type = "variable";
-                cnt->defined = 1;
-                cnt->name = global_token.content;
-                cnt->func_params = 0;
-                BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
-                var_id = hash_id(global_token.content);
-            }
-        }
         else if ((func_params == 1) && (global_token.type == ss_eol)) {     // if there are no more function params
             func_params = 0;
             num_of_func_params = 0;
@@ -205,8 +181,26 @@ void doMagic() {
                 after_eq = 1;
             }
         }
+        else if ((func_params == 1) && (global_token.type == s_id)) {   // pushes function params into local symtable and changes the number of params in global symtable
+            cnt->type = "func_parameter";
+            cnt->defined = 1;
+            cnt->name = global_token.content;
+            cnt->func_params = 0;
+            BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
+            num_of_func_params++;
+            cnt = malloc(sizeof(struct BSTNodeContent));
+            cnt->type = "function";
+            cnt->defined = 1;
+            cnt->name = (*global_symtable)->content->name;
+            cnt->func_params = num_of_func_params;
+            BSTInsert(global_symtable, cnt, func_id, 0);
+        }
         else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign, if and while statements are defined
-            if ((BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) && (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL)) {   // if the identifier was not used before, it is not defined
+            if (arr_id == 0) {
+                errorHandling(3);
+                return;
+            }
+            else if ((BSTSearch(&array[arr_id-1], hash_id(global_token.content)) == NULL) && (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL)) {   // if the identifier was not used before, it is not defined
                 errorHandling(3);
                 return;
             }
@@ -228,6 +222,16 @@ void doMagic() {
                     cnt->func_params = 0;
                     BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
                 }
+            }
+        }
+        else if ((is_global == 1) && (global_token.type == s_id)) {     // pushes the global ids into global symtable
+            if (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL) {
+                cnt->type = "variable";
+                cnt->defined = 1;
+                cnt->name = global_token.content;
+                cnt->func_params = 0;
+                BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
+                var_id = hash_id(global_token.content);
             }
         }
         else if (global_token.type == s_id) {   // push the id into the local symtable for the specific function
