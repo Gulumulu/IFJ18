@@ -525,7 +525,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 functionName = strcat(functionName, token.content);
                 functionName[strlen(tmpFuncName)+strlen(token.content)] = '\0';
                 isFunction = 1;
-                simulatePredictive(token, stackPredictive, globalSymtable);
+                simulatePredictive(token, stackPredictive, globalSymtable, node);
                 end = 1;
                 free(tmpFuncName);
             } else if (token.type == s_lbrac || token.type == s_comma || token.type == s_id || token.type == s_int || token.type == s_float || token.type == s_exp_int || token.type == s_exp_int_s || token.type == s_exp_f || token.type == s_exp_f_s || token.type == s_string) {
@@ -540,7 +540,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 functionName[strlen(tmpFuncName)] = '\0';
                 functionName = strcat(functionName, token.content);
                 functionName[strlen(tmpFuncName)+strlen(token.content)] = '\0';
-                simulatePredictive(token, stackPredictive, globalSymtable);
+                simulatePredictive(token, stackPredictive, globalSymtable, node);
                 end = 1;
                 free(tmpFuncName);
             } else if (token.type == s_rbrac || token.type == ss_eol || token.type == ss_eof) {
@@ -555,7 +555,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 functionName[strlen(tmpFuncName)] = '\0';
                 functionName = strcat(functionName, token.content);
                 functionName[strlen(tmpFuncName)+strlen(token.content)] = '\0';
-                simulatePredictive(token, stackPredictive, globalSymtable);
+                simulatePredictive(token, stackPredictive, globalSymtable, node);
                 isFunction = 0;
                 tStackPredictiveDispose(stackPredictive);
                 if (token.type == ss_eol || token.type == ss_eof) {

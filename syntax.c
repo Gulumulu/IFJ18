@@ -358,7 +358,7 @@ void doMagic() {
                             tFunctionTrackerPush(functionTracker, tmpToken.content);
                         }
                         // simulate predictive SA for current token
-                        simulatePredictive(tmpToken, predictiveStack, global_symtable);
+                        simulatePredictive(tmpToken, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
                         if (precedence == 1) {
                             simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         }
@@ -376,7 +376,7 @@ void doMagic() {
                     }
                     if (precedence == 0) {
                         // simulate predictive SA for next token
-                        simulatePredictive(global_token, predictiveStack, global_symtable);
+                        simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
                     }
                     if (precedence == 1){
                         simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);

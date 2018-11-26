@@ -22,6 +22,7 @@ int checkingArgs;
 int printing;
 TokenType inputFunction;
 char* inputFunctionName;
+tStackPredictive* argsTracker;
 
 // functions for working with stack
 void tStackPredictiveInit(tStackPredictive* stack);
@@ -32,7 +33,7 @@ char* tStackPredictiveGetTop(tStackPredictive* stack);
 void tStackPredictiveChangeTop(tStackPredictive* stack, int ruleNumber);
 
 // main function
-void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodePtr* globalSymtable);
+void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodePtr* globalSymtable, BSTNodePtr* node);
 
 // helper functions
 int rowOffset(char* symbol);
@@ -44,4 +45,6 @@ int checkRulesApplied();
 int checkUserFunction(BSTNodeContentPtr* functionContent, int numberOfArgs);
 int checkNumberOfArgs(TokenType inputFunction, BSTNodePtr* globalSymtable);
 int checkMainFunction();
+void pushArg(Token* token, BSTNodePtr* node);
+int checkArgsType(TokenType function);
 #endif //IFJ_PREDICT_H

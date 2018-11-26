@@ -197,8 +197,8 @@ int colOffset(TokenType symbol) {
 }
 
 int LLTable[14][17] = {
-        /*<start*/          {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0},
-        /*<function>*/      {2, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0},
+        /*<start*/          {1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0},
+        /*<function>*/      {2, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 3, 0, 3, 3, 0},
         /*<function-head>*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0},
         /*<function-tail>*/ {0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         /*<par>*/           {0, 0, 0, 0, 0, 6, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -288,48 +288,128 @@ int checkUserFunction(BSTNodeContentPtr* functionContent, int numberOfArgs) {
 }
 
 /**
+ * Function checks whether function arguments are of correct type.
+ *
+ * @param function tokenType is input function
+ * @return non-zero value is returned if arguments are correct otherwise zero-value is returned
+ */
+int checkArgsType(TokenType function) {
+    switch (function) {
+        case kw_length:
+            if (strcmp(tStackPredictiveGetTop(argsTracker), "string") == 0 || strcmp(tStackPredictiveGetTop(argsTracker), "undecided") == 0) {
+                return 1;
+            }
+            return 0;
+        case kw_substr:
+            if (strcmp(tStackPredictiveGetTop(argsTracker), "integer") == 0 || strcmp(tStackPredictiveGetTop(argsTracker), "undecided") == 0) {
+                tStackPredictivePop(argsTracker);
+                if (strcmp(tStackPredictiveGetTop(argsTracker), "integer") == 0 || strcmp(tStackPredictiveGetTop(argsTracker), "undecided") == 0) {
+                    tStackPredictivePop(argsTracker);
+                    if (strcmp(tStackPredictiveGetTop(argsTracker), "string") == 0 || strcmp(tStackPredictiveGetTop(argsTracker), "undecided") == 0) {
+                        return 1;
+                    }
+                }
+            }
+            return 0;
+        case kw_ord:
+            if (strcmp(tStackPredictiveGetTop(argsTracker), "integer") == 0 || strcmp(tStackPredictiveGetTop(argsTracker), "undecided") == 0) {
+                tStackPredictivePop(argsTracker);
+                if (strcmp(tStackPredictiveGetTop(argsTracker), "string") == 0 || strcmp(tStackPredictiveGetTop(argsTracker), "undecided") == 0) {
+                    return 1;
+                }
+            }
+            return 0;
+        case kw_chr:
+            if (strcmp(tStackPredictiveGetTop(argsTracker), "integer") == 0 || strcmp(tStackPredictiveGetTop(argsTracker), "undecided") == 0) {
+                return 1;
+            }
+            return 0;
+        case kw_inputf:
+            break;
+        case kw_inputi:
+            break;
+        case kw_inputs:
+            break;
+        case kw_print:
+
+            break;
+        default:
+
+            break;
+    }
+    return 1;
+}
+
+/**
  * Function checks whether of arguments are correct for build-in functions.
  *
  * @param inputFunction tokenType is input function
  * @param globalSymtable BSTNotePtr* is pointer to root of gloabl symtable
- *
  * @return non-zero value is returned if number of arguments is correct
  */
 int checkNumberOfArgs(TokenType inputFunction, BSTNodePtr* globalSymtable) {
     //BSTNodeContentPtr* functionContent = malloc(sizeof(struct BSTNodeContent));
     switch (inputFunction) {
         case kw_length:
-            if (checkRulesApplied() == 1) {
+            if (checkRulesApplied() == 1 ) {
+                if (checkArgsType(inputFunction) != 1) {
+                    errorHandling(4);
+                    return 0;
+                }
                 return 1;
             }
             break;
         case kw_substr:
-            if (checkRulesApplied() == 3) {
+            if (checkRulesApplied() == 3 ) {
+                if (checkArgsType(inputFunction) != 1) {
+                    errorHandling(4);
+                    return 0;
+                }
                 return 1;
             }
             break;
         case kw_ord:
-            if (checkRulesApplied() == 2) {
+            if (checkRulesApplied() == 2 ) {
+                if (checkArgsType(inputFunction) != 1) {
+                    errorHandling(4);
+                    return 0;
+                }
                 return 1;
             }
             break;
         case kw_chr:
-            if (checkRulesApplied() == 1) {
+            if (checkRulesApplied() == 1 ) {
+                if (checkArgsType(inputFunction) != 1) {
+                    errorHandling(4);
+                    return 0;
+                }
                 return 1;
             }
             break;
         case kw_inputf:
-            if (checkRulesApplied() == 0) {
+            if (checkRulesApplied() == 0 ) {
+                if (checkArgsType(inputFunction) != 1) {
+                    errorHandling(4);
+                    return 0;
+                }
                 return 1;
             }
             break;
         case kw_inputi:
-            if (checkRulesApplied() == 0) {
+            if (checkRulesApplied() == 0 ) {
+                if (checkArgsType(inputFunction) != 1) {
+                    errorHandling(4);
+                    return 0;
+                }
                 return 1;
             }
             break;
         case kw_inputs:
-            if (checkRulesApplied() == 0) {
+            if (checkRulesApplied() == 0 ) {
+                if (checkArgsType(inputFunction) != 1) {
+                    errorHandling(4);
+                    return 0;
+                }
                 return 1;
             }
             break;
@@ -339,6 +419,10 @@ int checkNumberOfArgs(TokenType inputFunction, BSTNodePtr* globalSymtable) {
             }
             break;
         case kw_print:
+            if (checkArgsType(inputFunction) != 1) {
+                errorHandling(4);
+                return 0;
+            }
             return 1;
         default:
             return 0;
@@ -361,13 +445,52 @@ int checkMainFunction() {
 }
 
 /**
+ * Function pushes argument type into the stack.
+ *
+ * @param token Token is input token
+ * @param node BSTNodePtr* is pointer to current variable in symmtable
+ */
+void pushArg(Token* token, BSTNodePtr* node) {
+    if (token == NULL || node == NULL) {
+        errorHandling(99);
+    } else {
+        BSTNodeContentPtr* tmpID = malloc(sizeof(struct BSTNodeContent));
+        tmpID = BSTSearch(node, hash_id(token->content));
+        switch (token->type) {
+            case s_string:
+                tStackPredictivePush(argsTracker, "string");
+                break;
+            case s_int:
+                tStackPredictivePush(argsTracker, "integer");
+                break;
+            case s_float:
+                tStackPredictivePush(argsTracker, "float");
+                break;
+            case s_id:
+                if (tmpID != NULL) {
+                    if (tmpID->var != NULL) {
+                        // push type of variable
+                        tStackPredictivePush(argsTracker, tmpID->var);
+                    } else {
+                        // push undecided if type is not known yet
+                        tStackPredictivePush(argsTracker, "undecided");
+                    }
+                }
+            default:
+                break;
+        }
+    }
+}
+
+/**
  * Function simulates predictive syntax analysis for given token.
  *
  * @param token token is given token from lexical analysis
  * @param predictiveStack pointer to tStackPredictive structure is predictive stack
  * @param globalSymtable BSTNodePtr* is pointer to root of global symtable
+ * @param node BSTNodePtr* is pointer to current variable in symtable
  */
-void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodePtr* globalSymtable) {
+void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodePtr* globalSymtable, BSTNodePtr* node) {
     int end = 0;
 
     if (predictiveStack == NULL) {                        // expendedStack error
@@ -401,12 +524,20 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 if (strcmp(predictiveStackTop, token.content) == 0 || token.type == s_id  || token.type == s_func_id || (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eol) || token.type == kw_length || token.type == kw_substr || token.type == kw_ord || token.type == kw_chr || token.type == kw_inputf || token.type == kw_inputi || token.type == kw_inputs || token.type == kw_print) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
+                    if (checkingArgs == 1 && token.type != s_lbrac && token.type != s_rbrac && token.type != s_comma) {
+                        // this token is function argument => push type to stack
+                        pushArg(&token, node);
+                    }
                 } else if (strcmp(predictiveStackTop, "EOL") == 0 && token.type == ss_eof) {
                     tStackPredictivePop(predictiveStack);
                     rule = 2;
                 } else if (strcmp(predictiveStackTop, "id") == 0 && checkingArgs == 1) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
+                    if (checkingArgs == 1 && token.type != s_lbrac && token.type != s_rbrac && token.type != s_comma) {
+                        // this token is function argument => push type to stack
+                        pushArg(&token, node);
+                    }
                 } else {
                     end = -1;
                 }
@@ -418,6 +549,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                         end = -1;
                     }
                     inputFunctionName = NULL;
+                    tStackPredictiveDispose(argsTracker);
                 }
             } else if (strcmp(predictiveStackTop, "<expr>") != 0){
                 // non-terminal in on top of the predictiveStack && no need to calculate expression
@@ -445,6 +577,13 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                         inputFunctionName = malloc(strlen(token.content)+1);
                         inputFunctionName = memcpy(inputFunctionName, token.content, strlen(token.content));
                         inputFunctionName[strlen(token.content)] = '\0';
+                        argsTracker = malloc(sizeof(tStackPredictive)*5);
+                        if (argsTracker == NULL) {
+                            errorHandling(99);
+                            break;
+                        }
+                        tStackPredictiveInit(argsTracker);
+                        tStackPredictivePop(argsTracker);
                     }
                 }
             } else if (rule == 22 || rule == 21) {
