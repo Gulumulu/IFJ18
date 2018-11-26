@@ -147,7 +147,7 @@ int token_generate(FILE *file)
 {
     create_token(&global_token);
     char c;
-    char* string;
+    //char* string;
     int error = 0;
     TokenType state = ss_new;
     int gen_fin = 0;
@@ -822,7 +822,7 @@ int token_generate(FILE *file)
                     state = ss_esc_hex;
                 }
                 else if ((isdigit(c)) || (c <= 'f')) {
-                    int esc = c * 16;
+                    //int esc = c * 16;
                     error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
