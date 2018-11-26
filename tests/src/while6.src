@@ -1,4 +1,4 @@
 a=""
-while a!="aaa" do
+while a !="aaa" do
 	print "a is ", a
 	a=a+"a"
