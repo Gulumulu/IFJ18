@@ -7,6 +7,7 @@
 #include "prectable.h"
 #include "predict.h"
 #include "syntax.h"
+#include "if-generate.h"
 
 int main() {
 

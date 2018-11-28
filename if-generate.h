@@ -1,5 +1,7 @@
 /**
- *
+ *  Header file for generating if and while statements.
+ *  Implemented by: Marek Varga             xvarga14
+ *                  Gabriel Quirschfeld     xquirs00
  */
 #ifndef IFJ_IF_GENERATE_H
 #define IFJ_IF_GENERATE_H
@@ -11,7 +13,7 @@
 // stack for if labels
 typedef struct tLabelStack {
     int top;
-    int numbers[6];
+    int numbers[100];
 } tLabelStack;
 
 tLabelStack* labelStack;         // stack for if labels
@@ -28,6 +30,7 @@ void generateCodeParek(Token* token);
 void generateIfHead(tASTPointer *AST);
 void generateIfMid();
 void generateIfEnd();
+void generatePrint(Token* token);
 
 // functions for working with stack
 void tLabelStackInit(tLabelStack* stack);

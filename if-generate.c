@@ -1,20 +1,32 @@
-//
-// Created by parek on 11/28/18.
-//
-
+/**
+ *  Source file for generating if and while statements.
+ *  Implemented by: Marek Varga             xvarga14
+ *                  Gabriel Quirschfeld     xquirs00
+ */
 #include "if-generate.h"
 #include "predict.h"
 
 char* myLabel = "$myIfLabel";
 char* myEndLabel = "$myIfEndLabel";
 
+/**
+ * Function initializes stack to store label numbers.
+ *
+ * @param stack pointer to tLabelStack structure is initialized stack
+ */
 void tLabelStackInit(tLabelStack* stack) {
     stack->top = 0;
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 100; i++) {
         stack->numbers[i] = 0;
     }
 }
 
+/**
+ * Function pushes label number in the stack.
+ *
+ * @param stack pointer to tLabelStack structure is initialized stack
+ * @param labelNumber int number pushed in the stack
+ */
 void tLabelStackPush(tLabelStack* stack, int labelNumber) {
     if (stack == NULL) {
         errorHandling(99);
@@ -24,6 +36,11 @@ void tLabelStackPush(tLabelStack* stack, int labelNumber) {
     }
 }
 
+/**
+ * Function pop label number from stack.
+ *
+ * @param stack pointer to tLabelStack structure is initialized stack
+ */
 void tLabelStackPop(tLabelStack* stack) {
     if (stack == NULL) {
         errorHandling(99);
@@ -35,6 +52,12 @@ void tLabelStackPop(tLabelStack* stack) {
     }
 }
 
+/**
+ * Function retrieves top label number from stack.
+ *
+ * @param stack pointer to tLabelStack structure is initialized stack
+ * @return int label number from stack top
+ */
 int tLabelStackGetTop(tLabelStack* stack) {
     if (stack == NULL) {
         errorHandling(99);
@@ -44,6 +67,11 @@ int tLabelStackGetTop(tLabelStack* stack) {
     }
 }
 
+/**
+ * Function generates head for if statement.
+ *
+ * @param AST structure tASTPointer is pointer to AST
+ */
 void generateIfHead(tASTPointer *AST) {
     if (AST == NULL) {
         errorHandling(99);
@@ -64,11 +92,14 @@ void generateIfHead(tASTPointer *AST) {
             printf("still need to calculate expression.\n");
             ifLabelNumber++;
             printf("JUMPIFNEQ %s%d $symb1 $symb2 \n", myLabel, ifLabelNumber);
-            tLabelStackPush(endLabelStack, ifEndLabelNumber);
+            tLabelStackPush(labelStack, ifLabelNumber);
         }
     }
 }
 
+/**
+ * Function generates middle section for if statement.
+ */
 void generateIfMid() {
     ifEndLabelNumber++;
     printf("JUMP %s%d \n", myEndLabel, ifEndLabelNumber);
@@ -77,11 +108,31 @@ void generateIfMid() {
     tLabelStackPop(labelStack);
 }
 
+/**
+ * Function generates end to if statement
+ */
 void generateIfEnd() {
     printf("LABEL %s%d \n", myEndLabel, tLabelStackGetTop(endLabelStack));
     tLabelStackPop(endLabelStack);
 }
 
+/**
+ * Function generates print in IFJcode18
+ * @param token input token
+ */
+void generatePrint(Token* token) {
+    if (token == NULL) {
+        errorHandling(99);
+    } else {
+        printf("WRITE %s\n", token->content);
+    }
+}
+
+/**
+ * Function for deciding which generate function will be called.
+ *
+ * @param token input token
+ */
 void generateCodeParek(Token* token) {
     if (token == NULL) {
         errorHandling(99);
@@ -101,9 +152,6 @@ void generateCodeParek(Token* token) {
                 default:
                     break;
             }
-        }
-        if (printing == 1) {
-            printf("PRINT %s\n", token->content);
         }
     }
 }

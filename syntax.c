@@ -9,6 +9,7 @@
 #include "symtable.h"
 #include "queue.h"
 #include "generate.h"
+#include "if-generate.h"
 
 #define BUF_SIZE 1024
 
@@ -90,7 +91,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    /*if (feof(stdin))
+    if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -108,9 +109,9 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);*/
+    fclose(fp);
 
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("./test.txt", "r");
 
     BSTNodeContentPtr* tmp;
     int not_int = 0;            // true if variable is float or string
@@ -368,7 +369,8 @@ void doMagic() {
                     }
                     if (printing == 1) {
                         // need to print this expression
-                        //generateCodeParek(&global_token);
+                        generatePrint(&tmpToken);
+                        //generateCodeParek(&tmpToken);
                         // todo: generate code
                         /*
                          * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
@@ -420,8 +422,9 @@ void doMagic() {
                 }
 
               	// NEJAKEJ PRINTING
-		        if (printing == 1 && strcmp(tStackPredictiveGetTop(predictiveStack), "<expr>") != 0) {
+		        if (printing == 1 ) {
                     // need to print this expression
+                    generatePrint(&global_token);
                     //generateCodeParek(&global_token);
                     // todo: generate code
                     /*
