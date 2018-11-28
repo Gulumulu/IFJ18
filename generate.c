@@ -50,8 +50,6 @@ char* get_frame(tFunctionTracker* functionTracker) { // najdi aktualni ramec
 
 void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, FILE* list) { // typova kontrola obsahu jednoho root uzlu (L + R)
 
-        fprintf(list,"counter: %d\n",counter);
-
         bool left = false; // false = neni promenna
         bool right = false; // false = neni promenna
         bool left_operator = false; // true = vlevo je operator
@@ -71,10 +69,12 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, FIL
         else if(!strcmp(Root->RightPointer->content->type,"variable")) // prava strana je VAR
             right = true;
 
+        /* debug tisk
         fprintf(list,"left: %d\n",left);
         fprintf(list,"left_operator: %d\n",left_operator);
         fprintf(list,"right: %d\n",right);
         fprintf(list,"right_operator: %d\n",right_operator);
+        */
 
         if(!left_operator) { // leva strana neni operator
             left_supply = Root->LeftPointer->content->name;
@@ -98,8 +98,6 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, FIL
             char buffer[10];
             sprintf(buffer,"%%%d",front);
             left_supply = buffer;
-
-            fprintf(list,"front: %d\n",front);
 
             fprintf(list,"DEFVAR %s@$type_%%%d\n", frame, front);
             fprintf(list,"DEFVAR %s@$temp_%%%d\n", frame, front);

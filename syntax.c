@@ -110,7 +110,7 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *list = fopen("list.txt", "a+");
+    FILE *list = fopen("list.txt", "w+");
     FILE *file = fopen("test.txt", "r");
 
     // zacatek programu
