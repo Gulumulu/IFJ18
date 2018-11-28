@@ -110,7 +110,7 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *list = fopen("list.txt", "w");
+    FILE *list = fopen("list.txt", "a+");
     FILE *file = fopen("test.txt", "r");
 
     // zacatek programu
@@ -460,7 +460,19 @@ void doMagic() {
         tStackPredictiveDispose(predictiveStack);
         //tASTDispose(AST);
         tFunctionTrackerDispose(functionTracker);
+
+        fclose(list);
+        if(ERROR_TYPE == 0) { // tisk obsahu souboru pokud se neobjevila chyba
+
+            fclose(list);
+            FILE *list = fopen("list.txt", "r");
+            char c;
+            while((c = fgetc(list)) != EOF)
+                printf("%c",c);
+            fclose(list);
+        }
+
     fclose(file);
-    fclose(list);
+
 }
 
