@@ -90,7 +90,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -108,9 +108,9 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *file = fopen("./test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
     BSTNodeContentPtr* tmp;
     int not_int = 0;            // true if variable is float or string
@@ -336,6 +336,9 @@ void doMagic() {
                         if (stackAST != NULL && ERROR_TYPE == 0) {
                             // result of precedence will be stored in AST - abstract syntax tree
                             *AST = *stackAST->body[stackAST->top];
+                            if (ifStatement == 1 && global_token.type == kw_then) {
+                                generateIfHead(stackAST->body[stackAST->top]);
+                            }
 
                             //generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
 		
@@ -365,6 +368,7 @@ void doMagic() {
                     }
                     if (printing == 1) {
                         // need to print this expression
+                        //generateCodeParek(&global_token);
                         // todo: generate code
                         /*
                          * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
@@ -382,7 +386,7 @@ void doMagic() {
                         simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
                     }
-
+                    generateCodeParek(&global_token);
 
                     /*
                      * Create function generateCode(char* predictiveStackTop) and pass top of predictiveStack.
@@ -416,8 +420,9 @@ void doMagic() {
                 }
 
               	// NEJAKEJ PRINTING
-		if (printing == 1 && strcmp(tStackPredictiveGetTop(predictiveStack), "<expr>") != 0) {
+		        if (printing == 1 && strcmp(tStackPredictiveGetTop(predictiveStack), "<expr>") != 0) {
                     // need to print this expression
+                    //generateCodeParek(&global_token);
                     // todo: generate code
                     /*
                      * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
@@ -430,6 +435,7 @@ void doMagic() {
                 if (global_token.type == kw_if || global_token.type == kw_while) {
                     // current token was if-condition or while-loop => expression will follow => need to simulate precedence
                     precedence = 1;
+                    ifStatement = 1;
                 }
                 if (global_token.type == ss_eol || global_token.type == s_rbrac) {
                     if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {

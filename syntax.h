@@ -12,6 +12,7 @@
 #include "symtable.h"
 #include "predict.h"
 #include "semantic.h"
+#include "if-generate.h"
 #include <string.h>
 
 // structure for stack of functions
