@@ -90,7 +90,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -108,9 +108,15 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *file = fopen("./test.txt", "r");
+    FILE *list = fopen("list.txt", "w");
+    FILE *file = fopen("test.txt", "r");
+
+    // zacatek programu
+
+    fprintf(list,".ifjcode18\n");
+    fprintf(list,"CREATEFRAME\n");
 
     BSTNodeContentPtr* tmp;
     int not_int = 0;            // true if variable is float or string
@@ -337,7 +343,7 @@ void doMagic() {
                             // result of precedence will be stored in AST - abstract syntax tree
                             *AST = *stackAST->body[stackAST->top];
 
-                            //generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
+                            generateExpression(AST,functionTracker,list); // vygeneruj do seznamu instrukce vyrazu
 		
                             // clear tree after generating
                             AST = malloc(sizeof(struct tAST) * 2);
@@ -381,6 +387,10 @@ void doMagic() {
                     if (precedence == 1){
                         simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
+
+                        char* frame = get_frame(functionTracker);
+                        fprintf(list,"MOVE %s@%s %s@%%assign\n",frame,tmpToken.content,frame);
+
                     }
 
 
@@ -394,20 +404,16 @@ void doMagic() {
                      * P.S. maybe there is no need for checking applied rules
                      */
 
-                    int overrule = 0; // uz doslo ke generovani
-                    /*//DEBUGINFO START
-                    int i = 0;
-                    while(rulesApplied[i] != 0) {
-                        printf("PRAVIDLO: %i\n", rulesApplied[i]);
-                        i++;
-                    }
-                    printf("PRED STACK: %s\n",predictiveStack->content[predictiveStack->top-1]);
-                    // DEBUGINFO END
-*/
-                    if(!overrule && !strcmp(predictiveStack->content[predictiveStack->top-1],"<assign>")) { // predst = <assign>
+                    /* TRASH
+                     *
+                     * int overrule = 0; // uz doslo ke generovani
+
+                    if(overrule && !strcmp(predictiveStack->content[predictiveStack->top-1],"<assign>")) { // predst = <assign>
                         overrule = 1;
-                        printf("MOVE %s %%assign\n",tmpToken.content); // do seznamu vygener. uloz finalni vysledek assign k pozdejsimu vypsani
+                        char* frame = get_frame(functionTracker);
+                        fprintf(list,"MOVE %s@%s %s@%%assign\n",frame,tmpToken.content,frame); // do seznamu vygener. uloz finalni vysledek assign k pozdejsimu vypsani
                     }
+                    */
 
 
 
@@ -455,5 +461,6 @@ void doMagic() {
         //tASTDispose(AST);
         tFunctionTrackerDispose(functionTracker);
     fclose(file);
+    fclose(list);
 }
 

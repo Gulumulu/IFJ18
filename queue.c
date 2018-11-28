@@ -47,7 +47,7 @@ void queuePreFront ( const tQueue* q, int* c ) {
         return;
     }
 
-    *c = q->arr[q->f_index-1];
+    *c = q->arr[q->f_index+1];
 }
 
 void queueRemove ( tQueue* q ) { // EDIT DODELAT
