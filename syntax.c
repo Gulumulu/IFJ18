@@ -91,7 +91,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -109,9 +109,9 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *file = fopen("./test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
     BSTNodeContentPtr* tmp;
     int not_int = 0;            // true if variable is float or string
@@ -340,6 +340,9 @@ void doMagic() {
                             if (ifStatement == 1 && global_token.type == kw_then) {
                                 generateIfHead(stackAST->body[stackAST->top]);
                             }
+                            if (whileStatement == 1 && global_token.type == kw_do) {
+                                generateWhileHead(stackAST->body[stackAST->top]);
+                            }
 
                             //generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
 		
@@ -435,10 +438,14 @@ void doMagic() {
                     // we will not be printing anymore
                     printing = 0;
                 }
-                if (global_token.type == kw_if || global_token.type == kw_while) {
+                if (global_token.type == kw_if) {
                     // current token was if-condition or while-loop => expression will follow => need to simulate precedence
                     precedence = 1;
                     ifStatement = 1;
+                }
+                if (global_token.type == kw_while) {
+                    precedence = 1;
+                    whileStatement = 1;
                 }
                 if (global_token.type == ss_eol || global_token.type == s_rbrac) {
                     if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {

@@ -43,7 +43,7 @@ void tASTDispose(tASTPointer* AST) {
  * @param pattern
  * @return
  */
-int match(const char *string, const char *pattern)
+/*int match(const char *string, const char *pattern)
 {
     regex_t re;
     if (regcomp(&re, pattern, REG_EXTENDED|REG_NOSUB) != 0) return 0;
@@ -51,7 +51,7 @@ int match(const char *string, const char *pattern)
     regfree(&re);
     if (status != 0) return 0;
     return 1;
-}
+}*/
 
 char* getArguments(const char* functionDeclaration) {
     char* arguments = "";
@@ -74,77 +74,77 @@ char* getArguments(const char* functionDeclaration) {
  * @param functionName
  * @return
  */
-char* getFunctionName(const char* functionName) {
+/*char* getFunctionName(const char* functionName) {
     //char* arguments = "";
     if (match(functionName, "(print)+") == 1) {
         return "print";
     } else if (match(functionName, "(length)+") == 1) {
-        /*if ((arguments = getArguments(functionName)) == NULL) {
+        *//*if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
             if (match(arguments, "\\([a-z]+\\)") != 1) {
                 return NULL;
             }
-        }*/
+        }*//*
         return "length";
     } else if (match(functionName, "(inputs)+") == 1) {
-        /*if ((arguments = getArguments(functionName)) == NULL) {
+        *//*if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
             if (match(arguments, "\\(\\)") != 1) {
                 return NULL;
             }
-        }*/
+        }*//*
         return "inputs";
     } else if (match(functionName, "(inputi)+") == 1) {
-        /*if ((arguments = getArguments(functionName)) == NULL) {
+        *//*if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
             if (match(arguments, "\\(\\)") != 1) {
                 return NULL;
             }
-        }*/
+        }*//*
         return "inputi";
     } else if (match(functionName, "(inputf)+") == 1) {
-        /*if ((arguments = getArguments(functionName)) == NULL) {
+        *//*if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
             if (match(arguments, "\\(\\)") != 1) {
                 return NULL;
             }
-        }*/
+        }*//*
         return "inputf";
     } else if (match(functionName, "(substr)+") == 1) {
-        /*if ((arguments = getArguments(functionName)) == NULL) {
+        *//*if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
             if (match(arguments, "\\([a-z]+, ?[a-z]+, ?[a-z]+\\)") != 1) {
                 return NULL;
             }
-        }*/
+        }*//*
         return "substr";
     } else if (match(functionName, "(ord)+") == 1) {
-        /*if ((arguments = getArguments(functionName)) == NULL) {
+        *//*if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
             if (match(arguments, "\\([a-z]+, ?[a-z]+\\)") != 1) {
                 return NULL;
             }
-        }*/
+        }*//*
         return "ord";
     } else if (match(functionName, "(chr)+") == 1) {
-        /*if ((arguments = getArguments(functionName)) == NULL) {
+        *//*if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
             if (match(arguments, "\\(([0-1]*[0-9]*[0-9]+|2[0-5]+[0-5]+)\\)") != 1) {
                 return NULL;
             }
-        }*/
+        }*//*
         return "chr";
     } else {
         return "function";
     }
-}
+}*/
 
 /**
  * Function searches for variable in symtable based on given token.
@@ -182,11 +182,11 @@ BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token) {
                         tmpNode->type = "float";
                         break;
                     case s_func_expr:
-                        tmpNode->type = getFunctionName(token->content);
+                        /*tmpNode->type = getFunctionName(token->content);
                         if (tmpNode->type == NULL) {
                             errorHandling(5);
                             return NULL;
-                        }
+                        }*/
                         break;
                     default:
                         tmpNode->type = "string";

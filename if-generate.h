@@ -20,10 +20,15 @@ tLabelStack* labelStack;         // stack for if labels
 tLabelStack* endLabelStack;      // stack for if end labels
 
 // helper vars
+int firstTime;
+
 int ifLabelNumber;
 int ifEndLabelNumber;
 int ifStatement;
-int firstTime;
+
+int whileLabelNumber;
+int whileEndLabelNumber;
+int whileStatement;
 
 // functions for generating
 void generateCodeParek(Token* token);
@@ -31,6 +36,9 @@ void generateIfHead(tASTPointer *AST);
 void generateIfMid();
 void generateIfEnd();
 void generatePrint(Token* token);
+
+void generateWhileHead(tASTPointer *AST);
+void generateWhileEnd();
 
 // functions for working with stack
 void tLabelStackInit(tLabelStack* stack);

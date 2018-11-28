@@ -3,11 +3,14 @@
  *  Implemented by: Marek Varga             xvarga14
  *                  Gabriel Quirschfeld     xquirs00
  */
+
 #include "if-generate.h"
 #include "predict.h"
 
-char* myLabel = "$myIfLabel";
-char* myEndLabel = "$myIfEndLabel";
+char* myIfLabel = "$myIfLabel";
+char* myIfEndLabel = "$myIfEndLabel";
+char* myWhileLabel = "$myWhileLabel";
+char* myWhileEndLabel = "$myWhileEndLabel";
 
 /**
  * Function initializes stack to store label numbers.
@@ -86,12 +89,12 @@ void generateIfHead(tASTPointer *AST) {
         if (strcmp(AST->ID, "!=") == 0) {
             printf("still need to calculate expression.\n");
             ifLabelNumber++;
-            printf("JUMPIFEQ %s%d $symb1 $symb2 \n", myLabel, ifLabelNumber);
+            printf("JUMPIFEQ %s%d $symb1 $symb2 \n", myIfLabel, ifLabelNumber);
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, "==") == 0) {
             printf("still need to calculate expression.\n");
             ifLabelNumber++;
-            printf("JUMPIFNEQ %s%d $symb1 $symb2 \n", myLabel, ifLabelNumber);
+            printf("JUMPIFNEQ %s%d $symb1 $symb2 \n", myIfLabel, ifLabelNumber);
             tLabelStackPush(labelStack, ifLabelNumber);
         }
     }
@@ -102,9 +105,9 @@ void generateIfHead(tASTPointer *AST) {
  */
 void generateIfMid() {
     ifEndLabelNumber++;
-    printf("JUMP %s%d \n", myEndLabel, ifEndLabelNumber);
+    printf("JUMP %s%d \n", myIfEndLabel, ifEndLabelNumber);
     tLabelStackPush(endLabelStack, ifEndLabelNumber);
-    printf("LABEL %s%d \n", myLabel, tLabelStackGetTop(labelStack));
+    printf("LABEL %s%d \n", myIfLabel, tLabelStackGetTop(labelStack));
     tLabelStackPop(labelStack);
 }
 
@@ -112,7 +115,45 @@ void generateIfMid() {
  * Function generates end to if statement
  */
 void generateIfEnd() {
-    printf("LABEL %s%d \n", myEndLabel, tLabelStackGetTop(endLabelStack));
+    printf("LABEL %s%d \n", myIfEndLabel, tLabelStackGetTop(endLabelStack));
+    tLabelStackPop(endLabelStack);
+}
+
+void generateWhileHead(tASTPointer *AST) {
+    if (AST == NULL) {
+        errorHandling(99);
+    } else {
+        if (firstTime == 0) {
+            firstTime++;
+            labelStack = malloc(sizeof(tLabelStack));
+            tLabelStackInit(labelStack);
+            endLabelStack = malloc(sizeof(tLabelStack));
+            tLabelStackInit(endLabelStack);
+        }
+        if (strcmp(AST->ID, "!=") == 0) {
+            printf("still need to calculate expression.\n");
+            whileLabelNumber++;
+            printf("LABEL %s%d \n", myWhileLabel, whileLabelNumber);
+            tLabelStackPush(labelStack, whileLabelNumber);
+            whileEndLabelNumber++;
+            printf("JUMPIFEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber);
+            tLabelStackPush(endLabelStack, whileEndLabelNumber);
+        } else if (strcmp(AST->ID, "==") == 0) {
+            printf("still need to calculate expression.\n");
+            whileLabelNumber++;
+            printf("LABEL %s%d \n", myWhileLabel, whileLabelNumber);
+            tLabelStackPush(labelStack, whileLabelNumber);
+            whileEndLabelNumber++;
+            printf("JUMPIFEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber);
+            tLabelStackPush(endLabelStack, whileEndLabelNumber);
+        }
+    }
+}
+
+void generateWhileEnd() {
+    printf("JUMP %s%d \n", myWhileLabel, tLabelStackGetTop(labelStack));
+    tLabelStackPop(labelStack);
+    printf("LABEL %s%d \n", myWhileEndLabel, tLabelStackGetTop(endLabelStack));
     tLabelStackPop(endLabelStack);
 }
 
@@ -151,6 +192,11 @@ void generateCodeParek(Token* token) {
                     break;
                 default:
                     break;
+            }
+        }
+        if (whileStatement != 0) {
+            if (token->type == kw_end) {
+                generateWhileEnd();
             }
         }
     }
