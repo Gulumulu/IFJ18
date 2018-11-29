@@ -390,6 +390,27 @@ void doMagic() {
                     if (precedence == 1){
                         simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
+                        if (precedence == 0) {
+                            // precedence has finished => need to pop rule from predictive stack
+                            tStackPredictivePop(predictiveStack);
+                            // assign newly created AST
+                            if (stackAST != NULL && ERROR_TYPE == 0) {
+                                // result of precedence will be stored in AST - abstract syntax tree
+                                *AST = *stackAST->body[stackAST->top];
+                                if (ifStatement == 1 && global_token.type == kw_then) {
+                                    generateIfHead(stackAST->body[stackAST->top]);
+                                }
+                                if (whileStatement == 1 && global_token.type == kw_do) {
+                                    generateWhileHead(stackAST->body[stackAST->top]);
+                                }
+
+                                //generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
+
+                                // clear tree after generating
+                                AST = malloc(sizeof(struct tAST) * 2);
+                            }
+                            simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+                        }
                     }
                     generateCodeParek(&global_token);
 
