@@ -85,7 +85,7 @@ char* number_parse(char* str) { // vypreparuje pro funkci chr(i) string a vrati 
     return "";
 }
 
-char* ord_parse(char* str) { // vypreparuje pro funkci strukturu s argumenty a vrati je
+char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string s argumenty a vrati ho
 
     int l = strlen(str);
 
@@ -218,6 +218,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, FIL
                 unsigned long ret; // ciselna cast
                 ret = strtol(parsed,&ptr,10);
 
+
                 if(ret < 256 && strlen(ptr) == 0) { // zadano cislo v platnem rozsahu
                     fprintf(list,"DEFVAR %s@%%%d\n",frame, counter);
                     fprintf(list,"INT2CHAR %s@%%%d int@%lu\n",frame,counter,ret);
@@ -246,7 +247,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, FIL
 
                 fprintf(list,"DEFVAR %s@%%%d\n",frame, counter);
 
-                char *str = ord_parse(Root->content->name);
+                char *str = arguments_parse(Root->content->name);
                 int l = strlen(str);
                 char s[l+1];
                 char i[l+1];
@@ -331,7 +332,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, FIL
                     fprintf(list,"LABEL $label_ok_%d\n",counter);
 
                     if(strlen(i_ptr) == 0 && i_ret != 0) { // zadal tam platne cislo za i
-                        if(i_ret > l-1) { // i je mimo rozsah
+                        if(i_ret > (unsigned long)l-1) { // i je mimo rozsah
                             fprintf(list,"MOVE %s@%%%d string@nil\n",frame,counter);
                         }
                         else { // index je v rozsahu
@@ -369,6 +370,167 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, FIL
                 free(s_help);
                 free(i_help);
 
+            }
+            /*else if(!strcmp(Root->content->type,"substr")) { // funkce susbtr(s,i,n)
+
+                fprintf(list,"DEFVAR %s@%%%d\n",frame, counter);
+
+                char *str = arguments_parse(Root->content->name);
+                int l = strlen(str);
+                char s[l+1];
+                char i[l+1];
+                char n[l+1];
+                for(int a = 0; a < l+1; a++) {
+                    s[a] = '\0';
+                    i[a] = '\0';
+                    n[a] = '\0';
+                }
+                bool second = false;
+                bool third = false;
+                int c = 0;
+                for(int a = 0; a < l; a++) {
+                    if(str[a] == ',' && !second) {
+                        second = true;
+                        c = 0;
+                        continue;
+                    }
+                    if(str[a] == ',' && second && !third) {
+                        third = true;
+                        c = 0;
+                        continue;
+                    }
+                    if(second && !third) {
+                        i[c] = str[a];
+                        c++;
+                    }
+                    if(third) {
+                        n[c] = str[a];
+                        c++;
+                    }
+                    if(!second && !third) {
+                        if(str[a] == '"') {
+                            parse_text = true;
+                            continue;
+                        }
+                        s[c] = str[a];
+                        c++;
+                    }
+                }
+                char* s_help = malloc(sizeof(char) * (l + 1));
+                char* i_help = malloc(sizeof(char) * (l + 1));
+                char* n_help = malloc(sizeof(char) * (l + 1));
+                strncpy(i_help,i,10);
+                strncpy(s_help,s,10);
+                strncpy(n_help,s,10);
+                char* i_ptr;
+                unsigned long i_ret = strtol(i_help,&i_ptr,10);
+                char* n_ptr;
+                unsigned long n_ret = strtol(n_help,&n_ptr,10);
+
+                ; // DOPLNIT NA KONCI
+
+                parse_text = false;
+                free(s_help);
+                free(i_help);
+                free(n_help);
+
+            }*/
+            else if(!strcmp(Root->content->type,"inputi")) { // vestavena funkce inputi
+                fprintf(list,"DEFVAR %s@%%%d\n",frame,counter);
+                fprintf(list,"READ %s@%%%d int\n",frame,counter); // nacti do promenne
+                fprintf(list,"DEFVAR %s@intemp%d\n",frame,counter); // uloz do tmp
+                fprintf(list,"MOVE %s@intemp%d %s%%%d\n",frame,counter,frame,counter);
+                fprintf(list,"DEFVAR %s@intype%d\n",frame,counter);
+                fprintf(list,"TYPE %s@intype%d %s@%%%d\n",frame,counter,frame,counter); // uloz typ
+                fprintf(list,"JUMPIFEQ $label_convert%d %s@intype%d string@float\n",counter,frame,counter); // jestli je float zkonvertuj
+                fprintf(list,"JUMPIFNEQ $label_wrong_type%d %s@intype%d string@int\n",counter,frame,counter); // jestli neni ani int tak 0
+                fprintf(list,"JUMP $label_inok%d\n",counter); // je to int
+
+                fprintf(list,"LABEL $label_convert%d\n",counter);
+                fprintf(list,"FLOAT2INT %s@%%%d %s@intemp%d\n",frame,counter,frame,counter);
+                fprintf(list,"JUMP $label_inok%d\n",counter);
+
+                fprintf(list,"LABEL $label_wrong_type%d\n",counter);
+                fprintf(list,"MOVE %s@%%%d int@0\n",frame,counter);
+
+                fprintf(list,"LABEL $label_inok%d\n",counter);
+            }
+            else if(!strcmp(Root->content->type,"inputf")) { // vestavena funkce inputf
+                fprintf(list,"DEFVAR %s@%%%d\n",frame,counter);
+                fprintf(list,"READ %s@%%%d float\n",frame,counter); // nacti do promenne
+                fprintf(list,"DEFVAR %s@floatemp%d\n",frame,counter); // uloz do tmp
+                fprintf(list,"MOVE %s@floatemp%d %s%%%d\n",frame,counter,frame,counter);
+                fprintf(list,"DEFVAR %s@floatype%d\n",frame,counter);
+                fprintf(list,"TYPE %s@floatype%d %s@%%%d\n",frame,counter,frame,counter); // uloz typ
+                fprintf(list,"JUMPIFEQ $label_convert%d %s@floatype%d string@int\n",counter,frame,counter); // jestli je int zkonvertuj
+                fprintf(list,"JUMPIFNEQ $label_wrong_type%d %s@floatype%d string@float\n",counter,frame,counter); // jestli neni ani float tak 0.0
+                fprintf(list,"JUMP $label_inok%d\n",counter); // je to float
+
+                fprintf(list,"LABEL $label_convert%d\n",counter);
+                fprintf(list,"INT2FLOAT %s@%%%d %s@floatemp%d\n",frame,counter,frame,counter);
+                fprintf(list,"JUMP $label_inok%d\n",counter);
+
+                fprintf(list,"LABEL $label_wrong_type%d\n",counter);
+                fprintf(list,"MOVE %s@%%%d float@0.0\n",frame,counter);
+
+                fprintf(list,"LABEL $label_inok%d\n",counter);
+            }
+            else if(!strcmp(Root->content->type,"inputs")) { // vestavena funkce inputs
+                fprintf(list,"DEFVAR %s@%%%d\n",frame,counter);
+                fprintf(list,"READ %s@%%%d string\n",frame,counter); // nacti do promenne
+                fprintf(list,"DEFVAR %s@strtype%d\n",frame,counter);
+                fprintf(list,"TYPE %s@strtype%d %s@%%%d\n",frame,counter,frame,counter); // uloz typ
+                fprintf(list,"JUMPIFEQ $label_inok%d %s@strtype%d string@string\n",counter,frame,counter); // jestli neni ani string tak nil
+                fprintf(list,"MOVE %s@%%%d string@nil\n",frame,counter);
+                fprintf(list,"LABEL $label_inok%d\n",counter);
+            }
+            else if(!strcmp(Root->content->type,"print")) { // vestavena funkce print
+
+                char *str = arguments_parse(Root->content->name); // dlooooouhy retezec se vsemi argumenty
+                int l = strlen(str); // delka celkoveho retezce
+                char s[l+1]; // pomocne pole pro jednotlivy operand
+                char* operand = malloc(sizeof(char) * (l + 1)); // finalni operand
+                char* operand_rest;
+                unsigned long operand_val;
+
+                for(int a = 0; a < l+1; a++) // vynulovani pole
+                    s[a] = '\0';
+
+                int internal = 0;
+                for(int a = 0; a < l+1; a++) {
+                    if(str[internal] == ',' || str[a] == '\0') { // oddelovac nebo konec
+                        strncpy(operand,s,10); // vytvoren retezec operand
+                        operand_val = strtol(operand, &operand_rest,10);
+
+                        // tady pracuj s jednim operandem
+
+                        if(parse_text) { // operand je textovy retezec
+                            fprintf(list,"WRITE string@%s\n",operand);
+                            parse_text = false;
+                        }
+                        else if(operand_val != 0 && !strlen(operand_rest)) { // operand je cislo. zatim umi jen inty
+                            fprintf(list,"WRITE int@%lu\n",operand_val);
+                        }
+
+                        else { // operand je promenna
+                            fprintf(list,"WRITE %s@%s\n",frame,operand); // dodelat az to pujde testovat
+                        }
+
+                        // konec prace s operandem
+                        internal = 0;
+                        for(int a = 0; a < l+1; a++) // vynulovani pole
+                            s[a] = '\0';
+                        continue;
+                    }
+                    if(str[a] == '"') {
+                        parse_text = true;
+                        continue;
+                    }
+                    s[internal] = str[a];
+                }
+
+                free(operand);
+                parse_text = false; // kdyby nahodou
             }
 
             else if(!strcmp(Root->content->type,"variable")) { // je to promenna, eg. a = b

@@ -91,7 +91,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -109,10 +109,10 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *list = fopen("./list.txt", "w+");
-    FILE *file = fopen("./test.txt", "r");
+    FILE *list = fopen("list.txt", "w+");
+    FILE *file = fopen("test.txt", "r");
 
     //FILE *file = fopen("../test.txt", "r");
     // zacatek programu
@@ -351,11 +351,11 @@ void doMagic() {
                                 generateWhileHead(stackAST->body[stackAST->top]);
                             }
 
-                            //generateExpression(AST,functionTracker,list); // vygeneruj do seznamu instrukce vyrazu
+                            generateExpression(AST,functionTracker,list); // vygeneruj do seznamu instrukce vyrazu
 
                             // po vygenerovani vyrazu ho prirad zadane promenne
-                            //char *frame = get_frame(functionTracker);
-                            //fprintf(list, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign);
+                            char *frame = get_frame(functionTracker);
+                            fprintf(list, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign);
                             assign++;
 
                             // clear tree after generating
@@ -493,7 +493,7 @@ void doMagic() {
         //tASTDispose(AST);
         tFunctionTrackerDispose(functionTracker);
 
-        /*fclose(list);
+        fclose(list);
         if(ERROR_TYPE == 0) { // tisk obsahu souboru pokud se neobjevila chyba
 
             fclose(list);
@@ -502,7 +502,7 @@ void doMagic() {
             while((c = fgetc(list)) != EOF)
                 printf("%c",c);
             fclose(list);
-        }*/
+        }
 
     fclose(file);
 

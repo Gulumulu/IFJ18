@@ -23,5 +23,6 @@ void type_control(tASTPointer* Root, char* operation, tQueue* q, char* frame, FI
 char* name_parse(char* str);
 char* number_parse(char* str);
 char* ord_parse(char* str);
+char* susbtr_parse(char* str);
 
 #endif //IFJ18_GENERATE_H
