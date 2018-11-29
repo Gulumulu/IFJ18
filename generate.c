@@ -1048,7 +1048,6 @@ void generateExpression(tASTPointer* AST, tFunctionTracker* functionTracker, cha
             issingle = true;
 
         postorder(AST,q,functionTracker, list_str); // rekurzivni postorder stromem
-
         generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%assign%d\n",frame,assign),list_str); // cilova hodnota vyrazu, NEXT mozna pojmenovat s counter kvuli originalite
         generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%assign%d %s@%%%i\n",frame, assign, frame, counter-1),list_str); // do %assign dej posledni hodnotu counteru - po pricteni
         assign++;
