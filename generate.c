@@ -13,6 +13,8 @@
 int dyn_length = 1024;
 int list_length = 0;
 
+bool issingle = false;
+
 void generate_to_list2(int ad,char* str) { // generovani do seznamu misto do souboru v2
 /*
     printf("celkova velikost: %d\n",*dyn_length);
@@ -211,11 +213,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
 
         // PREDBEZNE TESTY NA OBSAH UZLU
 
-        if(Root->LeftPointer == NULL && Root->RightPointer == NULL) {// single node, pouze operace assign, bez L a R
-            single = true;
-        }
-
-        if(single) { // operace, ktere probihaji nad stormem se single node
+        if(issingle) { // operace, ktere probihaji nad stromem se single node
 
             if(!strcmp(Root->content->type, "length")) { // funkce length(string)
 
@@ -992,7 +990,8 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
 
     char* frame = get_frame(functionTracker); // vyhledej ve ktere jsme funkci
 
-    type_control(Root, Root->ID,q,frame, list_str); // typova kontrola probehne v kazdem pripade
+    if(issingle || (Root->LeftPointer != NULL && Root->RightPointer != NULL)) // vylouceni listu z type_control, krome single node
+        type_control(Root, Root->ID,q,frame, list_str); // typova kontrola
 
     char* op;
     if(!strcmp(Root->ID,"+"))
@@ -1044,12 +1043,17 @@ void generateExpression(tASTPointer* AST, tFunctionTracker* functionTracker, cha
 
         tQueue* q = malloc(sizeof(tQueue)); // nova fronta pro generate_expression
         queueInit(q); // inicializuj frontu
+
+        if(AST->LeftPointer == NULL && AST->RightPointer == NULL)
+            issingle = true;
+
         postorder(AST,q,functionTracker, list_str); // rekurzivni postorder stromem
 
         generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%assign%d\n",frame,assign),list_str); // cilova hodnota vyrazu, NEXT mozna pojmenovat s counter kvuli originalite
         generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%assign%d %s@%%%i\n",frame, assign, frame, counter-1),list_str); // do %assign dej posledni hodnotu counteru - po pricteni
         assign++;
 
+        issingle = false;
         free(q); // uvolni frontu
 
 }
