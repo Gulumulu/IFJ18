@@ -11,7 +11,6 @@
 
 
 int parse_text = false; // jestli je parsovany vyraz "xx"
-static int assign = 1; // pocitadlo assign zacina na 1
 static int counter = 1; // globalni pocitadlo v uzlech. zaciname na %1
 bool concat = false; // jestli ma dojit k CONCAT misto ADD
 
@@ -161,7 +160,7 @@ char* convert_string(char* str) { // vytiskni ascii variantu retezce
             a++;
         }
         else {
-            help[a] = char(s);
+            help[a] = (char)s;
             a++;
         }
     }
@@ -866,8 +865,6 @@ void generateExpression(tASTPointer* AST, tFunctionTracker* functionTracker, FIL
         assign++;
 
         free(q); // uvolni frontu
-
-    //}
 
 }
 

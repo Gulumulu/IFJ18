@@ -344,7 +344,12 @@ void doMagic() {
                             *AST = *stackAST->body[stackAST->top];
 
                             generateExpression(AST,functionTracker,list); // vygeneruj do seznamu instrukce vyrazu
-		
+
+                            // po vygenerovani vyrazu ho prirad zadane promenne
+                            char *frame = get_frame(functionTracker);
+                            fprintf(list, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign);
+                            assign++;
+
                             // clear tree after generating
                             AST = malloc(sizeof(struct tAST) * 2);
                         }
@@ -383,16 +388,11 @@ void doMagic() {
                     if (precedence == 0) {
                         // simulate predictive SA for next token
                         simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+
                     }
                     if (precedence == 1){
                         simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
-
-
-                        if(!strcmp(predictiveStack->content[predictiveStack->top-1],"<assign>")) { // bude nasledovat expression, vytvor promennou na prirazeni
-                            char *frame = get_frame(functionTracker);
-                            fprintf(list, "MOVE %s@%s %s@%%assign\n", frame, tmpToken.content, frame);
-                        } // PROC NEZOBRAZUJE NIC PRI FUNKCI
 
                     }
 
@@ -406,6 +406,12 @@ void doMagic() {
                      * P.S. maybe there is no need for checking applied rules
                      */
                      //generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied);
+
+
+                    /*if(!strcmp(predictiveStack->content[predictiveStack->top-1],"<assign>")) { // bude nasledovat expression, vytvor promennou na prirazeni
+                        char *frame = get_frame(functionTracker);
+                        fprintf(list, "MOVE %s@%s %s@%%assign\n", frame, tmpToken.content, frame);
+                    } // PROC NEZOBRAZUJE NIC PRI FUNKCI*/
 
                 }
 
