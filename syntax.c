@@ -9,6 +9,7 @@
 #include "symtable.h"
 #include "queue.h"
 #include "generate.h"
+#include "if-generate.h"
 
 #define BUF_SIZE 1024
 
@@ -113,6 +114,7 @@ void doMagic() {
     FILE *list = fopen("list.txt", "w+");
     FILE *file = fopen("test.txt", "r");
 
+    //FILE *file = fopen("../test.txt", "r");
     // zacatek programu
 
     fprintf(list,".ifjcode18\n");
@@ -342,6 +344,12 @@ void doMagic() {
                         if (stackAST != NULL && ERROR_TYPE == 0) {
                             // result of precedence will be stored in AST - abstract syntax tree
                             *AST = *stackAST->body[stackAST->top];
+                            if (ifStatement == 1 && global_token.type == kw_then) {
+                                generateIfHead(stackAST->body[stackAST->top]);
+                            }
+                            if (whileStatement == 1 && global_token.type == kw_do) {
+                                generateWhileHead(stackAST->body[stackAST->top]);
+                            }
 
                             generateExpression(AST,functionTracker,list); // vygeneruj do seznamu instrukce vyrazu
 
@@ -376,6 +384,8 @@ void doMagic() {
                     }
                     if (printing == 1) {
                         // need to print this expression
+                        generatePrint(&tmpToken);
+                        //generateCodeParek(&tmpToken);
                         // todo: generate code
                         /*
                          * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
@@ -393,8 +403,29 @@ void doMagic() {
                     if (precedence == 1){
                         simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
+                        if (precedence == 0) {
+                            // precedence has finished => need to pop rule from predictive stack
+                            tStackPredictivePop(predictiveStack);
+                            // assign newly created AST
+                            if (stackAST != NULL && ERROR_TYPE == 0) {
+                                // result of precedence will be stored in AST - abstract syntax tree
+                                *AST = *stackAST->body[stackAST->top];
+                                if (ifStatement == 1 && global_token.type == kw_then) {
+                                    generateIfHead(stackAST->body[stackAST->top]);
+                                }
+                                if (whileStatement == 1 && global_token.type == kw_do) {
+                                    generateWhileHead(stackAST->body[stackAST->top]);
+                                }
 
+                                //generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
+
+                                // clear tree after generating
+                                AST = malloc(sizeof(struct tAST) * 2);
+                            }
+                            simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+                        }
                     }
+                    generateCodeParek(&global_token);
 
                     /*
                      * Create function generateCode(char* predictiveStackTop) and pass top of predictiveStack.
@@ -416,8 +447,10 @@ void doMagic() {
                 }
 
               	// NEJAKEJ PRINTING
-		if (printing == 1 && strcmp(tStackPredictiveGetTop(predictiveStack), "<expr>") != 0) {
+		        if (printing == 1 ) {
                     // need to print this expression
+                    generatePrint(&global_token);
+                    //generateCodeParek(&global_token);
                     // todo: generate code
                     /*
                      * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
@@ -427,9 +460,14 @@ void doMagic() {
                     // we will not be printing anymore
                     printing = 0;
                 }
-                if (global_token.type == kw_if || global_token.type == kw_while) {
+                if (global_token.type == kw_if) {
                     // current token was if-condition or while-loop => expression will follow => need to simulate precedence
                     precedence = 1;
+                    ifStatement = 1;
+                }
+                if (global_token.type == kw_while) {
+                    precedence = 1;
+                    whileStatement = 1;
                 }
                 if (global_token.type == ss_eol || global_token.type == s_rbrac) {
                     if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {
