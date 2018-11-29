@@ -9,7 +9,7 @@
 #ifndef IFJ18_GENERATE_H
 #define IFJ18_GENERATE_H
 
-char* convert_string(char* str, FILE* list);
+char* convert_string(char* str);
 char* get_frame(tFunctionTracker* functionTracker);
 void operation_assign(tASTPointer* Root, tFunctionTracker* functionTracker, FILE* list);
 void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, FILE* list);

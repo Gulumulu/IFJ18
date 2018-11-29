@@ -121,26 +121,52 @@ char* ord_parse(char* str) { // vypreparuje pro funkci strukturu s argumenty a v
     return "";
 }
 
-char* convert_string(char* str, FILE* list) { // vytiskni ascii variantu retezce
-     //DODELAT!!
-    char* asciistr = malloc(sizeof(strlen(str)) * 4 + 1); // novy retezec
-    for(unsigned long i = 0; i < sizeof(strlen(str)) * 4 + 1; i++)
-        asciistr[i] = '\0';
+char* convert_string(char* str) { // vytiskni ascii variantu retezce
 
-    for(long unsigned i = 0; i < strlen(str); i++) {
-        int s = str[i];
-        if (s <= 32)
-            fprintf(list,"\\%03d", s);
-        else if (s == 35)
-            fprintf(list,"\\%03d", s);
-        else if (s == 92)
-            fprintf(list,"\\%03d", s);
-        else
-            fprintf(list,"%c", s);
+    char* asciistr = malloc((strlen(str)* 4 + 1) * sizeof(char)); // novy retezec
+    char help[strlen(str) * 4 + 1];
+
+    for(unsigned long i = 0; i < (strlen(str)* 4 + 1); i++) {
+        asciistr[i] = '\0';
+        help[i] = '\0';
     }
 
-    return "NEDOKONCENO";
+    long unsigned a = 0;
+    for(long unsigned i = 0; i < strlen(str); i++) {
 
+        int s = str[i];
+
+        if(s <= 32) {
+            help[a] = '\\';
+            a++;
+            help[a] ='0';
+            a++;
+            if(a < 10) {
+                help[a] = '0';
+                a++;
+                help[a] = (char)s;
+                a++;
+            }
+            else {
+                help[a] = (char)s;
+                a++;
+            }
+        }
+        else if(s == 35 || s == 92) {
+            help[a] = '\\';
+            a++;
+            help[a] = '0';
+            a++;
+            help[a] = (char)s;
+            a++;
+        }
+        else {
+            help[a] = char(s);
+            a++;
+        }
+    }
+    strncpy(asciistr,help,10);
+    return asciistr;
 }
 
 char* get_frame(tFunctionTracker* functionTracker) { // najdi aktualni ramec
