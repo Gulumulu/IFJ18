@@ -13,12 +13,15 @@ static int assign = 1; // pocitadlo assign zacina na 1
 
 char* convert_string(char* str);
 char* get_frame(tFunctionTracker* functionTracker);
-//void operation_assign(tASTPointer* Root, tFunctionTracker* functionTracker, FILE* list);
-void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, FILE* list);
-void generateExpression(tASTPointer* AST,tFunctionTracker* functionTracker, FILE* list);
+
+void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, char* list_str);
+void generateExpression(tASTPointer* AST,tFunctionTracker* functionTracker, char* list_str);
 void generateCode(char* stackTop, int rules[]);
 
-void type_control(tASTPointer* Root, char* operation, tQueue* q, char* frame, FILE* list);
+void type_control(tASTPointer* Root, char* operation, tQueue* q, char* frame, char* list_str);
+
+void generate_to_list(int ad, int* ptr_list_length, int* ptr_dyn_length, char* list_str);
+void generate_to_list2(int ad,char* str);
 
 char* name_parse(char* str);
 char* number_parse(char* str);
