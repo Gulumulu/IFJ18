@@ -388,36 +388,24 @@ void doMagic() {
                         simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
 
-                        char* frame = get_frame(functionTracker);
-                        fprintf(list,"MOVE %s@%s %s@%%assign\n",frame,tmpToken.content,frame);
+
+                        if(!strcmp(predictiveStack->content[predictiveStack->top-1],"<assign>")) { // bude nasledovat expression, vytvor promennou na prirazeni
+                            char *frame = get_frame(functionTracker);
+                            fprintf(list, "MOVE %s@%s %s@%%assign\n", frame, tmpToken.content, frame);
+                        } // PROC NEZOBRAZUJE NIC PRI FUNKCI
 
                     }
-
 
                     /*
                      * Create function generateCode(char* predictiveStackTop) and pass top of predictiveStack.
                      * Look at the top of predictiveStack: predictiveStack->content[predictiveStack->top-1] =>
-                     * generateCode(predictiveStack->content[predictiveStack->top-1]);
+                     *
                      * For example if it contains "EOL" and rules 1,2,4,6,7 were applied (stored in rulesApplied[]) => generate function declaration
                      * Generated code: label nasobeni
                      *
                      * P.S. maybe there is no need for checking applied rules
                      */
-
-                    /* TRASH
-                     *
-                     * int overrule = 0; // uz doslo ke generovani
-
-                    if(overrule && !strcmp(predictiveStack->content[predictiveStack->top-1],"<assign>")) { // predst = <assign>
-                        overrule = 1;
-                        char* frame = get_frame(functionTracker);
-                        fprintf(list,"MOVE %s@%s %s@%%assign\n",frame,tmpToken.content,frame); // do seznamu vygener. uloz finalni vysledek assign k pozdejsimu vypsani
-                    }
-                    */
-
-
-
-
+                     //generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied);
 
                 }
 

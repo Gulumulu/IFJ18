@@ -6,12 +6,127 @@
 #include "semantic.h"
 #include "queue.h"
 #include <stdlib.h>
+#include <ctype.h>
 #include "errors.h"
 
-static int counter = 1; // zaciname na %1. Je reset counteru potreba, kdyz to pobezi cely program?
-//bool concat = false; // jestli ma dojit k CONCAT misto ADD
 
-void printf_string(char* str, FILE* list) { // vytiskni ascii variantu retezce
+int parse_text = false; // jestli je parsovany vyraz "xx"
+static int assign = 1; // pocitadlo assign zacina na 1
+static int counter = 1; // globalni pocitadlo v uzlech. zaciname na %1
+bool concat = false; // jestli ma dojit k CONCAT misto ADD
+
+char* name_parse(char* str) { // vypreparuje ven z retezce string || promennou pro funkci strlen(string)
+
+    int l = strlen(str);
+    char* buff = malloc((l + 1)*sizeof(char));
+    char help[l+1];
+    int internal = 0;
+
+    for(int j = 0; j < l+1; j++) {
+        buff[j] = '\0';
+        help[j] = '\0';
+    }
+    bool startReading = false;
+
+    for(int i = 0; i < l; i++) {
+        if(str[i] == '(') {
+            startReading = true;
+            continue;
+        }
+
+        if(startReading) {
+
+            if(str[i] == ')') {
+                strncpy(buff,help,10);
+                return buff;
+            }
+            if(str[i] == '"') {
+                parse_text = true;
+                continue;
+            }
+
+            help[internal] = str[i];
+            internal++;
+        }
+    }
+    return "";
+}
+
+char* number_parse(char* str) { // vypreparuje pro funkci chr(i) string a vrati ho
+
+    int l = strlen(str);
+    char* buff = malloc((l + 1)*sizeof(char));
+    char help[l+1];
+    int internal = 0;
+
+    for(int j = 0; j < l+1; j++) {
+        buff[j] = '\0';
+        help[j] = '\0';
+    }
+    bool startReading = false;
+
+    for(int i = 0; i < l; i++) {
+        if(str[i] == '(') {
+            startReading = true;
+            continue;
+        }
+
+        if(startReading) {
+
+            if(str[i] == ')') {
+                strncpy(buff,help,10);
+
+                return buff;
+            }
+                help[internal] = str[i];
+                internal++;
+                continue;
+        }
+    }
+    return "";
+}
+
+char* ord_parse(char* str) { // vypreparuje pro funkci strukturu s argumenty a vrati je
+
+    int l = strlen(str);
+
+    char* buff = malloc((l + 1)*sizeof(char));
+    char help[l+1];
+    int internal = 0;
+
+    for(int j = 0; j < l+1; j++) {
+        buff[j] = '\0';
+        help[j] = '\0';
+    }
+    bool startReading = false;
+
+    for(int i = 0; i < l; i++) {
+        if(str[i] == '(') {
+            startReading = true;
+            continue;
+        }
+
+        if(startReading) {
+
+            if(str[i] == ')') {
+                strncpy(buff,help,10);
+                return buff;
+            }
+            help[internal] = str[i];
+            internal++;
+            continue;
+        }
+    }
+
+    return "";
+}
+
+char* convert_string(char* str, FILE* list) { // vytiskni ascii variantu retezce
+     //DODELAT!!
+    char* asciistr = malloc(sizeof(strlen(str)) * 4 + 1); // novy retezec
+    for(unsigned long i = 0; i < sizeof(strlen(str)) * 4 + 1; i++)
+        asciistr[i] = '\0';
+
     for(long unsigned i = 0; i < strlen(str); i++) {
         int s = str[i];
         if (s <= 32)
@@ -23,20 +138,8 @@ void printf_string(char* str, FILE* list) { // vytiskni ascii variantu retezce
         else
             fprintf(list,"%c", s);
     }
-}
 
-void operation_assign(tASTPointer* Root, tFunctionTracker* functionTracker, FILE* list) { // operace prirazeni do promenne, pro strom o velikosti 1 pouze
-
-    char *frame = get_frame(functionTracker);
-
-    if(!strcmp(Root->content->type,"variable")) { // je to promenna, eg. a = b
-        fprintf(list,"DEFVAR %s@%%assign\n", frame);
-        fprintf(list,"MOVE %s@%%assign %s@%s\n", frame, frame, Root->content->name);
-    }
-    else { // prirazeni konstanty
-        fprintf(list,"DEFVAR %s@%%assign\n", frame);
-        fprintf(list,"MOVE %s@%%assign %s@%s\n", frame, Root->content->type, Root->content->name);
-    }
+    return "NEDOKONCENO";
 
 }
 
@@ -55,91 +158,290 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, FIL
         bool left_operator = false; // true = vlevo je operator
         bool right_operator = false; // true = vpravo je operator
 
+        bool single = false; // single node
+
         char* left_supply; // zastupny symbol za levy uzel Root->LeftPointer->content->name
         char* right_supply; // zastupny symbol za pravy uzel Root->RightPointer->content->name
 
         // PREDBEZNE TESTY NA OBSAH UZLU
 
-        if(Root->LeftPointer->content->name == NULL) // vlevo je operator
-            left_operator = true;
-        else if(!strcmp(Root->LeftPointer->content->type,"variable")) // leva strana je VAR
-            left = true;
-        if(Root->RightPointer->content->name == NULL) // vpravo je operator
-            right_operator = true;
-        else if(!strcmp(Root->RightPointer->content->type,"variable")) // prava strana je VAR
-            right = true;
+        if(Root->LeftPointer == NULL && Root->RightPointer == NULL) {// single node, pouze operace assign, bez L a R
+            single = true;
+        }
 
-        /* debug tisk
-        fprintf(list,"left: %d\n",left);
-        fprintf(list,"left_operator: %d\n",left_operator);
-        fprintf(list,"right: %d\n",right);
-        fprintf(list,"right_operator: %d\n",right_operator);
-        */
+        if(single) { // operace, ktere probihaji nad stormem se single node
 
-        if(!left_operator) { // leva strana neni operator
-            left_supply = Root->LeftPointer->content->name;
+            if(!strcmp(Root->content->type, "length")) { // funkce length(string)
 
-            fprintf(list,"DEFVAR %s@$type_%s$%d\n", frame, Root->LeftPointer->content->name, counter);
-            fprintf(list,"DEFVAR %s@$temp_%s$%d\n", frame, Root->LeftPointer->content->name, counter);
-            if (left) {
-                fprintf(list,"TYPE %s@$type_%s$%d %s@%s\n", frame, Root->LeftPointer->content->name, counter, frame, Root->LeftPointer->content->name);
-                fprintf(list,"MOVE %s@$temp_%s$%d %s@%s\n", frame, Root->LeftPointer->content->name, counter, frame, Root->LeftPointer->content->name);
-            } else {
-                fprintf(list,"TYPE %s@$type_%s$%d %s@%s\n", frame, Root->LeftPointer->content->name, counter, Root->LeftPointer->content->type,
-                       Root->LeftPointer->content->name);
-                fprintf(list,"MOVE %s@$temp_%s$%d %s@%s\n", frame, Root->LeftPointer->content->name, counter, Root->LeftPointer->content->type,
-                       Root->LeftPointer->content->name);
+                char*parsed = name_parse(Root->content->name);
+
+                fprintf(list,"DEFVAR %s%%%d\n",frame,counter);
+
+                if(parse_text) { // parsovany vyraz byl "xx"
+                    parse_text = false; // nastav zpet
+                    fprintf(list,"STRLEN %s@%%%d string@%s\n",frame,counter,parsed);
+                }
+                else
+                    fprintf(list,"STRLEN %s@%%%d %s@%s\n",frame, counter,frame, Root->content->name);
+
             }
-        }
-        else { // leva strana je operator
-            int front;
-            queueFront(q,&front);
+            else if(!strcmp(Root->content->type, "chr")) { // funkce chr(i)
 
-            char buffer[10];
-            sprintf(buffer,"%%%d",front);
-            left_supply = buffer;
+                char* parsed = number_parse(Root->content->name); // ulozena podstatna cast retezce z Root->content->name
 
-            fprintf(list,"DEFVAR %s@$type_%%%d\n", frame, front);
-            fprintf(list,"DEFVAR %s@$temp_%%%d\n", frame, front);
-            fprintf(list,"TYPE %s@$type_%%%d %s@%%%d\n", frame, front, frame, front);
-            fprintf(list,"MOVE %s@$temp_%%%d %s@%%%d\n", frame, front, frame, front);
-        }
+                char *ptr; // string s testovou casti
+                unsigned long ret; // ciselna cast
+                ret = strtol(parsed,&ptr,10);
 
-        if(!right_operator) { // prava strana neni operator
-            right_supply = Root->RightPointer->content->name;
+                if(ret < 256 && strlen(ptr) == 0) { // zadano cislo v platnem rozsahu
+                    fprintf(list,"DEFVAR %s@%%%d\n",frame, counter);
+                    fprintf(list,"INT2CHAR %s@%%%d int@%lu\n",frame,counter,ret);
+                }
+                else if(strlen(ptr) > 0) { // zadana promenna
+                    fprintf(list,"DEFVAR %s@%%%d\n",frame, counter);
+                    fprintf(list,"MOVE %s@%%%d %s@%s\n",frame,counter,frame,parsed);
+                    fprintf(list,"DEFVAR %s@bool%d\n",frame,counter); // novy bool pro porovnani
+                    fprintf(list,"LT %s@bool%d int@-1 %s@%%%d\n",frame,counter,frame,counter); // jestli vetsi nez -1 tak true do bool
+                    fprintf(list,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter); // pokud bool false skoc do error
+                    fprintf(list,"GT %s@bool%d int@256 %s@%%%d\n",frame,counter,frame,counter); // bool true pokud je mensi jak 256
+                    fprintf(list,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter); // pokud bool false smoc na error
+                    fprintf(list,"DEFVAR %s@newchar%d\n",frame,counter); // novy znak
+                    fprintf(list,"INT2CHAR %s@newchar%d %s@%%%d\n",frame,counter,frame,counter); // preved na novy znak
+                    fprintf(list,"JUMP $label_converted%d\n",counter);
+                    fprintf(list,"LABEL $label_error_%d\n",counter);
+                    fprintf(list,"ERROR int@4\n");
+                    fprintf(list,"LABEL $label_converted%d\n",counter);
+                }
+                else { // zadana spatna ciselna hodnota
+                    errorHandling(4);
+                }
 
-            fprintf(list,"DEFVAR %s@$type_%s$%d\n", frame, Root->RightPointer->content->name, counter);
-            fprintf(list,"DEFVAR %s@$temp_%s$%d\n", frame, Root->RightPointer->content->name, counter);
-            if (right) {
-                fprintf(list,"TYPE %s@$type_%s$%d %s@%s\n", frame, Root->RightPointer->content->name, counter, frame, Root->RightPointer->content->name);
-                fprintf(list,"MOVE %s@$temp_%s$%d %s@%s\n", frame, Root->RightPointer->content->name, counter, frame, Root->RightPointer->content->name);
-            } else {
-                fprintf(list,"TYPE %s@$type_%s$%d %s@%s\n", frame, Root->RightPointer->content->name, counter, Root->RightPointer->content->type,
-                       Root->RightPointer->content->name);
-                fprintf(list,"MOVE %s@$temp_%s$%d %s@%s\n", frame, Root->RightPointer->content->name, counter, Root->RightPointer->content->type,
-                       Root->RightPointer->content->name);
             }
-        }
-        else { // prava strana je operator
-            int front;
+            else if(!strcmp(Root->content->type, "ord")) { // funkce ord(s,i)
 
-            if(left_operator) // pokud byla leva operator, sahni do fronty o jeden dal
-                queuePreFront(q,&front);
-            else // vlevo nebyl operator, sahni normalne
-                queueFront(q,&front);
+                fprintf(list,"DEFVAR %s@%%%d\n",frame, counter);
 
-            char buffer[10];
-            sprintf(buffer,"%%%d",front);
-            right_supply = buffer;
-            
-            fprintf(list,"DEFVAR %s@$type_%%%d\n", frame, front);
-            fprintf(list,"DEFVAR %s@$temp_%%%d\n", frame, front);
-            fprintf(list,"TYPE %s@$type_%%%d %s@%%%d\n", frame, front,frame, front);
-            fprintf(list,"MOVE %s@$temp_%%%d %s@%%%d\n", frame, front,frame, front);
+                char *str = ord_parse(Root->content->name);
+                int l = strlen(str);
+                char s[l+1];
+                char i[l+1];
+                for(int a = 0; a < l+1; a++) {
+                    s[a] = '\0';
+                    i[a] = '\0';
+                }
+                bool second = false;
+                int c = 0;
+                for(int a = 0; a < l; a++) {
+                    if(str[a] == ',') {
+                        second = true;
+                        c = 0;
+                        continue;
+                    }
+                    if(second) {
+                        i[c] = str[a];
+                        c++;
+                    }
+                    if(!second) {
+                        if(str[a] == '"') {
+                            parse_text = true;
+                            continue;
+                        }
+                        s[c] = str[a];
+                        c++;
+                    }
+                }
+                char* s_help = malloc(sizeof(char) * (l + 1));
+                char* i_help = malloc(sizeof(char) * (l + 1));
+                strncpy(i_help,i,10);
+                strncpy(s_help,s,10);
+                char* i_ptr;
+                unsigned long i_ret = strtol(i_help,&i_ptr,10);
+
+                if(parse_text) { // zpracovavali jsme primo retezec
+
+                    if(strlen(i_ptr) == 0 && i_ret != 0) { // zadal tam platne cislo za i
+                        if(i_ret > (strlen(s_help)-1)) { // i je mimo rozsah
+                            fprintf(list,"MOVE %s@%%%d string@nil\n",frame,counter);
+                        }
+                        else { // index je v rozsahu
+                            fprintf(list,"DEFVAR %s@%%%d\n",frame,counter);
+                            fprintf(list,"GETCHAR %s@%%%d string@%s int@%s\n",frame,counter,s_help,i_help);
+                        }
+                    }
+                    else if(strlen(i_ptr) > 0) { // zadal tam promennou misto cisla i
+                        fprintf(list,"DEFVAR %s@$i_type%d\n",frame,counter);
+                        fprintf(list,"TYPE %s@$i_type%d %s@%s\n",frame,counter,frame,i_help);
+                        fprintf(list,"JUMPIFEQ $label_i_ok_%d %s@$i_type%d string@int\n",counter,frame,counter);
+                        fprintf(list,"ERROR int@4\n");
+
+                        fprintf(list,"LABEL $label_i_ok_%d\n",counter);
+                        fprintf(list,"DEFVAR %s@$len%d\n",frame,counter);
+                        fprintf(list,"DEFVAR %s@$i%d\n",frame,counter);
+                        fprintf(list,"MOVE %s@$i%d %s@%s\n",frame, counter,frame,i_help);
+                        fprintf(list,"STRLEN %s@$len%d string@%s\n",frame,counter,s_help); // delku retezce do promenne len
+                        fprintf(list,"DEFVAR %s@bool%d\n",frame,counter); // novy bool pro porovnani
+                        fprintf(list,"LT %s@bool%d int@-1 %s@$i%d\n",frame,counter,frame,counter); // jestli vetsi nez -1 tak true do bool
+                        fprintf(list,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter); // pokud bool false skoc do error
+                        fprintf(list,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter); // bool true pokud je mensi jak 256
+                        fprintf(list,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter);
+
+                        fprintf(list,"DEFVAR %s@%%%d\n",frame,counter);
+                        fprintf(list,"GETCHAR %s@%%%d string@%s %s@%s\n",frame,counter,s_help, frame, i_help);
+                        fprintf(list,"JUMP $label_end_%d\n",counter);
+
+                        fprintf(list,"LABEL $label_error_%d\n",counter);
+                        fprintf(list,"MOVE %s@%%%d string@nil\n",frame,counter);
+                        fprintf(list,"LABEL $label_end_%d\n",counter);
+                    }
+
+                    parse_text = false; // reset parse_text zpatky
+                }
+                else { // nepracovali jsme s primo textem, ale s promennou
+
+                    fprintf(list,"DEFVAR %s@$s_type%d\n",frame,counter);
+                    fprintf(list,"TYPE %s@$s_type%d %s@%s\n",frame,counter,frame,s_help);
+                    fprintf(list,"JUMPIFEQ $label_ok_%d %s@$s_type%d string@string\n",counter,frame,counter);
+                    fprintf(list,"ERROR int@4\n");
+
+                    fprintf(list,"LABEL $label_ok_%d\n",counter);
+
+                    if(strlen(i_ptr) == 0 && i_ret != 0) { // zadal tam platne cislo za i
+                        if(i_ret > l-1) { // i je mimo rozsah
+                            fprintf(list,"MOVE %s@%%%d string@nil\n",frame,counter);
+                        }
+                        else { // index je v rozsahu
+                            fprintf(list,"DEFVAR %s@%%%d\n",frame,counter);
+                            fprintf(list,"GETCHAR %s@%%%d string@%s int@%s\n",frame,counter,s_help,i_help);
+                        }
+                    }
+                    else if(strlen(i_ptr) > 0) { // zadal tam promennou misto cisla i
+                        fprintf(list,"DEFVAR %s@$i_type%d\n",frame,counter);
+                        fprintf(list,"TYPE %s@$i_type%d %s@%s\n",frame,counter,frame,i_help);
+                        fprintf(list,"JUMPIFEQ $label_i_ok_%d %s@$i_type%d string@int\n",counter,frame,counter);
+                        fprintf(list,"ERROR int@4\n");
+
+                        fprintf(list,"LABEL $label_i_ok_%d\n",counter);
+                        fprintf(list,"DEFVAR %s@$len%d\n",frame,counter);
+                        fprintf(list,"DEFVAR %s@$i%d\n",frame,counter);
+                        fprintf(list,"MOVE %s@$i%d %s@%s\n",frame, counter,frame,i_help);
+                        fprintf(list,"STRLEN %s@$len%d string@%s\n",frame,counter,s_help); // delku retezce do promenne len
+                        fprintf(list,"DEFVAR %s@bool%d\n",frame,counter); // novy bool pro porovnani
+                        fprintf(list,"LT %s@bool%d int@-1 %s@$i%d\n",frame,counter,frame,counter); // jestli vetsi nez -1 tak true do bool
+                        fprintf(list,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter); // pokud bool false skoc do error
+                        fprintf(list,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter); // bool true pokud je mensi jak 256
+                        fprintf(list,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter);
+
+                        fprintf(list,"DEFVAR %s@%%%d\n",frame,counter);
+                        fprintf(list,"GETCHAR %s@%%%d string@%s %s@%s\n",frame,counter,s_help, frame, i_help);
+                        fprintf(list,"JUMP $label_end_%d\n",counter);
+
+                        fprintf(list,"LABEL $label_error_%d\n",counter);
+                        fprintf(list,"MOVE %s@%%%d string@nil\n",frame,counter);
+                        fprintf(list,"LABEL $label_end_%d\n",counter);
+                    }
+                }
+
+                free(s_help);
+                free(i_help);
+
+            }
+
+            else if(!strcmp(Root->content->type,"variable")) { // je to promenna, eg. a = b
+                fprintf(list,"DEFVAR %s@%%%d\n",frame,counter);
+                fprintf(list,"MOVE %s@%%%d %s@%s\n",frame,counter,frame,Root->content->name);
+            }
+
+            else { // zbyva prirazeni konstanty
+                fprintf(list,"DEFVAR %s@%%%d\n",frame,counter);
+                fprintf(list,"MOVE %s@%%%d %s@%s\n",frame,counter,Root->content->type,Root->content->name);
+            }
+
+            counter++; // operace probehla
+
+            return ; // vyskoc ven
         }
+
+        // ODTUD TO NENI SINGLE NODE
+
+            if (Root->LeftPointer->content->name == NULL) // vlevo je operator
+                left_operator = true;
+            else if (!strcmp(Root->LeftPointer->content->type, "variable")) // leva strana je VAR
+                left = true;
+            if (Root->RightPointer->content->name == NULL) // vpravo je operator
+                right_operator = true;
+            else if (!strcmp(Root->RightPointer->content->type, "variable")) // prava strana je VAR
+                right = true;
+
+            if (!left_operator) { // leva strana neni operator
+                left_supply = Root->LeftPointer->content->name;
+
+                fprintf(list, "DEFVAR %s@$type_%s$%d\n", frame, Root->LeftPointer->content->name, counter);
+                fprintf(list, "DEFVAR %s@$temp_%s$%d\n", frame, Root->LeftPointer->content->name, counter);
+                if (left) {
+                    fprintf(list, "TYPE %s@$type_%s$%d %s@%s\n", frame, Root->LeftPointer->content->name, counter,
+                            frame, Root->LeftPointer->content->name);
+                    fprintf(list, "MOVE %s@$temp_%s$%d %s@%s\n", frame, Root->LeftPointer->content->name, counter,
+                            frame, Root->LeftPointer->content->name);
+                } else {
+                    fprintf(list, "TYPE %s@$type_%s$%d %s@%s\n", frame, Root->LeftPointer->content->name, counter,
+                            Root->LeftPointer->content->type,
+                            Root->LeftPointer->content->name);
+                    fprintf(list, "MOVE %s@$temp_%s$%d %s@%s\n", frame, Root->LeftPointer->content->name, counter,
+                            Root->LeftPointer->content->type,
+                            Root->LeftPointer->content->name);
+                }
+            } else { // leva strana je operator
+                int front;
+                queueFront(q, &front);
+
+                char buffer[10];
+                sprintf(buffer, "%%%d", front);
+                left_supply = buffer;
+
+                fprintf(list, "DEFVAR %s@$type_%%%d\n", frame, front);
+                fprintf(list, "DEFVAR %s@$temp_%%%d\n", frame, front);
+                fprintf(list, "TYPE %s@$type_%%%d %s@%%%d\n", frame, front, frame, front);
+                fprintf(list, "MOVE %s@$temp_%%%d %s@%%%d\n", frame, front, frame, front);
+            }
+
+            if (!right_operator) { // prava strana neni operator
+                right_supply = Root->RightPointer->content->name;
+
+                fprintf(list, "DEFVAR %s@$type_%s$%d\n", frame, Root->RightPointer->content->name, counter);
+                fprintf(list, "DEFVAR %s@$temp_%s$%d\n", frame, Root->RightPointer->content->name, counter);
+                if (right) {
+                    fprintf(list, "TYPE %s@$type_%s$%d %s@%s\n", frame, Root->RightPointer->content->name, counter,
+                            frame, Root->RightPointer->content->name);
+                    fprintf(list, "MOVE %s@$temp_%s$%d %s@%s\n", frame, Root->RightPointer->content->name, counter,
+                            frame, Root->RightPointer->content->name);
+                } else {
+                    fprintf(list, "TYPE %s@$type_%s$%d %s@%s\n", frame, Root->RightPointer->content->name, counter,
+                            Root->RightPointer->content->type,
+                            Root->RightPointer->content->name);
+                    fprintf(list, "MOVE %s@$temp_%s$%d %s@%s\n", frame, Root->RightPointer->content->name, counter,
+                            Root->RightPointer->content->type,
+                            Root->RightPointer->content->name);
+                }
+            } else { // prava strana je operator
+                int front;
+
+                if (left_operator) // pokud byla leva operator, sahni do fronty o jeden dal
+                    queuePreFront(q, &front);
+                else // vlevo nebyl operator, sahni normalne
+                    queueFront(q, &front);
+
+                char buffer[10];
+                sprintf(buffer, "%%%d", front);
+                right_supply = buffer;
+
+                fprintf(list, "DEFVAR %s@$type_%%%d\n", frame, front);
+                fprintf(list, "DEFVAR %s@$temp_%%%d\n", frame, front);
+                fprintf(list, "TYPE %s@$type_%%%d %s@%%%d\n", frame, front, frame, front);
+                fprintf(list, "MOVE %s@$temp_%%%d %s@%%%d\n", frame, front, frame, front);
+            }
+
 
         // ZPRACOVANI INSTRUKCE PODLE OPERATORU
-
         if(!strcmp(operation,"*") || !strcmp(operation,"-")) { // pro MULL a SUB oba musi byt float/int
 
             if(left && right) { // obe strany jsou promenna
@@ -479,6 +781,8 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
 
     // PROCESSING SINGLE NODE
 
+    char* frame = get_frame(functionTracker); // vyhledej ve ktere jsme funkci
+    type_control(Root, Root->ID,q,frame, list); // typova kontrola probehne v kazdem pripade
     char* op;
     if(!strcmp(Root->ID,"+"))
         op = "ADD";
@@ -490,16 +794,6 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
         op = "DIV";
     else
         return ;
-
-
-    char* frame = get_frame(functionTracker); // vyhledej ve ktere jsme funkci
-
-    type_control(Root, Root->ID,q,frame, list); // typova kontrola probehne v kazdem pripade
-
-    /*if(concat) { // pokud to vyhodilo ze ma byt operace CONCAT misto ADD, nastav ji a resetuj bool concat
-        op = "CONCAT";
-        concat = false;
-    }*/
 
     fprintf(list,"DEFVAR %s@%%%i\n",frame, counter); // operace, chystam tedy novou promennou
     int leftvar; // leva strana
@@ -535,22 +829,25 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
 
 void generateExpression(tASTPointer* AST, tFunctionTracker* functionTracker, FILE* list) {
 
-    if(AST->LeftPointer == NULL && AST->RightPointer == NULL) {// jedna se pouze o assign jednoducheho typu x = 1
-        operation_assign(AST,functionTracker, list);
-    }
-    else { // jedna se o delsi vyraz
-
         char* frame = get_frame(functionTracker);
 
         tQueue* q = malloc(sizeof(tQueue)); // nova fronta pro generate_expression
         queueInit(q); // inicializuj frontu
         postorder(AST,q,functionTracker, list); // rekurzivni postorder stromem
 
-        fprintf(list,"DEFVAR %s@%%assign\n",frame); // cilova hodnota vyrazu, NEXT mozna pojmenovat s counter kvuli originalite
-        fprintf(list,"MOVE %s@%%assign %s@%%%i\n",frame, frame, counter-1); // do %assign dej posledni hodnotu counteru - po pricteni
+        fprintf(list,"DEFVAR %s@%%assign%d\n",frame,assign); // cilova hodnota vyrazu, NEXT mozna pojmenovat s counter kvuli originalite
+        fprintf(list,"MOVE %s@%%assign%d %s@%%%i\n",frame, assign, frame, counter-1); // do %assign dej posledni hodnotu counteru - po pricteni
+        assign++;
 
         free(q); // uvolni frontu
 
-    }
+    //}
 
+}
+
+void generateCode(char* stackTop, int rules[]) {
+    printf("STACK: %s\n",stackTop);
+    for(int i = 0; i < 50; i++)
+        printf("rule: %d\n",rules[i]);
+    printf("GEN FINISHED.\n");
 }

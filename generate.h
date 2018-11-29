@@ -14,7 +14,17 @@ char* get_frame(tFunctionTracker* functionTracker);
 void operation_assign(tASTPointer* Root, tFunctionTracker* functionTracker, FILE* list);
 void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, FILE* list);
 void generateExpression(tASTPointer* AST,tFunctionTracker* functionTracker, FILE* list);
+void generateCode(char* stackTop, int rules[]);
 
 void type_control(tASTPointer* Root, char* operation, tQueue* q, char* frame, FILE* list);
+
+typedef struct { // navratova hodnota tvorena parametry funkce ord_parse()
+    char* str;
+    char* i;
+} ord_args;
+
+char* name_parse(char* str);
+char* number_parse(char* str);
+char* ord_parse(char* str);
 
 #endif //IFJ18_GENERATE_H

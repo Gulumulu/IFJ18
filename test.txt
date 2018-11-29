@@ -1,3 +1,2 @@
-def krat(a)
-	a=c*a
-end
+a = 2
+b = chr(4)
