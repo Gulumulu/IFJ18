@@ -91,7 +91,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -109,10 +109,10 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
-    FILE *list = fopen("./list.txt", "w+");
-    FILE *file = fopen("./test.txt", "r");
+    FILE *list = fopen("../list.txt", "w+");
+    FILE *file = fopen("../test.txt", "r");
 
     //FILE *file = fopen("../test.txt", "r");
     // zacatek programu
@@ -322,7 +322,7 @@ void doMagic() {
             // call lexical analysis
             token_generate(file);
             // call syntax analysis
-                if (precedence == 1 || ((global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0)) {
+                if ((precedence == 1 || ((global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0)) && strcmp(tStackPredictiveGetTop(predictiveStack), "<print-expr>") != 0 && strcmp(tStackPredictiveGetTop(predictiveStack), "<next-print-expr>") != 0) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
                     if (global_token.type == s_id) {
@@ -384,7 +384,7 @@ void doMagic() {
                     }
                     if (printing == 1) {
                         // need to print this expression
-                        generatePrint(&tmpToken);
+                        generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
                         //generateCodeParek(&tmpToken);
                         // todo: generate code
                         /*
@@ -451,7 +451,7 @@ void doMagic() {
               	// NEJAKEJ PRINTING
 		        if (printing == 1 ) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
                     // need to print this expression
-                    generatePrint(&global_token);
+                    generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker));
                     //generateCodeParek(&global_token);
                     // todo: generate code
                     /*

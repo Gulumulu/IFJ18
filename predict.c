@@ -534,9 +534,6 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 } else if (strcmp(predictiveStackTop, "id") == 0 && checkingArgs == 1) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
-                    if (inputFunction == kw_print) {
-                        printing = 1;
-                    }
                     if (checkingArgs == 1 && token.type != s_lbrac && token.type != s_rbrac && token.type != s_comma) {
                         // this token is function argument => push type to stack
                         pushArg(&token, node);
@@ -553,6 +550,10 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                     }
                     inputFunctionName = NULL;
                     tStackPredictiveDispose(argsTracker);
+                    inputFunction = s_comma;
+                }
+                if (inputFunction == kw_print) {
+                    printing = 1;
                 }
             } else if (strcmp(predictiveStackTop, "<expr>") != 0){
                 // non-terminal in on top of the predictiveStack && no need to calculate expression
