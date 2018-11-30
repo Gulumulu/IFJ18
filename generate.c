@@ -33,7 +33,7 @@ void generate_to_list2(int ad,char* str) { // generovani do seznamu misto do sou
 
 }
 
-int parse_text = false; // jestli je parsovany vyraz "xx"
+bool parse_text = false; // jestli je parsovany vyraz "xx"
 static int counter = 1; // globalni pocitadlo v uzlech. zaciname na %1
 bool concat = false; // jestli ma dojit k CONCAT misto ADD
 
@@ -225,8 +225,9 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                     parse_text = false; // nastav zpet
                     generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@%%%d string@%s\n",frame,counter,parsed),list_str);
                 }
-                else
+                else // parsovany vyraz byla promenna
                     generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@%%%d %s@%s\n",frame, counter,frame, Root->content->name),list_str);
+
 
             }
             else if(!strcmp(Root->content->type, "chr")) { // funkce chr(i)
@@ -509,44 +510,65 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 int l = strlen(str); // delka celkoveho retezce
                 char s[l+1]; // pomocne pole pro jednotlivy operand
                 char* operand = malloc(sizeof(char) * (l + 1)); // finalni operand
-                char* operand_rest;
-                unsigned long operand_val;
-
+                long int_val;
+                float float_val;
+                char* float_rest;
+                char* int_rest;
                 for(int a = 0; a < l+1; a++) // vynulovani pole
                     s[a] = '\0';
-
                 int internal = 0;
-                for(int a = 0; a < l+1; a++) {
-                    if(str[internal] == ',' || str[a] == '\0') { // oddelovac nebo konec
+                bool second_time = false; // zatim jeste nebyla nalezena parova '"'
+
+                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
+
+                for(int a = 0; a < l+1; a++) { // projizdim znak po znaku retezec s argumenty
+
+                    if(second_time && (str[a] == ',' || str[a] == '\0')) { // oddelovac nebo konec, kdyz uz byla nalezena druha '"'
                         strncpy(operand,s,10); // vytvoren retezec operand
-                        operand_val = strtol(operand, &operand_rest,10);
+                        int_val = strtol(operand, &int_rest,10);
+                        float_val = strtof(operand,&float_rest);
 
                         // tady pracuj s jednim operandem
 
                         if(parse_text) { // operand je textovy retezec
                             generate_to_list2(sprintf(list_str+list_length,"WRITE string@%s\n",operand),list_str);
                             parse_text = false;
+                            second_time = false;
                         }
-                        else if(operand_val != 0 && !strlen(operand_rest)) { // operand je cislo. zatim umi jen inty
-                            generate_to_list2(sprintf(list_str+list_length,"WRITE int@%lu\n",operand_val),list_str);
+                        else if(int_val != 0 && !strlen(int_rest)) { // operand je int
+                            generate_to_list2(sprintf(list_str+list_length,"WRITE int@%ld\n",int_val),list_str);
+                        }
+
+                        else if(float_val != 0 && !strlen(float_rest)) { // operand je float
+                            generate_to_list2(sprintf(list_str+list_length,"WRITE float@%f\n",float_val),list_str);
                         }
 
                         else { // operand je promenna
                             generate_to_list2(sprintf(list_str+list_length,"WRITE %s@%s\n",frame,operand),list_str); // dodelat az to pujde testovat
-                        }
+                        } // DODELAT
 
                         // konec prace s operandem
+
                         internal = 0;
                         for(int a = 0; a < l+1; a++) // vynulovani pole
                             s[a] = '\0';
                         continue;
                     }
+
+                    if(parse_text && str[a] == '"') { // byla nalezena parova uvozovka, moznost nacitat, dalsi retezec
+                        second_time = true;
+                        continue;
+                    }
+
                     if(str[a] == '"') {
                         parse_text = true;
                         continue;
                     }
                     s[internal] = str[a];
+                    internal++;
                 }
+
+                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d nil@nil\n",frame,counter),list_str); // navrat print je vzdy nil@nil
 
                 free(operand);
                 parse_text = false; // kdyby nahodou

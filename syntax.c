@@ -419,7 +419,7 @@ void doMagic() {
                                     generateWhileHead(stackAST->body[stackAST->top]);
                                 }
 
-                                //generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
+                                generateExpression(AST,functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
 
                                 // clear tree after generating
                                 AST = malloc(sizeof(struct tAST) * 2);

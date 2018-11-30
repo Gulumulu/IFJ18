@@ -8,8 +8,8 @@
 
 extern int dyn_length; // dyn se menici delka listu
 extern int list_length; // pocitadlo delky listu
-extern char* list_str;
+extern char* list_str; // list pro tisk
 
-extern bool issingle;
+extern bool issingle; // urceni zda se jedna o single node
 
 #endif //IFJ_LIST_H
