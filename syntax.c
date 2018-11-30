@@ -119,7 +119,7 @@ void doMagic() {
     // zacatek programu
 
 
-    generate_to_list2(sprintf(list_str+list_length,".IFJcode2018\n"),list_str);
+    generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"),list_str);
     generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"),list_str);
 
     BSTNodeContentPtr* tmp;

@@ -10,32 +10,22 @@
 #include "errors.h"
 #include "list.h"
 
-int dyn_length = 1024;
-int list_length = 0;
+int dyn_length = 1024; // dyn poc delka listu pro tisk
+int list_length = 0; // ukazatel na pozici v listu
 
-bool issingle = false;
+bool issingle = false; // urceni jestli je single node (strom vel. 1)
+
+bool parse_text = false; // jestli je parsovany vyraz "xx"
+static int counter = 1; // globalni pocitadlo v uzlech. zaciname na %1
+//bool concat = false; // jestli ma dojit k CONCAT misto ADD
 
 void generate_to_list2(int ad,char* str) { // generovani do seznamu misto do souboru v2
-/*
-    printf("celkova velikost: %d\n",*dyn_length);
-    printf("delka v sezmanu: %i\n",*list_length);
-    printf("delka ad: %i\n",ad);
-    printf("%s",list_str);
-*/
     if(ad > dyn_length - list_length) { // uz tam neni dost mista, realloc
         dyn_length *= 2;
         str = realloc(str,dyn_length);
     }
-
     list_length += ad; // pridej nove vygenerovanou delku ze sprintf do ukazatele na pozici v listu
-
-//    printf("nova delka v senamu: %i\n\n",*list_length);
-
 }
-
-bool parse_text = false; // jestli je parsovany vyraz "xx"
-static int counter = 1; // globalni pocitadlo v uzlech. zaciname na %1
-bool concat = false; // jestli ma dojit k CONCAT misto ADD
 
 char* name_parse(char* str) { // vypreparuje ven z retezce string || promennou pro funkci strlen(string)
 
@@ -592,6 +582,19 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
 
         // ODTUD TO NENI SINGLE NODE
 
+            // priprava na
+
+            char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs"};
+            bool left_func = false;
+            bool right_func = false;
+
+            for(int i = 0; i < 7; i++) {
+                if(!strcmp(Root->LeftPointer->content->type,funkce[i]))
+                    left_func = true;
+                if(!strcmp(Root->RightPointer->content->type,funkce[i]))
+                    right_func = true;
+            }
+
             if (Root->LeftPointer->content->name == NULL) // vlevo je operator
                 left_operator = true;
             else if (!strcmp(Root->LeftPointer->content->type, "variable")) // leva strana je VAR
@@ -632,6 +635,8 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%%%d %s@%%%d\n", frame, front, frame, front),list_str);
                 generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%%%d %s@%%%d\n", frame, front, frame, front),list_str);
             }
+
+
 
             if (!right_operator) { // prava strana neni operator
                 right_supply = Root->RightPointer->content->name;
