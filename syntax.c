@@ -391,7 +391,9 @@ void doMagic() {
                          * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
                          */
                         // pop <print-expr> rule from stack
-                        tStackPredictivePop(predictiveStack);
+                        /*if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
+                            tStackPredictivePop(predictiveStack);
+                        }*/
                         // we will not be printing anymore
                         printing = 0;
                     }
@@ -447,7 +449,7 @@ void doMagic() {
                 }
 
               	// NEJAKEJ PRINTING
-		        if (printing == 1 ) {
+		        if (printing == 1 ) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
                     // need to print this expression
                     generatePrint(&global_token);
                     //generateCodeParek(&global_token);
@@ -456,7 +458,9 @@ void doMagic() {
                      * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
                      */
                     // pop <print-expr> rule from stack
-                    tStackPredictivePop(predictiveStack);
+                   /* if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
+                        tStackPredictivePop(predictiveStack);
+                    }*/
                     // we will not be printing anymore
                     printing = 0;
                 }

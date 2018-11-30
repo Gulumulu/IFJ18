@@ -113,7 +113,7 @@ char* rightSides[30][10] = {
         /*19. <stat> -> */ {"while", "<expr>", "do", "EOL", "<st-list>", "end", "", "", "", ""},
         /*20. <stat> -> */ {"print", "<print-expr>", "", "", "", "", "", "", "", ""},
         /*21. <print-expr> -> */ {"(", "<print-expr>", ")", "", "", "", "", "", "", ""},
-        /*22. <print-expr> -> */ {"<expr>", "<next-print-expr>", "", "", "", "", "", "", "", ""},
+        /*22. <print-expr> -> */ {"id", "<next-print-expr>", "", "", "", "", "", "", "", ""},
         /*23. <print-expr> -> */ {"", "", "", "", "", "", "", "", "", ""},
         /*24. <next-print-expr> -> */ {",", "<print-expr>", "", "", "", "", "", "", "", ""},
         /*25. <stat> -> */ {"function-id", "<f-params>", "", "", "", "", "", "", "", "" },
@@ -534,6 +534,9 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 } else if (strcmp(predictiveStackTop, "id") == 0 && checkingArgs == 1) {
                     tStackPredictivePop(predictiveStack);
                     end = 2;
+                    if (inputFunction == kw_print) {
+                        printing = 1;
+                    }
                     if (checkingArgs == 1 && token.type != s_lbrac && token.type != s_rbrac && token.type != s_comma) {
                         // this token is function argument => push type to stack
                         pushArg(&token, node);
@@ -569,10 +572,14 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                         //fprintf(stdout, "Applying rule number: %d\n", rule);
                         fillRulesApplied(rule);
                     }
-                    if (rule == 17 || rule == 25) {
+                    if (rule == 17 || rule == 25 || rule == 22) {
                         // need to check arguments of function
                         checkingArgs = 1;
-                        inputFunction = token.type;
+                        if (rule == 22) {
+                            inputFunction = kw_print;
+                        } else {
+                            inputFunction = token.type;
+                        }
                         inputFunctionName = "";
                         inputFunctionName = malloc(strlen(token.content)+1);
                         inputFunctionName = memcpy(inputFunctionName, token.content, strlen(token.content));

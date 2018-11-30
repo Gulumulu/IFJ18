@@ -53,16 +53,17 @@ int match(const char *string, const char *pattern)
     return 1;
 }
 
-char* getArguments(const char* functionDeclaration) {
+char* getArguments(char* functionDeclaration) {
     char* arguments = "";
     arguments = strrchr(functionDeclaration, '(');
     if (arguments == NULL) {
         arguments = strchr(functionDeclaration, ' ');
-        if (arguments == NULL) {
+        /*if (arguments == NULL) {
             return NULL;
         } else {
             return arguments;
-        }
+        }*/
+        return functionDeclaration;
     } else {
         return arguments;
     }
@@ -74,7 +75,7 @@ char* getArguments(const char* functionDeclaration) {
  * @param functionName
  * @return
  */
-char* getFunctionName(const char* functionName) {
+char* getFunctionName(char* functionName) {
     char* arguments = "";
     if (match(functionName, "(print)+") == 1) {
         return "print";
@@ -82,16 +83,17 @@ char* getFunctionName(const char* functionName) {
         if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
-            if (match(arguments, "\\([a-z]+\\)") != 1) {
+            if (match(arguments, "\\((\".*\"|(([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*))\\)") != 1 && match(arguments, "(length)((\"[a-z]+\")|[a-z]+)") != 1) {
                 return NULL;
             }
+            // (([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*) -> variable regex
         }
         return "length";
     } else if (match(functionName, "(inputs)+") == 1) {
         if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
-            if (match(arguments, "\\(\\)") != 1) {
+            if (match(arguments, "\\(\\)") != 1 && match(arguments, "(inputs)") != 1) {
                 return NULL;
             }
         }
@@ -100,7 +102,7 @@ char* getFunctionName(const char* functionName) {
         if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
-            if (match(arguments, "\\(\\)") != 1) {
+            if (match(arguments, "\\(\\)") != 1 && match(arguments, "(inputi)") != 1) {
                 return NULL;
             }
         }
@@ -109,7 +111,7 @@ char* getFunctionName(const char* functionName) {
         if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
-            if (match(arguments, "\\(\\)") != 1) {
+            if (match(arguments, "\\(\\)") != 1 && match(arguments, "(inputf)") != 1) {
                 return NULL;
             }
         }
@@ -118,7 +120,7 @@ char* getFunctionName(const char* functionName) {
         if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
-            if (match(arguments, "\\(\"[a-z]+\", ?[a-z]+?[0-9]*, ?[a-z]+?[0-9]*\\)") != 1) {
+            if (match(arguments, "\\(((\".*\")|(([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*) |([0-9]*[0-9]+))\\)") != 1 && match(arguments, "(substr)((\".*\")|(([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+))") != 1) {
                 return NULL;
             }
         }
@@ -127,7 +129,7 @@ char* getFunctionName(const char* functionName) {
         if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
-            if (match(arguments, "\\([a-z]+, ?[a-z]+\\)") != 1) {
+            if (match(arguments, "\\(((\".*\")|(([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+))\\)") != 1 && match(arguments, "(ord)((\".*\")|[a-z]+),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+))") != 1) {
                 return NULL;
             }
         }
@@ -136,7 +138,7 @@ char* getFunctionName(const char* functionName) {
         if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
-            if (match(arguments, "\\(([0-1]*[0-9]*[0-9]+|2[0-5]+[0-5]+)\\)") != 1) {
+            if (match(arguments, "\\((([0-1]*[0-9]*[0-9]+) | (2[0-5]+[0-5]+) | (([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*))\\)") != 1 && match(arguments, "(ord)((([0-1]*[0-9]*[0-9]+)|(2[0-5]+[0-5]+)|[a-z]+)|((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)))")) {
                 return NULL;
             }
         }
@@ -167,8 +169,10 @@ BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token) {
                 errorHandling(99);
                 return NULL;
             } else {
-                tmpNode->name = malloc(strlen(token->content)+1);
-                tmpNode->name = token->content;
+                size_t len = strlen(token->content);
+                tmpNode->name = malloc(len+1);
+                tmpNode->name = memcpy(tmpNode->name,token->content, len);
+                tmpNode->name[(int)len] = '\0';
                 switch (token->type) {
                     case s_int:
                     case s_exp_int:
@@ -184,7 +188,7 @@ BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token) {
                     case s_func_expr:
                         tmpNode->type = getFunctionName(token->content);
                         if (tmpNode->type == NULL) {
-                            errorHandling(5);
+                            errorHandling(6);               // 4 or 6?
                             return NULL;
                         }
                         break;
@@ -222,6 +226,7 @@ tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer) {
             newLeaf->content = symtablePointer;
             newLeaf->ID = malloc(3);
             strcpy(newLeaf->ID,"E");
+            newLeaf->ID[1] = '\0';
             return newLeaf;
         }
     }
@@ -437,6 +442,7 @@ tASTPointer* makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPoin
                     switch (matchingTypes(rightPointer->content, leftPointer->content, ID) ) {
                         case 1:
                             // either operand is variable or user-defined function => not changing type
+                            tmpContent->type = NULL;
                             break;
                         case 2:
                             // every operation  => changing type
