@@ -1,2 +1,4 @@
-a = 2
-b = chr(4)
+a=""
+while a !="aaa" do
+	print "a is ", a
+	a=a+"a"

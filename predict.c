@@ -113,7 +113,7 @@ char* rightSides[30][10] = {
         /*19. <stat> -> */ {"while", "<expr>", "do", "EOL", "<st-list>", "end", "", "", "", ""},
         /*20. <stat> -> */ {"print", "<print-expr>", "", "", "", "", "", "", "", ""},
         /*21. <print-expr> -> */ {"(", "<print-expr>", ")", "", "", "", "", "", "", ""},
-        /*22. <print-expr> -> */ {"<expr>", "<next-print-expr>", "", "", "", "", "", "", "", ""},
+        /*22. <print-expr> -> */ {"id", "<next-print-expr>", "", "", "", "", "", "", "", ""},
         /*23. <print-expr> -> */ {"", "", "", "", "", "", "", "", "", ""},
         /*24. <next-print-expr> -> */ {",", "<print-expr>", "", "", "", "", "", "", "", ""},
         /*25. <stat> -> */ {"function-id", "<f-params>", "", "", "", "", "", "", "", "" },
@@ -550,6 +550,10 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                     }
                     inputFunctionName = NULL;
                     tStackPredictiveDispose(argsTracker);
+                    inputFunction = s_comma;
+                }
+                if (inputFunction == kw_print) {
+                    printing = 1;
                 }
             } else if (strcmp(predictiveStackTop, "<expr>") != 0){
                 // non-terminal in on top of the predictiveStack && no need to calculate expression
@@ -569,10 +573,14 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                         //fprintf(stdout, "Applying rule number: %d\n", rule);
                         fillRulesApplied(rule);
                     }
-                    if (rule == 17 || rule == 25) {
+                    if (rule == 17 || rule == 25 || rule == 22) {
                         // need to check arguments of function
                         checkingArgs = 1;
-                        inputFunction = token.type;
+                        if (rule == 22) {
+                            inputFunction = kw_print;
+                        } else {
+                            inputFunction = token.type;
+                        }
                         inputFunctionName = "";
                         inputFunctionName = malloc(strlen(token.content)+1);
                         inputFunctionName = memcpy(inputFunctionName, token.content, strlen(token.content));

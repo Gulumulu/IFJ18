@@ -324,7 +324,7 @@ void doMagic() {
             // call lexical analysis
             token_generate(file);
             // call syntax analysis
-                if (precedence == 1 || ((global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0)) {
+                if ((precedence == 1 || ((global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0)) && strcmp(tStackPredictiveGetTop(predictiveStack), "<print-expr>") != 0 && strcmp(tStackPredictiveGetTop(predictiveStack), "<next-print-expr>") != 0) {
                     // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
                     precedence = 1;
                     if (global_token.type == s_id) {
@@ -387,7 +387,7 @@ void doMagic() {
                     if (printing == 1) {
                         // need to print this expression
 
-                        generatePrint(&tmpToken);
+                        generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
 
                         //generateCodeParek(&tmpToken);
                         // todo: generate code
@@ -395,7 +395,9 @@ void doMagic() {
                          * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
                          */
                         // pop <print-expr> rule from stack
-                        tStackPredictivePop(predictiveStack);
+                        /*if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
+                            tStackPredictivePop(predictiveStack);
+                        }*/
                         // we will not be printing anymore
                         printing = 0;
                     }
@@ -451,16 +453,20 @@ void doMagic() {
                 }
 
               	// NEJAKEJ PRINTING
-		        if (printing == 1 ) {
+		        if (printing == 1 ) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
                     // need to print this expression
-                    //generatePrint(&global_token); ZAKOMENTOVANO MNOU, gab test print()
+
+                    generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker));
+
                     //generateCodeParek(&global_token);
                     // todo: generate code
                     /*
                      * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
                      */
                     // pop <print-expr> rule from stack
-                    tStackPredictivePop(predictiveStack);
+                   /* if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
+                        tStackPredictivePop(predictiveStack);
+                    }*/
                     // we will not be printing anymore
                     printing = 0;
                 }
