@@ -10,6 +10,7 @@
 #include "queue.h"
 #include "generate.h"
 #include "if-generate.h"
+#include "list.h"
 
 #define BUF_SIZE 1024
 
@@ -111,14 +112,15 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *list = fopen("../list.txt", "w+");
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("test.txt", "r");
+    char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
 
-    //FILE *file = fopen("../test.txt", "r");
+    //FILE *file = fopen("test.txt", "r");
     // zacatek programu
 
-    fprintf(list,".ifjcode18\n");
-    fprintf(list,"CREATEFRAME\n");
+
+    generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"),list_str);
+    generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"),list_str);
 
     BSTNodeContentPtr* tmp;
     int not_int = 0;            // true if variable is float or string
@@ -351,11 +353,11 @@ void doMagic() {
                                 generateWhileHead(stackAST->body[stackAST->top]);
                             }
 
-                            //generateExpression(AST,functionTracker,list); // vygeneruj do seznamu instrukce vyrazu
+                            generateExpression(AST,functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
 
                             // po vygenerovani vyrazu ho prirad zadane promenne
-                            //char *frame = get_frame(functionTracker);
-                            //fprintf(list, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign);
+                            char *frame = get_frame(functionTracker);
+                            generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign),list_str);
                             assign++;
 
                             // clear tree after generating
@@ -384,7 +386,9 @@ void doMagic() {
                     }
                     if (printing == 1) {
                         // need to print this expression
+
                         generatePrint(&tmpToken);
+
                         //generateCodeParek(&tmpToken);
                         // todo: generate code
                         /*
@@ -417,7 +421,7 @@ void doMagic() {
                                     generateWhileHead(stackAST->body[stackAST->top]);
                                 }
 
-                                //generateExpression(AST); // vygeneruj do seznamu instrukce vyrazu
+                                generateExpression(AST,functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
 
                                 // clear tree after generating
                                 AST = malloc(sizeof(struct tAST) * 2);
@@ -449,7 +453,7 @@ void doMagic() {
               	// NEJAKEJ PRINTING
 		        if (printing == 1 ) {
                     // need to print this expression
-                    generatePrint(&global_token);
+                    //generatePrint(&global_token); ZAKOMENTOVANO MNOU, gab test print()
                     //generateCodeParek(&global_token);
                     // todo: generate code
                     /*
@@ -493,17 +497,13 @@ void doMagic() {
         //tASTDispose(AST);
         tFunctionTrackerDispose(functionTracker);
 
-        /*fclose(list);
         if(ERROR_TYPE == 0) { // tisk obsahu souboru pokud se neobjevila chyba
 
-            fclose(list);
-            FILE *list = fopen("list.txt", "r");
-            char c;
-            while((c = fgetc(list)) != EOF)
-                printf("%c",c);
-            fclose(list);
-        }*/
+            printf("%s",list_str);
 
+        }
+
+    free(list_str);
     fclose(file);
 
 }

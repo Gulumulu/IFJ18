@@ -11,7 +11,7 @@
 #include "errors.h"
 #include "scanner.h"
 #include <string.h>
-//#include <regex.h>
+#include <regex.h>
 #define MAX 50
 int precedence;
 // structure for node
