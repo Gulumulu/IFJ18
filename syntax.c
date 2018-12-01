@@ -12,6 +12,10 @@
 #include "if-generate.h"
 #include "list.h"
 
+// externi promenne
+char* list_str;
+tFunctionTracker* functionTracker;
+
 #define BUF_SIZE 1024
 
 /**
@@ -115,7 +119,6 @@ void doMagic() {
     FILE *file = fopen("test.txt", "r");
     char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
 
-    //FILE *file = fopen("test.txt", "r");
     // zacatek programu
 
 
@@ -387,7 +390,10 @@ void doMagic() {
                     if (printing == 1) {
                         // need to print this expression
 
+
                         generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
+
+                        printf("dochazi k tisku.\n");
 
                         //generateCodeParek(&tmpToken);
                         // todo: generate code
@@ -443,12 +449,6 @@ void doMagic() {
                      * P.S. maybe there is no need for checking applied rules
                      */
                      //generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied);
-
-
-                    /*if(!strcmp(predictiveStack->content[predictiveStack->top-1],"<assign>")) { // bude nasledovat expression, vytvor promennou na prirazeni
-                        char *frame = get_frame(functionTracker);
-                        fprintf(list, "MOVE %s@%s %s@%%assign\n", frame, tmpToken.content, frame);
-                    } // PROC NEZOBRAZUJE NIC PRI FUNKCI*/
 
                 }
 

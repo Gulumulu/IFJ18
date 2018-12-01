@@ -21,6 +21,8 @@ typedef struct tFT{
     char* function[];
 } tFunctionTracker;
 
+extern tFunctionTracker* functionTracker;
+
 // function that does all the work
 void doMagic();
 

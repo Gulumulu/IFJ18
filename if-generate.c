@@ -6,6 +6,8 @@
 
 #include "if-generate.h"
 #include "predict.h"
+#include "generate.h"
+#include "list.h"
 
 char* myIfLabel = "$myIfLabel";
 char* myIfEndLabel = "$myIfEndLabel";
@@ -79,6 +81,7 @@ void generateIfHead(tASTPointer *AST) {
     if (AST == NULL) {
         errorHandling(99);
     } else {
+
         if (firstTime == 0) {
             firstTime++;
             labelStack = malloc(sizeof(tLabelStack));
@@ -89,14 +92,14 @@ void generateIfHead(tASTPointer *AST) {
             tLabelStackInit(tmpVariables);
         }
         if (strcmp(AST->ID, "!=") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str); // M
             ifLabelNumber++;
-            printf("JUMPIFEQ %s%d $symb1 $symb2 \n", myIfLabel, ifLabelNumber);
+            printf("JUMPIFEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber);
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, "==") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str); // M
             ifLabelNumber++;
-            printf("JUMPIFNEQ %s%d $symb1 $symb2 \n", myIfLabel, ifLabelNumber);
+            printf("JUMPIFNEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber);
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, "<") == 0) {
             printf("still need to calculate expression.\n");
@@ -170,7 +173,7 @@ void generateWhileHead(tASTPointer *AST) {
             tLabelStackInit(endLabelStack);
         }
         if (strcmp(AST->ID, "!=") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str); // M
             whileLabelNumber++;
             printf("LABEL %s%d \n", myWhileLabel, whileLabelNumber);
             tLabelStackPush(labelStack, whileLabelNumber);
@@ -178,7 +181,7 @@ void generateWhileHead(tASTPointer *AST) {
             printf("JUMPIFEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber);
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "==") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str); // M
             whileLabelNumber++;
             printf("LABEL %s%d \n", myWhileLabel, whileLabelNumber);
             tLabelStackPush(labelStack, whileLabelNumber);

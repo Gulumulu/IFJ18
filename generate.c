@@ -2,6 +2,9 @@
 // Created by root on 11/23/18.
 //
 
+// konfl sprv, float_exp v scanner.h, dopoisu fuci print v if generate. zkontrolovat print v gen.c
+
+
 #include "generate.h"
 #include "semantic.h"
 #include "queue.h"
@@ -435,7 +438,6 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter),list_str);
     }
     else if(id == 2) { // vestavena funkce print
-
         char *str = arguments_parse(Root->content->name); // dlooooouhy retezec se vsemi argumenty
         long l = strlen(str); // delka celkoveho retezce
         char s[l+1]; // pomocne pole pro jednotlivy operand
@@ -453,7 +455,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
         for(int a = 0; a < l+1; a++) { // projizdim znak po znaku retezec s argumenty
 
-            if(second_time && (str[a] == ',' || str[a] == '\0')) { // oddelovac nebo konec, kdyz uz byla nalezena druha '"'
+            if((!second_time && (str[a] == ',' || str[a] == '\0')) || (second_time && parse_text && (str[a] == ',' || str[a] == '\0'))) { // oddelovac nebo konec, kdyz uz byla nalezena druha '"'
+
                 strncpy(operand,s,10); // vytvoren retezec operand
                 int_val = strtol(operand, &int_rest,10);
                 float_val = strtof(operand,&float_rest);
@@ -483,6 +486,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 for(int b = 0; b < l+1; b++) // vynulovani pole
                     s[b] = '\0';
                 continue;
+
+
             }
 
             if(parse_text && str[a] == '"') { // byla nalezena parova uvozovka, moznost nacitat, dalsi retezec
