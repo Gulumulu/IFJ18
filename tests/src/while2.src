@@ -1,5 +1,6 @@
+# test for while-loop
 a=2
-while a>=0 do
+while a >= 0 do
 	print "a is ", a
 	a=a-1
 end

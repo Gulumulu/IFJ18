@@ -1,4 +1,4 @@
-def krat(a)
-	a=2*a
-	length("ahoj", a)
-end
+# test for build-in function length => wrong number of parameters
+print("lenght of foobar is: ")
+a=length("foobar", 2)
+print(a)

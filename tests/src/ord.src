@@ -1,4 +1,6 @@
-def krat(a)
-    b = "ahoj"
-	ord(b, a)
-end
+# test for build-in function ord => variables used as parameters
+b = "foobar"
+a = 1
+print("ASCII value of o is: ")
+b=ord(b, a)
+print(b)

@@ -1,4 +1,5 @@
-def krat(a)
-	a=2*a
-	substr(a)
-end
+# test for build-in function substr => wrong number of parameters
+a="foobar"
+a=substr(a)
+print("substring of ", a, " is: ")
+print(a)

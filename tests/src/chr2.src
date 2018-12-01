@@ -1,4 +1,9 @@
-def krat(a)
+# test for build-in function chr() => wrong number of parameter for chr()
+def getChr(a)
 	a=2*a
 	chr(5, a)
 end
+b=48
+print ("ASCII value of ", b, " is:")
+b=getChr(b)
+print b

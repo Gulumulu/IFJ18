@@ -1,3 +1,8 @@
-def krat(a)
-	a="ahoj"+chr(a)
+# test for build-in function chr() => concatenate chr() and string
+def getChr(a)
+	a="foobar"+chr(a)
 end
+b=48
+print ("foobar and ASCII value of ", b, " is:")
+b=getChr(b)
+print b

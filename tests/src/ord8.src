@@ -1,3 +1,4 @@
-def krat(a)
-	ord("ahoj", "h")
-end
+# test for build-in function ord
+print("ASCII value of o is: ")
+a=ord("foobar", "one")
+print(a)

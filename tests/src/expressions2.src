@@ -1,1 +1,4 @@
+# test for int and string concatenation => incompatible types
+print("2 plus ahoj is: ")
 a=2+"ahoj"
+print(a)

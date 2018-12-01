@@ -1,5 +1,6 @@
-a=1
-if a>=1 then
+# test for if-statement
+a=3
+if a >= 1 then
 	print "a is greater or equal to 1"
 else
 	print "a is less than 1"

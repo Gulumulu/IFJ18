@@ -1,1 +1,4 @@
+# test for expressions => adding build-in function results
+print("length of ahoj plus ASCII value of char h is: ")
 a=length("ahoj")+ord("ahoj",1)
+print(a)

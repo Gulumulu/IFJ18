@@ -1,3 +1,4 @@
-def krat(a)
-	a=length a
-end
+# test for build-in function length => paranthesis not used
+print("length of foobar is: ")
+a=length "foobar"
+print(a)

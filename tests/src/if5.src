@@ -1,0 +1,7 @@
+# test for if-statement => variable and string comparison
+a="abd"
+if a < "abc" then
+	print "error"
+else
+	print "abd is greater than abc"
+end

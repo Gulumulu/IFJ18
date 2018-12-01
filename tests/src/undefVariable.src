@@ -1,8 +1,14 @@
-def krat(a)
-	a=1
+# test for undefined variable
+def foo(a)
 	b=a*3
 end
 
-def nasobeni(b)
+def bar(b)
 	b=a*3
 end
+print("1 multiplied by 3 is: ")
+a=foo(1)
+print(a)
+print("1 multiplied by 3 is: ")
+a=bar(1)
+print(a)

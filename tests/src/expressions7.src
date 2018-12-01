@@ -1,4 +1,7 @@
-def retInt()
+# test for expressions => user defined function plus string result in incompatible types
+def retOne()
 	a=1
 end
-a=retInt()+"ahoj"
+print("1 plus ahoj is: ")
+a=retOne()+"ahoj"
+print(a)

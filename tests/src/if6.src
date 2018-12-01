@@ -1,0 +1,7 @@
+# test for if-statement => variable and float comparison
+a=3.5
+if a != 4.20 then
+	print "a ain't 4.20"
+else
+	print "a is 4.20"
+end

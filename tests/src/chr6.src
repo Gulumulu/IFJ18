@@ -1,3 +1,5 @@
-def krat(a)
-	a=chr a
-end
+# test for build-in function chr() => not using brackets for parameters
+b=48
+print ("ASCII value of ", b, " is:")
+b=chr b
+print b

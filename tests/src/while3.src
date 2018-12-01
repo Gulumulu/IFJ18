@@ -1,5 +1,6 @@
+# test for while-loop
 a=10
-while (a/2)!=1 do
+while (a/2) != 1 do
 	print "a is ", a
 	a=a/2
 end
