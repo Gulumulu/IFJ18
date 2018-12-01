@@ -229,6 +229,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         else {// parsovany vyraz byla promenna
             generate_to_list2(sprintf(list_str + list_length, "STRLEN %s@%s%d %s@%s\n", frame,macro, counter, frame, Root->content->name), list_str);
         }
+        free(parsed);
     }
 
     else if(id == 1) { // funkce chr(i)
@@ -258,6 +259,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         }
         else // zadana spatna ciselna hodnota
             errorHandling(4);
+
+        free(parsed);
     }
 
     else if(id == 0) { // funkce ord(s,i)
@@ -385,6 +388,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
         free(s_help);
         free(i_help);
+        free(str);
 
     }
 
@@ -506,6 +510,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d nil@nil\n",frame,macro,counter),list_str); // navrat print je vzdy nil@nil
 
         free(operand);
+        free(str);
         parse_text = false; // kdyby nahodou
 
     }
