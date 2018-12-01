@@ -53,34 +53,32 @@ typedef enum {
 /*33*/  s_string,       // string starting with "
 /*34*/  s_lbrac,        // left bracket (
 /*35*/  s_rbrac,        // right bracket )
-/*36*/  s_lbrac_c,      // left bracket curly {
-/*37*/  s_rbrac_c,      // right bracket curly }
-/*38*/  s_int,          // integer name
-/*39*/  s_float,        // float name
-/*40*/  s_exp_int,      // exp of integer
-/*41*/  s_exp_f,        // exp of float
-/*42*/  s_exp_int_s,    // sign of exp of integer
-/*43*/  s_exp_f_s,      // sign of exp of float
-/*44*/  s_num_i,        // number following sign in integer
-/*45*/  s_num_f,        // number following sign in float
+/*36*/  s_int,          // integer name
+/*37*/  s_float,        // float name
+/*38*/  s_exp_int,      // exp of integer
+/*39*/  s_exp_f,        // exp of float
+/*40*/  s_exp_int_s,    // sign of exp of integer
+/*41*/  s_exp_f_s,      // sign of exp of float
+/*42*/  s_num_i,        // number following sign in integer
+/*43*/  s_num_f,        // number following sign in float
 
     /* SPECIAL STATES */
-/*46*/  ss_eol,         // end of line
-/*47*/  ss_eof,         // end of file
-/*48*/  ss_com,         // comment in line #
-/*49*/  ss_com_bl_s,    // start of comment block =begin
-/*50*/  ss_com_bl,      // continuous comment block
-/*51*/  ss_com_bl_e,    // end of comment block =end
-/*52*/  ss_esc,         // escape sequence
-/*53*/  ss_esc_hex,     // hexadecimal number
-/*54*/  ss_after_hex,   // space after hex
-/*55*/  ss_error,       // error
-/*56*/  ss_new,         // start a new scan
-/*57*/  ss_final,       // end of scanning
+/*44*/  ss_eol,         // end of line
+/*45*/  ss_eof,         // end of file
+/*46*/  ss_com,         // comment in line #
+/*47*/  ss_com_bl_s,    // start of comment block =begin
+/*48*/  ss_com_bl,      // continuous comment block
+/*49*/  ss_com_bl_e,    // end of comment block =end
+/*50*/  ss_esc,         // escape sequence
+/*51*/  ss_esc_hex,     // hexadecimal number
+/*52*/  ss_after_hex,   // space after hex
+/*52*/  ss_error,       // error
+/*54*/  ss_new,         // start a new scan
+/*55*/  ss_final,       // end of scanning
 
     /*  VERY SPECIFIC SPECIAL STATE */
-/*58*/  s_func_id,      // function id
-/*59*/  s_func_expr     // function in expression
+/*56*/  s_func_id,      // function id
+/*57*/  s_func_expr     // function in expression
 
 } TokenType;
 

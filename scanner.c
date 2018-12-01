@@ -294,24 +294,6 @@ int token_generate(FILE *file)
                     };
                     state = s_string;
                 }
-                else if (c == '{') {                    // left curly bracket
-                    error = append_token(&global_token, c);
-                    if (error) {
-                        destroy_token(&global_token);
-                        state = ss_error;
-                        break;
-                    };
-                    state = s_lbrac_c;
-                }
-                else if (c == '}') {                    // right curly bracket
-                    error = append_token(&global_token, c);
-                    if (error) {
-                        destroy_token(&global_token);
-                        state = ss_error;
-                        break;
-                    };
-                    state = s_rbrac_c;
-                }
                 else if (c == EOF) {
                     state = ss_eof;
                 }
@@ -892,8 +874,6 @@ int token_generate(FILE *file)
             case s_lbrac:
             case s_rbrac:
             case s_comma:
-            case s_lbrac_c:
-            case s_rbrac_c:
             case s_great_eq:
             case s_less_eq:
             case ss_eof: {
