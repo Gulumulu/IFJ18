@@ -13,7 +13,7 @@
 #include "errors.h"
 #include "list.h"
 
-int dyn_length = 1024; // dyn poc delka listu pro tisk
+int dyn_length = 4096; // dyn poc delka listu pro tisk
 int list_length = 0; // ukazatel na pozici v listu
 
 bool issingle = false; // urceni jestli je single node (strom vel. 1)
