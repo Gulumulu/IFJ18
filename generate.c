@@ -39,7 +39,7 @@ void generate_to_list2(int ad,char* str) { // generovani do seznamu misto do sou
 
 char* name_parse(char* str) { // vypreparuje ven z retezce string || promennou pro funkci strlen(string)
 
-    int l = strlen(str);
+    long l = strlen(str);
     char* buff = malloc((l + 1)*sizeof(char));
     char help[l+1];
     int internal = 0;
@@ -76,7 +76,7 @@ char* name_parse(char* str) { // vypreparuje ven z retezce string || promennou p
 
 char* number_parse(char* str) { // vypreparuje pro funkci chr(i) string a vrati ho
 
-    int l = strlen(str);
+    long l = strlen(str);
     char* buff = malloc((l + 1)*sizeof(char));
     char help[l+1];
     int internal = 0;
@@ -110,7 +110,7 @@ char* number_parse(char* str) { // vypreparuje pro funkci chr(i) string a vrati 
 
 char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string s argumenty a vrati ho
 
-    int l = strlen(str);
+    long l = strlen(str);
 
     char* buff = malloc((l + 1)*sizeof(char));
     char help[l+1];
@@ -201,19 +201,30 @@ char* get_frame(tFunctionTracker* functionTracker) { // najdi aktualni ramec
 
 void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // napoveda: char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs"};
 
-    // vygeneruj zakl promenne, pracuje se s nimi pri vypsani operace
-    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame, counter),list_str);
-    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@temp_%s$%d\n",frame,Root->content->type,counter),list_str);
-    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@type_%s$%d\n",frame,Root->content->type,counter),list_str);
+    char* macro;
+
+    if (!issingle) {
+        macro = "func"; // makro pro nazev promenne (%s%d)
+
+        // vygeneruj zakl promenne, pracuje se s nimi pri vypsani operace
+        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@func%d\n", frame, counter), list_str);
+        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@temp_%s$%d\n", frame, Root->content->type, counter),
+                list_str);
+        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@type_%s$%d\n", frame, Root->content->type, counter),
+                list_str);
+    }
+    else {
+        macro = "%"; // makro pro nazev promenne, pokud je single node (%%%d)
+    }
 
     if(id == 3) { // funkce length(string)
         char*parsed = name_parse(Root->content->name);
         if(parse_text) { // parsovany vyraz byl "xx"
             parse_text = false; // nastav zpet
-            generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@func%d string@%s\n",frame,counter,parsed),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@%s%d string@%s\n",frame,macro,counter,parsed),list_str);
         }
         else {// parsovany vyraz byla promenna
-            generate_to_list2(sprintf(list_str + list_length, "STRLEN %s@func%d %s@%s\n", frame, counter, frame, Root->content->name), list_str);
+            generate_to_list2(sprintf(list_str + list_length, "STRLEN %s@%s%d %s@%s\n", frame,macro, counter, frame, Root->content->name), list_str);
         }
     }
 
@@ -223,20 +234,20 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         long ret; // ciselna cast
         ret = strtol(parsed,&ptr,10);
         if(ret < 256 && strlen(ptr) == 0) { // zadano cislo v platnem rozsahu
-            generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame, counter),list_str);
-            generate_to_list2(sprintf(list_str+list_length,"INT2CHAR %s@func%d int@%ld\n",frame,counter,ret),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro, counter),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"INT2CHAR %s@%s%d int@%ld\n",frame,macro,counter,ret),list_str);
         }
         else if(strlen(ptr) > 0) { // zadana promenna
-            generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame, counter),list_str);
-            generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d %s@%s\n",frame,counter,frame,parsed),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro, counter),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d %s@%s\n",frame,macro,counter,frame,parsed),list_str);
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@bool%d\n",frame,counter),list_str); // novy bool pro porovnani
-            generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d int@-1 %s@func%d\n",frame,counter,frame,counter),list_str); // jestli vetsi nez -1 tak true do bool
+            generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d int@-1 %s@%s%d\n",frame,counter,frame,macro,counter),list_str); // jestli vetsi nez -1 tak true do bool
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str); // pokud bool false skoc do error
-            generate_to_list2(sprintf(list_str+list_length,"GT %s@bool%d int@256 %s@func%d\n",frame,counter,frame,counter),list_str); // bool true pokud je mensi jak 256
+            generate_to_list2(sprintf(list_str+list_length,"GT %s@bool%d int@256 %s@%s%d\n",frame,counter,frame,macro,counter),list_str); // bool true pokud je mensi jak 256
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str); // pokud bool false smoc na error
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@newchar%d\n",frame,counter),list_str); // novy znak
-            generate_to_list2(sprintf(list_str+list_length,"INT2CHAR %s@newchar%d %s@func%d\n",frame,counter,frame,counter),list_str); // preved na novy znak
-            generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d %s@newchar%d\n",frame,counter,frame,counter),list_str); // uloz novy znak do func
+            generate_to_list2(sprintf(list_str+list_length,"INT2CHAR %s@newchar%d %s@%s%d\n",frame,counter,frame,macro,counter),list_str); // preved na novy znak
+            generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d %s@newchar%d\n",frame,macro,counter,frame,counter),list_str); // uloz novy znak do func
             generate_to_list2(sprintf(list_str+list_length,"JUMP $label_converted%d\n",counter),list_str);
             generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter),list_str);
             generate_to_list2(sprintf(list_str+list_length,"ERROR int@4\n"),list_str);
@@ -248,13 +259,13 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
     else if(id == 0) { // funkce ord(s,i)
 
-        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame, counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro, counter),list_str);
 
         char *str = arguments_parse(Root->content->name);
-        int l = strlen(str);
+        long l = strlen(str);
         char s[l+1];
         char i[l+1];
-        for(int a = 0; a < l+1; a++) {
+        for(long a = 0; a < l+1; a++) {
             s[a] = '\0';
             i[a] = '\0';
         }
@@ -290,10 +301,10 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
             if(strlen(i_ptr) == 0 && i_ret != 0) { // zadal tam platne cislo za i
                 if(i_ret > (long)(strlen(s_help)-1)) { // i je mimo rozsah
-                    generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d string@nil\n",frame,counter),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d string@nil\n",frame,macro,counter),list_str);
                 }
                 else { // index je v rozsahu
-                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@func%d string@%s int@%s\n",frame,counter,s_help,i_help),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s int@%s\n",frame,macro,counter,s_help,i_help),list_str);
                 }
             }
             else if(strlen(i_ptr) > 0) { // zadal tam promennou misto cisla i
@@ -313,12 +324,12 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter),list_str); // bool true pokud je mensi jak 256
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str);
 
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@func%d string@%s %s@%s\n",frame,counter,s_help, frame, i_help),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s %s@%s\n",frame,macro,counter,s_help, frame, i_help),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter),list_str);
 
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d string@nil\n",frame,counter),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d string@nil\n",frame,macro,counter),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter),list_str);
             }
 
@@ -335,11 +346,11 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
             if(strlen(i_ptr) == 0 && i_ret != 0) { // zadal tam platne cislo za i
                 if(i_ret > l-1) { // i je mimo rozsah
-                    generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d string@nil\n",frame,counter),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d string@nil\n",frame,macro,counter),list_str);
                 }
                 else { // index je v rozsahu
-                    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame,counter),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@func%d string@%s int@%s\n",frame,counter,s_help,i_help),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s int@%s\n",frame,macro,counter,s_help,i_help),list_str);
                 }
             }
             else if(strlen(i_ptr) > 0) { // zadal tam promennou misto cisla i
@@ -359,12 +370,12 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter),list_str); // bool true pokud je mensi jak 256
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str);
 
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@func%d string@%s %s@%s\n",frame,counter,s_help, frame, i_help),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s %s@%s\n",frame,macro,counter,s_help, frame, i_help),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter),list_str);
 
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d string@nil\n",frame,counter),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d string@nil\n",frame,macro,counter),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter),list_str);
             }
         }
@@ -375,58 +386,58 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
     }
 
     else if(id == 4) { // vestavena funkce inputi
-        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame,counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"READ %s@func%d int\n",frame,counter),list_str); // nacti do promenne
+        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"READ %s@%s%d int\n",frame,macro,counter),list_str); // nacti do promenne
         generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@intemp%d\n",frame,counter),list_str); // uloz do tmp
-        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@intemp%d %sfunc%d\n",frame,counter,frame,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@intemp%d %s@%s%d\n",frame,counter,frame,macro,counter),list_str);
         generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@intype%d\n",frame,counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"TYPE %s@intype%d %s@func%d\n",frame,counter,frame,counter),list_str); // uloz typ
+        generate_to_list2(sprintf(list_str+list_length,"TYPE %s@intype%d %s@%s%d\n",frame,counter,frame,macro,counter),list_str); // uloz typ
         generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_convert%d %s@intype%d string@float\n",counter,frame,counter),list_str); // jestli je float zkonvertuj
         generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_wrong_type%d %s@intype%d string@int\n",counter,frame,counter),list_str); // jestli neni ani int tak 0
         generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter),list_str); // je to int
 
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_convert%d\n",counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"FLOAT2INT %s@func%d %s@intemp%d\n",frame,counter,frame,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"FLOAT2INT %s@%s%d %s@intemp%d\n",frame,macro,counter,frame,counter),list_str);
         generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter),list_str);
 
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_wrong_type%d\n",counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d int@0\n",frame,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d int@0\n",frame,macro,counter),list_str);
 
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter),list_str);
     }
     else if(id == 5) { // vestavena funkce inputf
-        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame,counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"READ %s@func%d float\n",frame,counter),list_str); // nacti do promenne
+        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"READ %s@%s%d float\n",frame,macro,counter),list_str); // nacti do promenne
         generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@floatemp%d\n",frame,counter),list_str); // uloz do tmp
-        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@floatemp%d %sfunc%d\n",frame,counter,frame,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@floatemp%d %s@%s%d\n",frame,counter,frame,macro,counter),list_str);
         generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@floatype%d\n",frame,counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"TYPE %s@floatype%d %s@func%d\n",frame,counter,frame,counter),list_str); // uloz typ
+        generate_to_list2(sprintf(list_str+list_length,"TYPE %s@floatype%d %s@%s%d\n",frame,counter,frame,macro,counter),list_str); // uloz typ
         generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_convert%d %s@floatype%d string@int\n",counter,frame,counter),list_str); // jestli je int zkonvertuj
         generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_wrong_type%d %s@floatype%d string@float\n",counter,frame,counter),list_str); // jestli neni ani float tak 0.0
         generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter),list_str); // je to float
 
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_convert%d\n",counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"INT2FLOAT %s@func%d %s@floatemp%d\n",frame,counter,frame,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"INT2FLOAT %s@%s%d %s@floatemp%d\n",frame,macro,counter,frame,counter),list_str);
         generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter),list_str);
 
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_wrong_type%d\n",counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d float@0.0\n",frame,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d float@0.0\n",frame,macro,counter),list_str);
 
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter),list_str);
     }
     else if(id == 6) { // vestavena funkce inputs
-        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame,counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"READ %s@func%d string\n",frame,counter),list_str); // nacti do promenne
+        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"READ %s@%s%d string\n",frame,macro,counter),list_str); // nacti do promenne
         generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@strtype%d\n",frame,counter),list_str);
-        generate_to_list2(sprintf(list_str+list_length,"TYPE %s@strtype%d %s@func%d\n",frame,counter,frame,counter),list_str); // uloz typ
+        generate_to_list2(sprintf(list_str+list_length,"TYPE %s@strtype%d %s@%s%d\n",frame,counter,frame,macro,counter),list_str); // uloz typ
         generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_inok%d %s@strtype%d string@string\n",counter,frame,counter),list_str); // jestli neni ani string tak nil
-        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d string@nil\n",frame,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d string@nil\n",frame,macro,counter),list_str);
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter),list_str);
     }
     else if(id == 2) { // vestavena funkce print
 
         char *str = arguments_parse(Root->content->name); // dlooooouhy retezec se vsemi argumenty
-        int l = strlen(str); // delka celkoveho retezce
+        long l = strlen(str); // delka celkoveho retezce
         char s[l+1]; // pomocne pole pro jednotlivy operand
         char* operand = malloc(sizeof(char) * (l + 1)); // finalni operand
         long int_val;
@@ -438,7 +449,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         int internal = 0;
         bool second_time = false; // zatim jeste nebyla nalezena parova '"'
 
-        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@func%d\n",frame,counter),list_str);
+        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
 
         for(int a = 0; a < l+1; a++) { // projizdim znak po znaku retezec s argumenty
 
@@ -469,8 +480,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 // konec prace s operandem
 
                 internal = 0;
-                for(int a = 0; a < l+1; a++) // vynulovani pole
-                    s[a] = '\0';
+                for(int b = 0; b < l+1; b++) // vynulovani pole
+                    s[b] = '\0';
                 continue;
             }
 
@@ -487,17 +498,18 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
             internal++;
         }
 
-        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@func%d nil@nil\n",frame,counter),list_str); // navrat print je vzdy nil@nil
+        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d nil@nil\n",frame,macro,counter),list_str); // navrat print je vzdy nil@nil
 
         free(operand);
         parse_text = false; // kdyby nahodou
 
     }
 
-    // vloz do hodnot vysledky, se kterymi se dale bude pracovat
-    generate_to_list2(sprintf(list_str+list_length,"MOVE %s@temp_%s$%d %s@func%d\n",frame,Root->content->type,counter,frame,counter),list_str);
-    generate_to_list2(sprintf(list_str+list_length,"TYPE %s@type_%s$%d %s@func%d\n",frame,Root->content->type,counter,frame,counter),list_str);
-
+    if(!issingle) {
+        // vloz do hodnot vysledky, se kterymi se dale bude pracovat
+        generate_to_list2(sprintf(list_str + list_length, "MOVE %s@temp_%s$%d %s@%s%d\n", frame, Root->content->type, counter, frame, macro, counter), list_str);
+        generate_to_list2(sprintf(list_str + list_length, "TYPE %s@type_%s$%d %s@%s%d\n", frame, Root->content->type, counter, frame, macro, counter), list_str);
+    }
 }
 
 void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, char* list_str) { // typova kontrola obsahu jednoho root uzlu (L + R)
@@ -505,376 +517,29 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
         bool left = false; // false = neni promenna
         bool right = false; // false = neni promenna
 
-        // PREDBEZNE TESTY NA OBSAH UZLU
-
         if(issingle) { // operace, ktere probihaji nad stromem se single node
 
-            if(!strcmp(Root->content->type, "length")) { // funkce length(string)
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s%%%d\n",frame,counter),list_str);
-                char*parsed = name_parse(Root->content->name);
-                if(parse_text) { // parsovany vyraz byl "xx"
-                    parse_text = false; // nastav zpet
-                    generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@%%%d string@%s\n",frame,counter,parsed),list_str);
+            for(int i = 0; i < 7; i++) {
+                if (!strcmp(Root->content->type, funkce[i])) {
+                    call_function(i, frame, Root, list_str); // zavolej funkci call_function jestli je to nektera z funkci
+                    counter++; // nezapomen na counter
+                    return; // vyskoc pryc
                 }
-                else // parsovany vyraz byla promenna
-                    generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@%%%d %s@%s\n",frame, counter,frame, Root->content->name),list_str);
             }
 
-            else if(!strcmp(Root->content->type, "chr")) { // funkce chr(i)
-                char* parsed = number_parse(Root->content->name); // ulozena podstatna cast retezce z Root->content->name
-                char *ptr; // string s testovou casti
-                long ret; // ciselna cast
-                ret = strtol(parsed,&ptr,10);
-                if(ret < 256 && strlen(ptr) == 0) { // zadano cislo v platnem rozsahu
-                    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame, counter),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"INT2CHAR %s@%%%d int@%ld\n",frame,counter,ret),list_str);
-                }
-                else if(strlen(ptr) > 0) { // zadana promenna
-                    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame, counter),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d %s@%s\n",frame,counter,frame,parsed),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@bool%d\n",frame,counter),list_str); // novy bool pro porovnani
-                    generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d int@-1 %s@%%%d\n",frame,counter,frame,counter),list_str); // jestli vetsi nez -1 tak true do bool
-                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str); // pokud bool false skoc do error
-                    generate_to_list2(sprintf(list_str+list_length,"GT %s@bool%d int@256 %s@%%%d\n",frame,counter,frame,counter),list_str); // bool true pokud je mensi jak 256
-                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str); // pokud bool false smoc na error
-                    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@newchar%d\n",frame,counter),list_str); // novy znak
-                    generate_to_list2(sprintf(list_str+list_length,"INT2CHAR %s@newchar%d %s@%%%d\n",frame,counter,frame,counter),list_str); // preved na novy znak
-                    generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d %s@newchar%d\n",frame,counter,frame,counter),list_str); // uloz novy znak do func
-                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_converted%d\n",counter),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"ERROR int@4\n"),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_converted%d\n",counter),list_str);
-                }
-                else // zadana spatna ciselna hodnota
-                    errorHandling(4);
-            }
-
-            else if(!strcmp(Root->content->type, "ord")) { // funkce ord(s,i)
-
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame, counter),list_str);
-
-                char *str = arguments_parse(Root->content->name);
-                int l = strlen(str);
-                char s[l+1];
-                char i[l+1];
-                for(int a = 0; a < l+1; a++) {
-                    s[a] = '\0';
-                    i[a] = '\0';
-                }
-                bool second = false;
-                int c = 0;
-                for(int a = 0; a < l; a++) {
-                    if(str[a] == ',') {
-                        second = true;
-                        c = 0;
-                        continue;
-                    }
-                    if(second) {
-                        i[c] = str[a];
-                        c++;
-                    }
-                    if(!second) {
-                        if(str[a] == '"') {
-                            parse_text = true;
-                            continue;
-                        }
-                        s[c] = str[a];
-                        c++;
-                    }
-                }
-                char* s_help = malloc(sizeof(char) * (l + 1));
-                char* i_help = malloc(sizeof(char) * (l + 1));
-                strncpy(i_help,i,10);
-                strncpy(s_help,s,10);
-                char* i_ptr;
-                long i_ret = strtol(i_help,&i_ptr,10);
-
-                if(parse_text) { // zpracovavali jsme primo retezec
-
-                    if(strlen(i_ptr) == 0 && i_ret != 0) { // zadal tam platne cislo za i
-                        if(i_ret > (long)(strlen(s_help)-1)) { // i je mimo rozsah
-                            generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d string@nil\n",frame,counter),list_str);
-                        }
-                        else { // index je v rozsahu
-                            generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%%%d string@%s int@%s\n",frame,counter,s_help,i_help),list_str);
-                        }
-                    }
-                    else if(strlen(i_ptr) > 0) { // zadal tam promennou misto cisla i
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$i_type%d\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"TYPE %s@$i_type%d %s@%s\n",frame,counter,frame,i_help),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_i_ok_%d %s@$i_type%d string@int\n",counter,frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"ERROR int@4\n"),list_str);
-
-                        generate_to_list2(sprintf(list_str+list_length,"LABEL $label_i_ok_%d\n",counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$len%d\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$i%d\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@$i%d %s@%s\n",frame, counter,frame,i_help),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@$len%d string@%s\n",frame,counter,s_help),list_str); // delku retezce do promenne len
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@bool%d\n",frame,counter),list_str); // novy bool pro porovnani
-                        generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d int@-1 %s@$i%d\n",frame,counter,frame,counter),list_str); // jestli vetsi nez -1 tak true do bool
-                        generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str); // pokud bool false skoc do error
-                        generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter),list_str); // bool true pokud je mensi jak 256
-                        generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str);
-
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%%%d string@%s %s@%s\n",frame,counter,s_help, frame, i_help),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter),list_str);
-
-                        generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d string@nil\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter),list_str);
-                    }
-
-                    parse_text = false; // reset parse_text zpatky
-                }
-                else { // nepracovali jsme s primo textem, ale s promennou
-
-                    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$s_type%d\n",frame,counter),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"TYPE %s@$s_type%d %s@%s\n",frame,counter,frame,s_help),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_ok_%d %s@$s_type%d string@string\n",counter,frame,counter),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"ERROR int@4\n"),list_str);
-
-                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_ok_%d\n",counter),list_str);
-
-                    if(strlen(i_ptr) == 0 && i_ret != 0) { // zadal tam platne cislo za i
-                        if(i_ret > l-1) { // i je mimo rozsah
-                            generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d string@nil\n",frame,counter),list_str);
-                        }
-                        else { // index je v rozsahu
-                            generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
-                            generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%%%d string@%s int@%s\n",frame,counter,s_help,i_help),list_str);
-                        }
-                    }
-                    else if(strlen(i_ptr) > 0) { // zadal tam promennou misto cisla i
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$i_type%d\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"TYPE %s@$i_type%d %s@%s\n",frame,counter,frame,i_help),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_i_ok_%d %s@$i_type%d string@int\n",counter,frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"ERROR int@4\n"),list_str);
-
-                        generate_to_list2(sprintf(list_str+list_length,"LABEL $label_i_ok_%d\n",counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$len%d\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$i%d\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@$i%d %s@%s\n",frame, counter,frame,i_help),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@$len%d string@%s\n",frame,counter,s_help),list_str); // delku retezce do promenne len
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@bool%d\n",frame,counter),list_str); // novy bool pro porovnani
-                        generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d int@-1 %s@$i%d\n",frame,counter,frame,counter),list_str); // jestli vetsi nez -1 tak true do bool
-                        generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str); // pokud bool false skoc do error
-                        generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter),list_str); // bool true pokud je mensi jak 256
-                        generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str);
-
-                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%%%d string@%s %s@%s\n",frame,counter,s_help, frame, i_help),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter),list_str);
-
-                        generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d string@nil\n",frame,counter),list_str);
-                        generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter),list_str);
-                    }
-                }
-
-                free(s_help);
-                free(i_help);
-
-            }
-            /*else if(!strcmp(Root->content->type,"substr")) { // funkce susbtr(s,i,n)
-
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame, counter);
-
-                char *str = arguments_parse(Root->content->name);
-                int l = strlen(str);
-                char s[l+1];
-                char i[l+1];
-                char n[l+1];
-                for(int a = 0; a < l+1; a++) {
-                    s[a] = '\0';
-                    i[a] = '\0';
-                    n[a] = '\0';
-                }
-                bool second = false;
-                bool third = false;
-                int c = 0;
-                for(int a = 0; a < l; a++) {
-                    if(str[a] == ',' && !second) {
-                        second = true;
-                        c = 0;
-                        continue;
-                    }
-                    if(str[a] == ',' && second && !third) {
-                        third = true;
-                        c = 0;
-                        continue;
-                    }
-                    if(second && !third) {
-                        i[c] = str[a];
-                        c++;
-                    }
-                    if(third) {
-                        n[c] = str[a];
-                        c++;
-                    }
-                    if(!second && !third) {
-                        if(str[a] == '"') {
-                            parse_text = true;
-                            continue;
-                        }
-                        s[c] = str[a];
-                        c++;
-                    }
-                }
-                char* s_help = malloc(sizeof(char) * (l + 1));
-                char* i_help = malloc(sizeof(char) * (l + 1));
-                char* n_help = malloc(sizeof(char) * (l + 1));
-                strncpy(i_help,i,10);
-                strncpy(s_help,s,10);
-                strncpy(n_help,s,10);
-                char* i_ptr;
-                long i_ret = strtol(i_help,&i_ptr,10);
-                char* n_ptr;
-                long n_ret = strtol(n_help,&n_ptr,10);
-
-                ; // DOPLNIT NA KONCI
-
-                parse_text = false;
-                free(s_help);
-                free(i_help);
-                free(n_help);
-
-            }*/
-            else if(!strcmp(Root->content->type,"inputi")) { // vestavena funkce inputi
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"READ %s@%%%d int\n",frame,counter),list_str); // nacti do promenne
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@intemp%d\n",frame,counter),list_str); // uloz do tmp
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@intemp%d %s%%%d\n",frame,counter,frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@intype%d\n",frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"TYPE %s@intype%d %s@%%%d\n",frame,counter,frame,counter),list_str); // uloz typ
-                generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_convert%d %s@intype%d string@float\n",counter,frame,counter),list_str); // jestli je float zkonvertuj
-                generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_wrong_type%d %s@intype%d string@int\n",counter,frame,counter),list_str); // jestli neni ani int tak 0
-                generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter),list_str); // je to int
-
-                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_convert%d\n",counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"FLOAT2INT %s@%%%d %s@intemp%d\n",frame,counter,frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter),list_str);
-
-                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_wrong_type%d\n",counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d int@0\n",frame,counter),list_str);
-
-                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter),list_str);
-            }
-            else if(!strcmp(Root->content->type,"inputf")) { // vestavena funkce inputf
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"READ %s@%%%d float\n",frame,counter),list_str); // nacti do promenne
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@floatemp%d\n",frame,counter),list_str); // uloz do tmp
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@floatemp%d %s%%%d\n",frame,counter,frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@floatype%d\n",frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"TYPE %s@floatype%d %s@%%%d\n",frame,counter,frame,counter),list_str); // uloz typ
-                generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_convert%d %s@floatype%d string@int\n",counter,frame,counter),list_str); // jestli je int zkonvertuj
-                generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_wrong_type%d %s@floatype%d string@float\n",counter,frame,counter),list_str); // jestli neni ani float tak 0.0
-                generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter),list_str); // je to float
-
-                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_convert%d\n",counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"INT2FLOAT %s@%%%d %s@floatemp%d\n",frame,counter,frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter),list_str);
-
-                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_wrong_type%d\n",counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d float@0.0\n",frame,counter),list_str);
-
-                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter),list_str);
-            }
-            else if(!strcmp(Root->content->type,"inputs")) { // vestavena funkce inputs
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"READ %s@%%%d string\n",frame,counter),list_str); // nacti do promenne
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@strtype%d\n",frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"TYPE %s@strtype%d %s@%%%d\n",frame,counter,frame,counter),list_str); // uloz typ
-                generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_inok%d %s@strtype%d string@string\n",counter,frame,counter),list_str); // jestli neni ani string tak nil
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d string@nil\n",frame,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter),list_str);
-            }
-            else if(!strcmp(Root->content->type,"print")) { // vestavena funkce print
-
-                char *str = arguments_parse(Root->content->name); // dlooooouhy retezec se vsemi argumenty
-                int l = strlen(str); // delka celkoveho retezce
-                char s[l+1]; // pomocne pole pro jednotlivy operand
-                char* operand = malloc(sizeof(char) * (l + 1)); // finalni operand
-                long int_val;
-                float float_val;
-                char* float_rest;
-                char* int_rest;
-                for(int a = 0; a < l+1; a++) // vynulovani pole
-                    s[a] = '\0';
-                int internal = 0;
-                bool second_time = false; // zatim jeste nebyla nalezena parova '"'
-
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
-
-                for(int a = 0; a < l+1; a++) { // projizdim znak po znaku retezec s argumenty
-
-                    if(second_time && (str[a] == ',' || str[a] == '\0')) { // oddelovac nebo konec, kdyz uz byla nalezena druha '"'
-                        strncpy(operand,s,10); // vytvoren retezec operand
-                        int_val = strtol(operand, &int_rest,10);
-                        float_val = strtof(operand,&float_rest);
-
-                        // tady pracuj s jednim operandem
-
-                        if(parse_text) { // operand je textovy retezec
-                            generate_to_list2(sprintf(list_str+list_length,"WRITE string@%s\n",operand),list_str);
-                            parse_text = false;
-                            second_time = false;
-                        }
-                        else if(int_val != 0 && !strlen(int_rest)) { // operand je int
-                            generate_to_list2(sprintf(list_str+list_length,"WRITE int@%ld\n",int_val),list_str);
-                        }
-
-                        else if(float_val != 0 && !strlen(float_rest)) { // operand je float
-                            generate_to_list2(sprintf(list_str+list_length,"WRITE float@%f\n",float_val),list_str);
-                        }
-
-                        else { // operand je promenna
-                            generate_to_list2(sprintf(list_str+list_length,"WRITE %s@%s\n",frame,operand),list_str); // dodelat az to pujde testovat
-                        } // DODELAT
-
-                        // konec prace s operandem
-
-                        internal = 0;
-                        for(int a = 0; a < l+1; a++) // vynulovani pole
-                            s[a] = '\0';
-                        continue;
-                    }
-
-                    if(parse_text && str[a] == '"') { // byla nalezena parova uvozovka, moznost nacitat, dalsi retezec
-                        second_time = true;
-                        continue;
-                    }
-
-                    if(str[a] == '"') {
-                        parse_text = true;
-                        continue;
-                    }
-                    s[internal] = str[a];
-                    internal++;
-                }
-
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d nil@nil\n",frame,counter),list_str); // navrat print je vzdy nil@nil
-
-                free(operand);
-                parse_text = false; // kdyby nahodou
-
-            }
-
-            else if(!strcmp(Root->content->type,"variable")) { // je to promenna, eg. a = b
+            if(!strcmp(Root->content->type,"variable")) { // je to prirazeni promenne, eg. a = b
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d %s@%s\n",frame,counter,frame,Root->content->name),list_str);
             }
-
             else { // zbyva prirazeni konstanty
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d %s@%s\n",frame,counter,Root->content->type,Root->content->name),list_str);
             }
-
             counter++; // operace probehla
             return ; // vyskoc ven
         }
 
-        // ODTUD TO NENI SINGLE NODE
+        // ODTUD NENI SINGLE NODE
 
             // DEFINICE CO JE NA KAZDE STRANE: FUNKCE | OPERATOR | PROMENNA
 
@@ -974,16 +639,15 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%%%d %s@%%%d\n", frame, front, frame, front),list_str);
             }
 
+        // vypis vestavene funkce pro VSECHNY OPERACE (/*+-)
+        if(left_func) { // vlevo je funkce
+            call_function(left_func_id, frame,Root->LeftPointer,list_str);
+        }
+        if(right_func) { // vpravo je funkce
+            call_function(right_func_id, frame,Root->RightPointer,list_str);
+        }
 
         if(!strcmp(operation,"*") || !strcmp(operation,"-")) { // pro MULL a SUB oba musi byt float/int
-
-            // ZPRACOVANI VESTAVENE FUNKCE - MUSI VEN VYPADNOUT ZPRAC KOD FUNKCE A TEMP + TYPE UZ SE SPRAVNYM OBSAHEM
-            if(left_func) { // vlevo je operator
-                call_function(left_func_id, frame,Root->LeftPointer,list_str);
-            }
-            if(right_func) { // vlevo je operator
-                call_function(right_func_id, frame,Root->RightPointer,list_str);
-            }
 
             if((left && right) || (left_func && right_func)) { // obe strany jsou promenne nebo vysledky vestavenych funkci
 
@@ -1094,7 +758,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
 
         else if(!strcmp(operation,"+")) { // pro ADD oba musi byt float/int || string
 
-            if(left && right) { // obe strany jsou promenna
+            if((left && right) || (left_func && right_func)) { // obe strany jsou promenna || funkce
 
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_string$%d %s@$type_%s$%d string@string\n",counter,frame, left_supply, counter),list_str); // skoc pokud neni levej string
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@string\n",counter,frame, right_supply, counter),list_str); // proved concat jestli je pravej taky string
@@ -1164,7 +828,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
 
             }
 
-            else { // jedna ze stran je konstanta
+            else { // jedna ze stran je konstanta || vest funkce
 
                 char* var; // replacement name leve nebo prave var, podle toho kde byla
                 tASTPointer* cons; // replacement name za konstantu
@@ -1225,9 +889,10 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
 
             }
         }
-        else { // pro DIV musi byt oba float a pravej nesmi byt nula
 
-            if(left && right) { // obe strany jsou promenna
+        else { // DIV: musi byt oba float a pravej nesmi byt nula
+
+            if((left && right) || (left_func && right_func)) { // obe strany jsou promenna || funkce
 
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$type_%s$%d int@0\n",counter,frame, right_supply, counter),list_str); // porovnani s int 0
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$type_%s$%d float@0.0\n",counter,frame, right_supply, counter),list_str); // porovnani s float 0 - BLBE
@@ -1273,7 +938,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 }
             }
 
-            else { // jedna ze stran je konstanta
+            else { // jedna ze stran je konstanta || vest funkce
 
                 char* var; // replacement name leve nebo prave var, podle toho kde byla
                 tASTPointer* cons; // replacement name za konstantu
