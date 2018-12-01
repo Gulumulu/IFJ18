@@ -23,6 +23,8 @@ void type_control(tASTPointer* Root, char* operation, tQueue* q, char* frame, ch
 void generate_to_list(int ad, int* ptr_list_length, int* ptr_dyn_length, char* list_str);
 void generate_to_list2(int ad,char* str);
 
+void call_function(int id, char* frame, tASTPointer* Root, char* list_str);
+
 char* name_parse(char* str);
 char* number_parse(char* str);
 char* ord_parse(char* str);

@@ -386,7 +386,9 @@ void doMagic() {
                     }
                     if (printing == 1) {
                         // need to print this expression
+
                         generatePrint(&tmpToken);
+
                         //generateCodeParek(&tmpToken);
                         // todo: generate code
                         /*
@@ -451,7 +453,7 @@ void doMagic() {
               	// NEJAKEJ PRINTING
 		        if (printing == 1 ) {
                     // need to print this expression
-                    generatePrint(&global_token);
+                    //generatePrint(&global_token); ZAKOMENTOVANO MNOU, gab test print()
                     //generateCodeParek(&global_token);
                     // todo: generate code
                     /*
