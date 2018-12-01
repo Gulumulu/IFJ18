@@ -1,3 +1,8 @@
-def krat(a)
+# test for build-in function chr()
+def getChr(a)
 	chr(a)
 end
+b=48
+print ("ASCII value of ", b, " is:")
+b=getChr(b)
+print b

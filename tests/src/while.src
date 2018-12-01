@@ -1,3 +1,4 @@
-while a >1 do
+# test for while-loop => undeclared variable used in declaration
+while a > 1 do
 	print "undeclared variable not found"
 end

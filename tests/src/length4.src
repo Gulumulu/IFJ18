@@ -1,3 +1,8 @@
-def krat(a)
+# test for build-in function length => length used in user defined function
+def lenTimesTwo(a)
 	a=2*length(a)
 end
+a="foobar"
+print("length of ", a, " times two is: ")
+a=lenTimesTwo(a)
+print(a)

@@ -1,3 +1,5 @@
-def krat(a)
-	a=c*a
+# test for undefined variable in user-defined function
+def foo(a)
+	c=b+a
 end
+c=foo("bar")

@@ -1,3 +1,4 @@
+# test for while-loop
 a=""
 while a !="aaa" do
 	print "a is ", a

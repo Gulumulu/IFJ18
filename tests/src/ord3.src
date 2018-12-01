@@ -1,3 +1,4 @@
-def krat(a)
-	a = ord("ahoj", a)
-end
+# test for build-in function ord => wrong number of parameters
+print("second parameter is missing but still result is: ")
+b=ord("foobar)
+print(b)

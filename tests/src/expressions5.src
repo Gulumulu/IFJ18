@@ -1,1 +1,4 @@
+# test for expressions => incompatible types
+print("lenght of ahoj and string ahoj should be an error")
 a=length("ahoj")+"ahoj"
+print(a)

@@ -1,5 +1,9 @@
-def func(a)
+# test for incompatible types in expression in user-defined function
+def foo()
 	a = 1
-	b = "ahoj"
+	b = "foobar"
 	a = a + b
 end
+print("1 plus foobar is: )
+a=foo()
+print(a)

@@ -1,4 +1,7 @@
-def retInt()
+# test for expressions => user-defined function plus int
+def retOne()
 	a=1
 end
-a=retInt()+5
+print("1 plus 5 is: ")
+a=retOne()+5
+print(a)

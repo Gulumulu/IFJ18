@@ -1,4 +1,6 @@
-def func(a, b)
+# test for parameter mismatch in user-defined function
+def mul(a, b)
+	c=a*b
 end
-a = 1
-func(a)
+print("4 multiplied by 2 is: )
+a=mul(4)

@@ -1,3 +1,4 @@
-def krat(a)
-	substr("ahoj", 5, "a")
-end
+# test for build-in function substr => incompatable types
+a=substr("foobar", "zero", "one")
+print("substring of foobar is: ")
+print(a)

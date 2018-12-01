@@ -1,3 +1,4 @@
-def krat(a)
-	a=length(a)*2
-end
+# test for build-in function length => incompatible parameter type
+print("length of int 5 is: ")
+a=length(5)
+print(a)

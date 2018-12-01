@@ -1,4 +1,4 @@
-def incVal(a)
-	a=a+1
-end
-a=incVal(a)<"ahoj"
+# test for expressions => comparision between int and string
+print("1 < ahoj result in: ")
+a=1 < "ahoj"
+print(a)

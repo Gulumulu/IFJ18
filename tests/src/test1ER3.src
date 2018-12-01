@@ -1,3 +1,9 @@
-def (a)
-	a = b * 2
+# test for undefined variable in user-defined function
+def mul2(a)
+	a=2*a
+	a=a*b
 end
+a=2
+print(a, " multiplied by 2 is: ")
+a=mul2(a)
+print(a)

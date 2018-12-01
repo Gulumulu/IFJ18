@@ -1,1 +1,3 @@
-a=2*"ahoj"
+# test for multiplying float and string => incompatible types
+print("4.2 multiplied by ahoj is: ")
+a=4.2*"ahoj"

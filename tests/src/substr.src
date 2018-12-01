@@ -1,5 +1,7 @@
-def krat(a)
-	a = 2 * a
-	b = 0
-	substr("ahoj", b, 4)
-end
+# test for build-in function substr => variables as parameters
+a=2
+b=2
+c="foobar"
+c=substr(c, a, b)
+print("substring of ", c, " from ", a, ". position ", b, " chars long is: ")
+print(c)

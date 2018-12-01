@@ -1,4 +1,5 @@
-if "abd">"abc" then
+# test for if-statement => string comparison
+if "abd" > "abc" then
 	print "abd is greater than abc"
 else
 	print "error"

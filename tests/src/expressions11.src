@@ -1,1 +1,4 @@
+# test for expressions => division by zero
+print("9 divided by zero is: ")
 a=9/0
+print(a)

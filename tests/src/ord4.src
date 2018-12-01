@@ -1,3 +1,5 @@
-def krat(a)
-	a=2*ord("ahoj", a)
-end
+# test for build-in function ord => result used in expression
+print("ASCII value of f plus 5 is: ")
+b=ord("foobar", 0)+5
+print(b)
+

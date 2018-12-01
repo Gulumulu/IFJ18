@@ -1,2 +1,5 @@
-def krat(a)
+# test for wrong use of key words => expected end
+def foo(a)
 	a=2*a
+b=1
+a=foo(b)

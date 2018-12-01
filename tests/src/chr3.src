@@ -1,3 +1,5 @@
-def krat(a)
-	a=chr(a)
-end
+# test for build-in function chr() => bad parameter type
+b="char"
+print ("ASCII value of ", b, " is:")
+b=chr("char")
+print b

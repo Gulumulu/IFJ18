@@ -1,2 +1,5 @@
+# test for expressions => variable divided by zero
 a=1
+print(a, " divided by 0 is: ")
 a=a/0
+print(a)
