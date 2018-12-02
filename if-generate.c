@@ -251,11 +251,12 @@ void generatePrint(Token* token, char* currentFunction) {
         errorHandling(99);
     } else {
         if (token->type == s_string) {
-            generate_to_list2(sprintf("WRITE string@%s\n", token->content),list_str);
+            generate_to_list2(sprintf("WRITE string@%s\n", convert_string(token->content)),list_str);
+            free(asciistr);
         } else if (token->type == s_int) {
             generate_to_list2(sprintf("WRITE int@%s\n", token->content),list_str);
         } else if (token->type == s_float) {
-            generate_to_list2(sprintf("WRITE float@%s\n", token->content),list_str);
+            generate_to_list2(sprintf("WRITE float@%a\n", token->content),list_str);
         } else if (token->type == s_id) {
             if (strcmp(currentFunction, "Main") == 0) {
                 generate_to_list2(sprintf("WRITE GF@%s\n", token->content),list_str);

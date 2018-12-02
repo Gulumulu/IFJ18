@@ -356,9 +356,7 @@ void doMagic() {
                                 generateWhileHead(stackAST->body[stackAST->top]);
                             }
 
-                            printf("SEGF\n");
                             generateExpression(AST,functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
-                            printf("SEGF2\n");
 
                             // po vygenerovani vyrazu ho prirad zadane promenne
                             char *frame = get_frame(functionTracker);

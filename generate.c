@@ -15,19 +15,15 @@
 
 int dyn_length = 4096; // dyn poc delka listu pro tisk
 int list_length = 0; // ukazatel na pozici v listu
-
+char* asciistr; // je tu kvuli funkci convert_string, aby se dalo dat free() kdekoliv kde je funkce zavolana
 bool issingle = false; // urceni jestli je single node (strom vel. 1)
-
 char* left_supply; // zastupny symbol za levy uzel Root->LeftPointer->content->name
 char* right_supply; // zastupny symbol za pravy uzel Root->RightPointer->content->name
-
 char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs"}; // seznam podporovanych funkci
 bool left_func = false; // Root->Left je funkce
 bool right_func = false; // Root->Right je funkce
-
 bool left_operator = false; // true = vlevo je operator
 bool right_operator = false; // true = vpravo je operator
-
 bool parse_text = false; // jestli je parsovany vyraz "xx"
 static int counter = 1; // globalni pocitadlo v uzlech. zaciname na %1
 //bool concat = false; // jestli ma dojit k CONCAT misto ADD
@@ -43,6 +39,7 @@ void generate_to_list2(int ad,char* str) { // generovani do seznamu misto do sou
 char* name_parse(char* str) { // vypreparuje ven z retezce string || promennou pro funkci strlen(string)
 
     long l = strlen(str);
+
     char* buff = malloc((l + 1)*sizeof(char));
     char help[l+1];
     int internal = 0;
@@ -62,7 +59,7 @@ char* name_parse(char* str) { // vypreparuje ven z retezce string || promennou p
         if(startReading) {
 
             if(str[i] == ')') {
-                strncpy(buff,help,10);
+                strcpy(buff,help);
                 return buff;
             }
             if(str[i] == '"') {
@@ -99,7 +96,7 @@ char* number_parse(char* str) { // vypreparuje pro funkci chr(i) string a vrati 
         if(startReading) {
 
             if(str[i] == ')') {
-                strncpy(buff,help,10);
+                strcpy(buff,help);
 
                 return buff;
             }
@@ -134,7 +131,7 @@ char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string
         if(startReading) {
 
             if(str[i] == ')') {
-                strncpy(buff,help,10);
+                strcpy(buff,help);
                 return buff;
             }
             help[internal] = str[i];
@@ -157,10 +154,11 @@ char* convert_string(char* str) { // vytiskni ascii variantu retezce
     }
 
     long a = 0;
+    char ret[4];
     for(unsigned long i = 0; i < strlen(str); i++) {
-
-        int s = str[i];
-
+        char c = str[i];
+        int s = (int)c;
+        sprintf(ret,"%d",s);
         if(s <= 32) {
             help[a] = '\\';
             a++;
@@ -169,28 +167,42 @@ char* convert_string(char* str) { // vytiskni ascii variantu retezce
             if(a < 10) {
                 help[a] = '0';
                 a++;
-                help[a] = (char)s;
+                help[a] = ret[0];
                 a++;
             }
             else {
-                help[a] = (char)s;
+                help[a] = ret[0];
+                a++;
+                help[a] = ret[1];
                 a++;
             }
         }
-        else if(s == 35 || s == 92) {
+        else if(s == 35) {
             help[a] = '\\';
             a++;
             help[a] = '0';
             a++;
-            help[a] = (char)s;
+            help[a] = '3';
+            a++;
+            help[a] = '5';
+            a++;
+        }
+        else if(s == 92) {
+            help[a] = '\\';
+            a++;
+            help[a] = '0';
+            a++;
+            help[a] = '9';
+            a++;
+            help[a] = '2';
             a++;
         }
         else {
-            help[a] = (char)s;
+            help[a] = c;
             a++;
         }
     }
-    strncpy(asciistr,help,10);
+    strcpy(asciistr,help);
     return asciistr;
 }
 
@@ -224,7 +236,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         char*parsed = name_parse(Root->content->name);
         if(parse_text) { // parsovany vyraz byl "xx"
             parse_text = false; // nastav zpet
-            generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@%s%d string@%s\n",frame,macro,counter,parsed),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@%s%d string@%s\n",frame,macro,counter,convert_string(parsed)),list_str);
+            free(asciistr);
         }
         else {// parsovany vyraz byla promenna
             generate_to_list2(sprintf(list_str + list_length, "STRLEN %s@%s%d %s@%s\n", frame,macro, counter, frame, Root->content->name), list_str);
@@ -298,8 +311,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         }
         char* s_help = malloc(sizeof(char) * (l + 1));
         char* i_help = malloc(sizeof(char) * (l + 1));
-        strncpy(i_help,i,10);
-        strncpy(s_help,s,10);
+        strcpy(i_help,i);
+        strcpy(s_help,s);
         char* i_ptr;
         long i_ret = strtol(i_help,&i_ptr,10);
 
@@ -310,7 +323,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                     generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d string@nil\n",frame,macro,counter),list_str);
                 }
                 else { // index je v rozsahu
-                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s int@%s\n",frame,macro,counter,s_help,i_help),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s int@%s\n",frame,macro,counter,convert_string(s_help),i_help),list_str);
+                    free(asciistr);
                 }
             }
             else if(strlen(i_ptr) > 0) { // zadal tam promennou misto cisla i
@@ -323,7 +337,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$len%d\n",frame,counter),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$i%d\n",frame,counter),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"MOVE %s@$i%d %s@%s\n",frame, counter,frame,i_help),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@$len%d string@%s\n",frame,counter,s_help),list_str); // delku retezce do promenne len
+                generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@$len%d string@%s\n",frame,counter,convert_string(s_help)),list_str); // delku retezce do promenne len
+                free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@bool%d\n",frame,counter),list_str); // novy bool pro porovnani
                 generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d int@-1 %s@$i%d\n",frame,counter,frame,counter),list_str); // jestli vetsi nez -1 tak true do bool
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str); // pokud bool false skoc do error
@@ -331,7 +346,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str);
 
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s %s@%s\n",frame,macro,counter,s_help, frame, i_help),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s %s@%s\n",frame,macro,counter,convert_string(s_help), frame, i_help),list_str);
+                free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter),list_str);
 
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter),list_str);
@@ -356,7 +372,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 }
                 else { // index je v rozsahu
                     generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
-                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s int@%s\n",frame,macro,counter,s_help,i_help),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s int@%s\n",frame,macro,counter,convert_string(s_help),i_help),list_str);
+                    free(asciistr);
                 }
             }
             else if(strlen(i_ptr) > 0) { // zadal tam promennou misto cisla i
@@ -369,7 +386,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$len%d\n",frame,counter),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$i%d\n",frame,counter),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"MOVE %s@$i%d %s@%s\n",frame, counter,frame,i_help),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@$len%d string@%s\n",frame,counter,s_help),list_str); // delku retezce do promenne len
+                generate_to_list2(sprintf(list_str+list_length,"STRLEN %s@$len%d string@%s\n",frame,counter,convert_string(s_help)),list_str); // delku retezce do promenne len
+                free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@bool%d\n",frame,counter),list_str); // novy bool pro porovnani
                 generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d int@-1 %s@$i%d\n",frame,counter,frame,counter),list_str); // jestli vetsi nez -1 tak true do bool
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str); // pokud bool false skoc do error
@@ -377,7 +395,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter),list_str);
 
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter),list_str);
-                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s %s@%s\n",frame,macro,counter,s_help, frame, i_help),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s %s@%s\n",frame,macro,counter,convert_string(s_help), frame, i_help),list_str);
+                free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter),list_str);
 
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter),list_str);
@@ -461,14 +480,15 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
             if((!second_time && (str[a] == ',' || str[a] == '\0')) || (second_time && parse_text && (str[a] == ',' || str[a] == '\0'))) { // oddelovac nebo konec, kdyz uz byla nalezena druha '"'
 
-                strncpy(operand,s,10); // vytvoren retezec operand
+                strcpy(operand,s); // vytvoren retezec operand
                 int_val = strtol(operand, &int_rest,10);
                 float_val = strtof(operand,&float_rest);
 
                 // tady pracuj s jednim operandem
 
                 if(parse_text) { // operand je textovy retezec
-                    generate_to_list2(sprintf(list_str+list_length,"WRITE string@%s\n",operand),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"WRITE string@%s\n",convert_string(operand)),list_str);
+                    free(asciistr);
                     parse_text = false;
                     second_time = false;
                 }
@@ -477,7 +497,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 }
 
                 else if(float_val != 0 && !strlen(float_rest)) { // operand je float
-                    generate_to_list2(sprintf(list_str+list_length,"WRITE float@%f\n",float_val),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"WRITE float@%a\n",float_val),list_str);
                 }
 
                 else { // operand je promenna
@@ -969,7 +989,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 generate_to_list2(sprintf(list_str+list_length,"TYPE %s@$type_%s$%d %s@%s\n", frame, var, counter, frame, var),list_str);
 
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$type_%s$%d int@0\n",counter,frame, right_supply, counter),list_str); // porovnani s int 0
-                generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$type_%s$%d float@0\n",counter,frame, right_supply, counter),list_str); // porovnani s float 0 - BLBE
+                generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$type_%s$%d float@0.0\n",counter,frame, right_supply, counter),list_str); // porovnani s float 0 - BLBE
 
                 // ASI BLBE
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@float\n",counter,frame, left_supply, counter),list_str); // skoc pokud je levy jiny nez float
