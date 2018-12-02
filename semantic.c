@@ -32,7 +32,7 @@ void tASTDispose(tASTPointer* AST) {
         tASTDispose(disposedNode->LeftPointer);
         tASTDispose(disposedNode->RightPointer);
         free(disposedNode->ID);
-        free(disposedNode->changed);
+        // free(disposedNode->changed); // BUG
         //free(disposedNode->content->type);
         //free(disposedNode->content->name);
         //free(disposedNode->content->var);

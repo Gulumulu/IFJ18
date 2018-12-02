@@ -94,44 +94,44 @@ void generateIfHead(tASTPointer *AST) {
         if (strcmp(AST->ID, "!=") == 0) {
             generateExpression(AST, functionTracker, list_str); // M
             ifLabelNumber++;
-            generate_to_list2(sprintf("JUMPIFEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber),list_str);
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, "==") == 0) {
             generateExpression(AST, functionTracker, list_str); // M
             ifLabelNumber++;
-            generate_to_list2(sprintf("JUMPIFNEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber),list_str);
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, "<") == 0) {
             printf("still need to calculate expression.\n");
             ifLabelNumber++;
             tmpVariableNumber++;
-            generate_to_list2(sprintf("DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("LT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("JUMPIFNEQ %s%d TF@%s%d bool@true \n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"LT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true \n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, "<=") == 0) {
             printf("still need to calculate expression.\n");
             ifLabelNumber++;
             tmpVariableNumber++;
-            generate_to_list2(sprintf("DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("AND TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("JUMPIFEQ %s%d TF@%s%d $symb2 \n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"AND TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d $symb2 \n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, ">") == 0) {
             printf("still need to calculate expression.\n");
             ifLabelNumber++;
             tmpVariableNumber++;
-            generate_to_list2(sprintf("DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("GT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("JUMPIFNEQ %s%d TF@%s%d bool@true\n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"GT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true\n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, ">=") == 0) {
             printf("still need to calculate expression.\n");
             ifLabelNumber++;
             tmpVariableNumber++;
-            generate_to_list2(sprintf("DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("OR TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("JUMPIFEQ %s%d TF@%s%d $symb1 \n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d $symb1 \n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
             tLabelStackPush(labelStack, ifLabelNumber);
         }
     }
@@ -142,9 +142,9 @@ void generateIfHead(tASTPointer *AST) {
  */
 void generateIfMid() {
     ifEndLabelNumber++;
-    generate_to_list2(sprintf("JUMP %s%d \n", myIfEndLabel, ifEndLabelNumber),list_str);
+    generate_to_list2(sprintf(list_str+list_length,"JUMP %s%d \n", myIfEndLabel, ifEndLabelNumber),list_str);
     tLabelStackPush(endLabelStack, ifEndLabelNumber);
-    generate_to_list2(sprintf("LABEL %s%d \n", myIfLabel, tLabelStackGetTop(labelStack)),list_str);
+    generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myIfLabel, tLabelStackGetTop(labelStack)),list_str);
     tLabelStackPop(labelStack);
 }
 
@@ -152,7 +152,7 @@ void generateIfMid() {
  * Function generates end to if statement.
  */
 void generateIfEnd() {
-    generate_to_list2(sprintf("LABEL %s%d \n", myIfEndLabel, tLabelStackGetTop(endLabelStack)),list_str);
+    generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myIfEndLabel, tLabelStackGetTop(endLabelStack)),list_str);
     tLabelStackPop(endLabelStack);
 }
 
@@ -175,58 +175,58 @@ void generateWhileHead(tASTPointer *AST) {
         if (strcmp(AST->ID, "!=") == 0) {
             generateExpression(AST, functionTracker, list_str); // M
             whileLabelNumber++;
-            generate_to_list2(sprintf("LABEL %s%d \n", myWhileLabel, whileLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber),list_str);
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf("JUMPIFEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber),list_str);
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "==") == 0) {
             generateExpression(AST, functionTracker, list_str); // M
             whileLabelNumber++;
-            generate_to_list2(sprintf("LABEL %s%d \n", myWhileLabel, whileLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber),list_str);
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf("JUMPIFNEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber),list_str);
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "<") == 0) {
             printf("still need to calculate expression.\n");
             whileLabelNumber++;
-            generate_to_list2(sprintf("LABEL %s%d \n", myWhileLabel, whileLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber),list_str);
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf("DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("LT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("JUMPIFNEQ %s%d TF@%s%d bool@true \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"LT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "<=") == 0) {
             printf("still need to calculate expression.\n");
             whileLabelNumber++;
-            generate_to_list2(sprintf("LABEL %s%d\n", myWhileLabel, whileLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d\n", myWhileLabel, whileLabelNumber),list_str);
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf("DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("AND TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("JUMPIFEQ %s%d TF@%s%d $symb2 \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"AND TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d $symb2 \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, ">") == 0) {
             printf("still need to calculate expression.\n");
             whileLabelNumber++;
-            generate_to_list2(sprintf("LABEL %s%d \n", myWhileLabel, whileLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber),list_str);
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf("DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("GT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("JUMPIFNEQ %s%d TF@%s%d bool@true \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"GT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "<=") == 0) {
             printf("still need to calculate expression.\n");
             whileLabelNumber++;
-            generate_to_list2(sprintf("LABEL %s%d\n", myWhileLabel, whileLabelNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d\n", myWhileLabel, whileLabelNumber),list_str);
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf("DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("OR TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
-            generate_to_list2(sprintf("JUMPIFEQ %s%d TF@%s%d $symmb1 \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d $symmb1 \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber),list_str);
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         }
     }
@@ -236,9 +236,9 @@ void generateWhileHead(tASTPointer *AST) {
  * Function generates an ending for while loop.
  */
 void generateWhileEnd() {
-    generate_to_list2(sprintf("JUMP %s%d \n", myWhileLabel, tLabelStackGetTop(labelStack)),list_str);
+    generate_to_list2(sprintf(list_str+list_length,"JUMP %s%d \n", myWhileLabel, tLabelStackGetTop(labelStack)),list_str);
     tLabelStackPop(labelStack);
-    generate_to_list2(sprintf("LABEL %s%d \n", myWhileEndLabel, tLabelStackGetTop(endLabelStack)),list_str);
+    generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileEndLabel, tLabelStackGetTop(endLabelStack)),list_str);
     tLabelStackPop(endLabelStack);
 }
 
@@ -247,21 +247,28 @@ void generateWhileEnd() {
  * @param token input token
  */
 void generatePrint(Token* token, char* currentFunction) {
+
+printf("::%s\n",list_str);
+    printf("WUT\n");
+
     if (token == NULL) {
         errorHandling(99);
     } else {
         if (token->type == s_string) {
-            generate_to_list2(sprintf("WRITE string@%s\n", convert_string(token->content)),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"WRITE string@%s\n", convert_string(token->content)),list_str);
             free(asciistr);
         } else if (token->type == s_int) {
-            generate_to_list2(sprintf("WRITE int@%s\n", token->content),list_str);
+
+            printf("WUT\n");
+            generate_to_list2(sprintf(list_str+list_length,"WRITE int@%s\n", token->content),list_str);
+            printf("WUT\n");
         } else if (token->type == s_float) {
-            generate_to_list2(sprintf("WRITE float@%a\n", token->content),list_str);
+            generate_to_list2(sprintf(list_str+list_length,"WRITE float@%s\n", token->content),list_str);
         } else if (token->type == s_id) {
             if (strcmp(currentFunction, "Main") == 0) {
-                generate_to_list2(sprintf("WRITE GF@%s\n", token->content),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"WRITE GF@%s\n", token->content),list_str);
             } else {
-                generate_to_list2(sprintf("WRITE LF@%s\n", token->content),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"WRITE LF@%s\n", token->content),list_str);
             }
         }
     }
