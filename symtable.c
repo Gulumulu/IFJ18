@@ -43,6 +43,10 @@ void BSTDispose(BSTNodePtr* root) {
     if (*root != NULL) {
         BSTDispose(&(*root)->LeftPtr);
         BSTDispose(&(*root)->RightPtr);
+        free((*root)->content->type);
+        free((*root)->content->name);
+        free((*root)->content->var);
+        free((*root)->content);
         free(*root);
         *root = NULL;
     }
@@ -58,31 +62,32 @@ void BSTDispose(BSTNodePtr* root) {
  */
 void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned long ID, unsigned long func_id) {
     if (*root == NULL) {    // if the tree is empty we need to create a new root
-        BSTNodePtr tmp = malloc(sizeof(struct BSTNode));    // allocating space for the node
-        tmp->content = malloc(sizeof(struct BSTNodeContent));
-        if (tmp != NULL) {  // filling the node with information
-            tmp->ID = ID;
-            tmp->func_id = func_id;
-            tmp->content->type = malloc(sizeof(char) * strlen(content->type));
-            tmp->content->type = strcpy(tmp->content->type, content->type);
-            tmp->content->type[strlen(tmp->content->type)] = '\0';
-            tmp->content->defined = content->defined;
-            tmp->content->func_params = content->func_params;
-            tmp->content->name = malloc(sizeof(char) * strlen(content->name));
-            tmp->content->name = strcpy(tmp->content->name, content->name);
-            tmp->content->name[strlen(tmp->content->name)] = '\0';
-            tmp->content->var = malloc(sizeof(char) * strlen(content->var));
-            tmp->content->var = strcpy(tmp->content->var, content->var);
-            tmp->content->var[strlen(tmp->content->var)] = '\0';
-            tmp->LeftPtr = NULL;
-            tmp->RightPtr = NULL;
-            *root = tmp;
-            free(tmp->content->var);
+        //BSTNodePtr tmp = malloc(sizeof(struct BSTNode));    // allocating space for the node
+        (*root) = malloc(sizeof(struct BSTNode));
+        (*root)->content = malloc(sizeof(struct BSTNodeContent));
+        //if (tmp != NULL) {  // filling the node with information
+        (*root)->ID = ID;
+        (*root)->func_id = func_id;
+        (*root)->content->type = malloc(sizeof(char) * (strlen(content->type)+1));
+        (*root)->content->type = strcpy((*root)->content->type, content->type);
+        (*root)->content->type[strlen((*root)->content->type)] = '\0';
+        (*root)->content->defined = content->defined;
+        (*root)->content->func_params = content->func_params;
+        (*root)->content->name = malloc(sizeof(char) * (strlen(content->name)+1));
+        (*root)->content->name = strcpy((*root)->content->name, content->name);
+        (*root)->content->name[strlen((*root)->content->name)] = '\0';
+        (*root)->content->var = malloc(sizeof(char) * (strlen(content->var)+1));
+        (*root)->content->var = strcpy((*root)->content->var, content->var);
+        (*root)->content->var[strlen((*root)->content->var)] = '\0';
+        (*root)->LeftPtr = NULL;
+        (*root)->RightPtr = NULL;
+            //*root = tmp;
+            /*free(tmp->content->var);
             free(tmp->content->name);
             free(tmp->content->type);
             free(tmp->content);
-            free(tmp);
-        }
+            free(tmp);*/
+        //}
     } else {
         if ((*root)->ID == ID) {    // if there already is a root with this id we just update the content
             (*root)->content = content;

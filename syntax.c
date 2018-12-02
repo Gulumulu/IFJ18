@@ -406,7 +406,7 @@ void doMagic() {
                     if (printing == 1) {
                         // need to print this expression
 
-                generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
+                //generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
 
                 //generateCodeParek(&tmpToken);
                 // todo: generate code
@@ -442,7 +442,7 @@ void doMagic() {
                             generateWhileHead(stackAST->body[stackAST->top]);
                         }
 
-                        generateExpression(AST,functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
+                        //generateExpression(AST,functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
 
                         // clear tree after generating
                         AST = malloc(sizeof(struct tAST) * 2);
@@ -469,7 +469,7 @@ void doMagic() {
         if (printing == 1 ) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
             // need to print this expression
 
-            generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker));
+            //generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker));
 
             //generateCodeParek(&global_token);
             // todo: generate code
@@ -511,10 +511,16 @@ void doMagic() {
         errorHandling(2);                       // some rule remained on the stack
     }
 
+    //BSTDispose(global_symtable);
     free(global_symtable);
+    while (arr_id > 0) {
+        BSTDispose(&array[arr_id]);
+        free(&array[arr_id]);
+        arr_id--;
+    }
         free(array);
         free(tmpToken.content);
-        tStackASTDispose(stackAST);
+        //tStackASTDispose(stackAST);
         free(stackAST);
         stackAST=NULL;
         dispose(expendedStack);
@@ -523,7 +529,7 @@ void doMagic() {
     tStackPredictiveDispose(predictiveStack);
     free(predictiveStack);
         predictiveStack=NULL;
-        tASTDispose(AST);
+        //tASTDispose(AST);
         free(AST);
         AST = NULL;
         tFunctionTrackerDispose(functionTracker);

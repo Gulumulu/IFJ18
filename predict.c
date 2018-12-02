@@ -610,7 +610,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
 
             predictiveStackTop = NULL;
         } while (rule != 0 && end == 0);
-
+        free(predictiveStackTop);
         /*if (strcmp(predictiveStack->content[predictiveStack->top-1],"<expr>") == 0 && printing != 1) {
             // expression will be calculated next
             precedence = 1;

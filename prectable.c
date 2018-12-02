@@ -37,7 +37,7 @@ void dispose(tExpendedStack* stack) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        if (stack->top > 0) {
+        if (stack->top >= 0) {
             free(stack->content);
             stack->content = NULL;
         }
