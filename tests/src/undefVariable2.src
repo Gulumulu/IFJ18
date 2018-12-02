@@ -1,5 +1,5 @@
 # test for undefined variable in user-defined function
 def foo(a)
-	c=b+a
+	c= b+a
 end
 c=foo("bar")

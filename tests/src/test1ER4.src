@@ -4,6 +4,6 @@ def foo()
 	b = "foobar"
 	a = a + b
 end
-print("1 plus foobar is: )
+print("1 plus foobar is: ")
 a=foo()
 print(a)

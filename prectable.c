@@ -37,8 +37,8 @@ void dispose(tExpendedStack* stack) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        if (stack->top >= 0) {
-            //free(stack->content);
+        if (stack->top > 0) {
+            free(stack->content);
             stack->content = NULL;
         }
     }
@@ -54,10 +54,13 @@ void push(tExpendedStack* stack, char* c) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        char *tmp = malloc(strlen(stack->content) + strlen(c));
+        size_t len = strlen(stack->content);
+        char *tmp = malloc(sizeof(char)*(strlen(stack->content) + strlen(c) + 1));
         checkMalloc(tmp);
         strcpy(tmp, stack->content);
-        stack->content = malloc(strlen(tmp) + strlen(c));
+        tmp[strlen(stack->content)] = '\0';
+        free(stack->content);
+        stack->content = malloc(sizeof(char)*(strlen(tmp) + strlen(c) + 1));
         checkMalloc(stack->content);
         // todo: pushing < into the stack that is not endRuleSign
         if (strcmp(c, "<=") == 0) {     // in case we are pushing two chars
@@ -75,8 +78,12 @@ void push(tExpendedStack* stack, char* c) {
         } else {
             strcat(tmp, c);
         }
+        tmp[len+1] = '\0';
         strcpy(stack->content, tmp);
+        stack->content[strlen(tmp)] = '\0';
         stack->top++;
+        free(tmp);
+        tmp=NULL;
     }
 }
 
@@ -90,14 +97,17 @@ void pop(tExpendedStack* stack) {
         errorHandling(99);
     } else {
         stack->top--;
-        char* tmp = malloc(strlen(stack->content));
+        char* tmp = malloc(sizeof(char)*(strlen(stack->content)));
         checkMalloc(tmp);
         tmp = memcpy(tmp, stack->content, strlen(stack->content)-1);
         tmp[strlen(stack->content)-1] = '\0';
-        stack->content = malloc(strlen(tmp)+1);
+        free(stack->content);
+        stack->content = malloc(sizeof(char)*(strlen(tmp)+1));
         checkMalloc(stack->content);
         stack->content = memcpy(stack->content, tmp, strlen(tmp));
         stack->content[strlen(tmp)] = '\0';
+        free(tmp);
+        tmp=NULL;
     }
 }
 
@@ -249,15 +259,20 @@ char getTop(tExpendedStack* stack) {
  * @param addedChar char that will be added
  * @return newly formed string
  */
-char* appendChar(char* string, char addedChar) {
+void appendChar(char* string, char addedChar) {
     size_t len = strlen(string);
-    char* returnedString = malloc(len + 2);
+    char* returnedString = malloc(len + sizeof(char) * 2);
     checkMalloc(returnedString);
     strcpy(returnedString, string);
     returnedString[len] = addedChar;
     returnedString[len+1] = '\0';
-
-    return returnedString;
+    size_t len2 = strlen(returnedString);
+    string = malloc(len2+1);
+    checkMalloc(string);
+    string = strcpy(string, returnedString);
+    string[strlen(returnedString)] = '\0';
+    free(returnedString);
+    returnedString = NULL;
 }
 
 char* catStrings(char* string1, char* string2) {
@@ -280,27 +295,48 @@ void pushEndRuleSign(tExpendedStack* stack, char firstChar) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        char* rest = malloc(strlen(strrchr(stack->content, firstChar))+1);
-        rest = strrchr(stack->content, firstChar);
+        char* rest = NULL;
+        size_t len;
+        if (strrchr(stack->content, firstChar) == NULL) {
+            rest = malloc(sizeof(char) * 1);
+            rest[0] = '\0';
+        } else {
+            rest = malloc(strlen(strrchr(stack->content, firstChar))+1);
+            if (rest == NULL) {
+                errorHandling(99);
+            }
+            len = strlen(strrchr(stack->content, firstChar));
+            rest = strcpy(rest,strrchr(stack->content, firstChar));
+            rest[len] = '\0';
+        }
         //rest[strlen(strrchr(stack->content, firstChar))] = '\0';
         char *beginning = malloc(strlen(stack->content) + 2);
         memcpy(beginning, stack->content, (strlen(stack->content) - strlen(rest)) + 1);
-        beginning[(strlen(stack->content) - strlen(rest)) + 1] = '\0';
-        beginning = appendChar(beginning, '<');
+        beginning[(strlen(stack->content) - strlen(rest)) + 1] = '<';
+        beginning[(strlen(stack->content) - strlen(rest)) + 2] = '\0';
+        //appendChar(beginning, '<');
         for (int i = 0; i < (int) strlen(rest) - 1; i++) {
             rest[i] = rest[i + 1];
         }
-        if (strlen(rest) != 1) {
-            rest[strlen(rest)-1] = '\0';
+        rest[strlen(rest)-1] = '\0';
+        if (strlen(rest) != 2) {
+            rest[strlen(rest)] = '\0';
+            size_t len2 = strlen(beginning);
             strcat(beginning, rest);
+            beginning[len2+strlen(rest)] = '\0';
         } else {
-            strcat(beginning, "\0");
+            size_t len2 = strlen(beginning);
+            //strcat(beginning, "\0");
+            beginning[len2+strlen(rest)] = '\0';
         }
+        //free(stack->content);
         stack->content = malloc(strlen(beginning)+1);
         stack->content = memcpy(stack->content, beginning, strlen(beginning));
         stack->content[strlen(beginning)] = '\0';
         //stack->content = beginning;
         free(beginning);
+        beginning = NULL;
+        free(rest);
         rest = NULL;
         stack->top++;
     }
@@ -318,17 +354,20 @@ void applyRule(tExpendedStack* stack, char* handle,char* rule) {
         errorHandling(99);
     } else {
         char *tmpStackContent = NULL;
-        tmpStackContent = malloc(strlen(stack->content) - strlen(handle) + strlen(rule)+1);
+        tmpStackContent = malloc(sizeof(char)*(strlen(stack->content) - strlen(handle) + strlen(rule)+1));
         //tmpStackContent = malloc(10);
         //tmpStackContent = memmove(tmpStackContent, stack->content, strlen(stack->content) - strlen(handle));
         tmpStackContent = memcpy(tmpStackContent, stack->content, strlen(stack->content) - strlen(handle));
         tmpStackContent[strlen(stack->content) - strlen(handle)] = '\0';
+        size_t len = strlen(tmpStackContent);
         tmpStackContent = strcat(tmpStackContent, rule);
+        tmpStackContent[len + strlen(rule)] = '\0';
         //tmpStackContent = appendChar(tmpStackContent, 'E');
         stack->top -= (strlen(handle) - 1);
         free(stack->content);
-        stack->content = malloc(strlen(tmpStackContent)+1);
+        stack->content = malloc(sizeof(char)*(strlen(tmpStackContent)+1));
         stack->content = strcpy(stack->content, tmpStackContent);
+        stack->content[strlen(tmpStackContent)] = '\0';
         //stack->content = tmpStackContent;
         free(tmpStackContent);
     }
@@ -419,11 +458,11 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
     if (expendedStack == NULL || stackAST == NULL) {                        // expendedStack error
         errorHandling(99);
     } else {
-        char* a;
-        char* c;
-        char* emptyString = "";
+        char* a = malloc(sizeof(char) * 2);
+        char* c = malloc((sizeof(char)) * 2);
+        char* emptyString = malloc(sizeof(char) * 2);
         int end = 0;
-        if (functionName == NULL || strcmp(functionName, "") == 0) {
+        if (stackPredictive == NULL) {
             functionName = "";
             stackPredictive = malloc(sizeof(tStackPredictive)*15);
             tStackPredictiveInit(stackPredictive);
@@ -437,13 +476,20 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
             precedence = 0;                     // precedence SA has finished, need to do predictive SA with the same token
         }
         do {
-            a = "";
-            c = "";
+            //a = "";
+            //c = "";
             char tmp1 = getTop(expendedStack);
             char tmp3 = changeTokenTypeToChar(token.type);
 
-            a = appendChar(a, tmp1);
-            c = appendChar(c, tmp3);
+            //a = malloc(sizeof(char) * 2);
+            //appendChar(a, tmp1);
+            a[0] = tmp1;
+            a[1] = '\0';
+            //c = malloc((sizeof(char)) * 2);
+            //appendChar(c, tmp3);
+            c[0] = tmp3;
+            c[1] = '\0';
+            //emptyString = malloc(sizeof(char) * 2);
 
             if (strcmp(c, "f") != 0 && isFunction == 0) {
                 // normal expression => not dealing with assigning a function
@@ -461,35 +507,52 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 } else {
                     char prec = precTable[row][col];        // get precedence operator from precedence table
                     char *handle = NULL;
+                    size_t len;
 
                     switch (prec) {
                         // decide what to do based on precedence operator obtained from precedence table
                         case '=' :
                             // copy token into the stack
-                            push(expendedStack, appendChar(emptyString, tmp3));
+                            //emptyString = malloc()
+                            //appendChar(emptyString, tmp3);
+                            emptyString[0] = tmp3;
+                            emptyString[1] = '\0';
+                            push(expendedStack, emptyString);
                             end = 1;                            // need to get next token
                             break;
                         case '<' :
                             // put end rule sign into the stack and push token into the stack
                             pushEndRuleSign(expendedStack, tmp1);
-                            push(expendedStack, appendChar(emptyString, tmp3));
+                            //appendChar(emptyString, tmp3);
+                            emptyString[0] = tmp3;
+                            emptyString[1] = '\0';
+                            push(expendedStack, emptyString);
                             if (tmp3 == 'i') {
-                                tStackASTPush(stackAST, makeLeaf(findVariable(*node, &token)));
+                                tStackASTPush(stackAST, *node, &token, "", NULL, NULL);
                             }
                             end = 1;                            // need to get next token
                             break;
                         case '>' :
                             // change expresion in the stack
-                            handle = malloc(strlen(strrchr(expendedStack->content, '<')));
+                            if (strrchr(expendedStack->content, '<') == NULL) {
+                                handle = malloc(sizeof(char)*2);
+                                len = 0;
+                            } else {
+                                handle = malloc(sizeof(char)*(strlen(strrchr(expendedStack->content, '<'))+1));
+                                len = strlen(strrchr(expendedStack->content, '<'));
+                            }
                             handle = strcpy(handle,strrchr(expendedStack->content, '<'));
-                            if (handle != NULL && changeHandle(expendedStack, handle) != 0) {
+                            handle[len] = '\0';
+                            if (strcmp(handle, "") != 0 && changeHandle(expendedStack, handle) != 0) {
                                 switch (rule) {
                                     case 1:
                                     case 2:
                                     case 3:
                                         // merging two operands - creating new tree
-                                        tStackASTPush(stackAST,
-                                                      makeTree(a, tStackASTPop(stackAST), tStackASTPop(stackAST)));
+                                        tStackASTPush(stackAST, *node,&token, a, tStackASTPop(stackAST), tStackASTPop(stackAST));
+                                        /*free(a);
+                                        free(c);
+                                        free(emptyString);*/
                                         break;
                                     case 4:
                                         // doing nothing, just changing handle
@@ -511,13 +574,15 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                             end = 1;
                             break;
                     }
+                    /*free(handle);
+                    handle=NULL;*/
                 }
             } else if (strcmp(c, "f") == 0) {
                 // assigning a function in expression => need to load other tokens as well
-                char* tmpFuncName = malloc(strlen(functionName));
+                char* tmpFuncName = malloc(sizeof(char)*strlen(functionName));
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
-                functionName = malloc(strlen(functionName)+strlen(token.content)+1);
+                functionName = malloc(sizeof(char)*(strlen(functionName)+strlen(token.content)+1));
                 //functionName = catStrings(functionName, tmpFuncName);
                 //functionName = catStrings(functionName, token.content);
                 functionName = memcpy(functionName, tmpFuncName, strlen(tmpFuncName));
@@ -530,10 +595,10 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 free(tmpFuncName);
             } else if (token.type == s_lbrac || token.type == s_comma || token.type == s_id || token.type == s_int || token.type == s_float || token.type == s_exp_int || token.type == s_exp_int_s || token.type == s_exp_f || token.type == s_exp_f_s || token.type == s_string) {
                 // assigning a function in expression => need to load other tokens as well
-                char* tmpFuncName = malloc(strlen(functionName));
+                char* tmpFuncName = malloc(sizeof(char)*strlen(functionName));
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
-                functionName = malloc(strlen(functionName)+strlen(token.content)+1);
+                functionName = malloc(sizeof(char)*(strlen(functionName)+strlen(token.content)+1));
                 //functionName = catStrings(functionName, tmpFuncName);
                 //functionName = catStrings(functionName, token.content);
                 functionName = memcpy(functionName, tmpFuncName, strlen(tmpFuncName));
@@ -545,10 +610,10 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 free(tmpFuncName);
             } else if (token.type == s_rbrac || token.type == ss_eol || token.type == ss_eof) {
                 // assigning a function in expression => need to load other tokens as well
-                char* tmpFuncName = malloc(strlen(functionName));
+                char* tmpFuncName = malloc(sizeof(char)*strlen(functionName));
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
-                functionName = malloc(strlen(functionName)+strlen(token.content)+1);
+                functionName = malloc(sizeof(char)*(strlen(functionName)+strlen(token.content)+1));
                 //functionName = catStrings(functionName, tmpFuncName);
                 //functionName = catStrings(functionName, token.content);
                 functionName = memcpy(functionName, tmpFuncName, strlen(tmpFuncName));
@@ -561,14 +626,14 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 if (token.type == ss_eol || token.type == ss_eof) {
                     Token tmpToken;
                     tmpToken.type = s_func_expr;
-                    tmpToken.content = malloc(strlen(functionName)+1);
+                    tmpToken.content = malloc(sizeof(char)*(strlen(functionName)+1));
                     tmpToken.content = strcpy(tmpToken.content, functionName);
                     tmpToken.content[strlen(functionName)] = '\0';
                     simulatePrecedence(tmpToken, expendedStack, stackAST, node, globalSymtable);
                     end = 0;
                 } else {
                     token.type = s_func_expr;
-                    token.content = malloc(strlen(functionName)+1);
+                    token.content = malloc(sizeof(char)*(strlen(functionName)+1));
                     token.content = strcpy(token.content, functionName);
                 }
                 free(functionName);
@@ -578,6 +643,15 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 errorHandling(2);
                 end = 1;
             }
+            /*free(a);
+            a=NULL;
+            free(c);
+            c=NULL;
+            free(emptyString);
+            emptyString=NULL;*/
         } while (end != 1);
+        free(a);
+        free(c);
+        free(emptyString);
     }
 }

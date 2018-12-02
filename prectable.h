@@ -35,6 +35,6 @@ void checkMalloc(const char* checkedString);
 int getTableOffset(char* terminal);
 void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr* stackAST, BSTNodePtr* node, BSTNodePtr* globalSymtable);
 char getTop(tExpendedStack* stack);
-char* appendChar(char *string, char addedChar);
+void appendChar(char *string, char addedChar);
 TokenType decideID(Token nextToken);
 #endif //IFJ_PRECTABLE_H

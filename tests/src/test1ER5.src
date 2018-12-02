@@ -2,5 +2,5 @@
 def mul(a, b)
 	c=a*b
 end
-print("4 multiplied by 2 is: )
+print("4 multiplied by 2 is: ")
 a=mul(4)

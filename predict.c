@@ -12,10 +12,10 @@
  */
 void tStackPredictiveInit(tStackPredictive* stack) {
     stack->top = 2;
-    stack->content[0] = malloc(2);
+    stack->content[0] = malloc(sizeof(char) * 2);
     stack->content[0] = strcpy(stack->content[0], "$");
     stack->content[0][1] = '\0';
-    stack->content[1] = malloc(8);
+    stack->content[1] = malloc(sizeof(char) * 8);
     stack->content[1] = strcpy(stack->content[1], "<start>");
     stack->content[1][7] = '\0';
 }
@@ -29,9 +29,9 @@ void tStackPredictiveDispose(tStackPredictive* stack) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        while (stack->top >= 0) {
-            //free(stack->content[stack->top]);
-            stack->content[stack->top] = NULL;
+        while (stack->top > 0) {
+            free(stack->content[stack->top-1]);
+            stack->content[stack->top-1] = NULL;
             stack->top--;
         }
     }
@@ -47,7 +47,7 @@ void tStackPredictivePush(tStackPredictive* stack, char* symbol) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
-        stack->content[stack->top] = malloc((strlen(symbol)+1));
+        stack->content[stack->top] = malloc(sizeof(char)*(strlen(symbol)+1));
         //checkMalloc(stack->content[stack->top]);
         stack->content[stack->top] = strcpy(stack->content[stack->top], symbol);
         stack->content[stack->top][strlen(symbol)] = '\0';
@@ -79,6 +79,7 @@ void tStackPredictivePop(tStackPredictive* stack) {
     if (stack == NULL) {
         errorHandling(99);
     } else {
+        free(stack->content[stack->top-1]);
         stack->content[stack->top-1] = NULL;
         stack->top--;
     }
@@ -454,8 +455,8 @@ void pushArg(Token* token, BSTNodePtr* node) {
     if (token == NULL || node == NULL) {
         errorHandling(99);
     } else {
-        BSTNodeContentPtr* tmpID = malloc(sizeof(struct BSTNodeContent));
-        tmpID = BSTSearch(node, hash_id(token->content));
+        BSTNodeContentPtr* tmpID = BSTSearch(node, hash_id(token->content));
+        //tmpID = BSTSearch(node, hash_id(token->content));
         switch (token->type) {
             case s_string:
                 tStackPredictivePush(argsTracker, "string");
@@ -479,6 +480,8 @@ void pushArg(Token* token, BSTNodePtr* node) {
             default:
                 break;
         }
+        //free(tmpID);
+        tmpID=NULL;
     }
 }
 
@@ -500,7 +503,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
 
         do {
             size_t predictiveStackTopLen = strlen(tStackPredictiveGetTop(predictiveStack));
-            predictiveStackTop = malloc(predictiveStackTopLen+1);
+            predictiveStackTop = malloc(sizeof(char)*(predictiveStackTopLen+1));
             predictiveStackTop = strcpy(predictiveStackTop, tStackPredictiveGetTop(predictiveStack));
             predictiveStackTop[(int)predictiveStackTopLen] = '\0';
 
@@ -548,6 +551,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                         errorHandling(45);
                         end = -1;
                     }
+                    free(inputFunctionName);
                     inputFunctionName = NULL;
                     tStackPredictiveDispose(argsTracker);
                     inputFunction = s_comma;
@@ -581,7 +585,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                         } else {
                             inputFunction = token.type;
                         }
-                        inputFunctionName = "";
+                        //inputFunctionName = "";
                         inputFunctionName = malloc(strlen(token.content)+1);
                         inputFunctionName = memcpy(inputFunctionName, token.content, strlen(token.content));
                         inputFunctionName[strlen(token.content)] = '\0';

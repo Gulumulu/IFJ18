@@ -38,13 +38,13 @@ typedef struct tStackAST{
 // function for working with AST
 void tASTInit(tASTPointer* AST);
 void tASTDispose(tASTPointer* AST);
-BSTNodeContentPtr* findVariable(BSTNodePtr node, Token* token);
-tASTPointer* makeLeaf(BSTNodeContentPtr* symtablePointer);
-tASTPointer* makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer);
+void findVariable(BSTNodePtr node, Token* token, BSTNodeContentPtr* nodeContentPtr);
+void makeLeaf(BSTNodePtr node, Token* token, tASTPointer* AST);
+void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tASTPointer* AST);
 
 // functions for working with stack of ASTs
 void tStackASTInit(tStackASTPtr* stack);
-void tStackASTPush(tStackASTPtr* stack, tASTPointer* AST);
+void tStackASTPush(tStackASTPtr* stack, BSTNodePtr node, Token* token, char* operator, tASTPointer* leftSide, tASTPointer* righSide);
 tASTPointer* tStackASTPop(tStackASTPtr* stack);
 void tStackASTDispose(tStackASTPtr* stack);
 

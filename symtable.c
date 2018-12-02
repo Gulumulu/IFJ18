@@ -66,6 +66,7 @@ void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned long ID, u
             tmp->LeftPtr = NULL;
             tmp->RightPtr = NULL;
             *root = tmp;
+            free(tmp);
         }
     } else {
         if ((*root)->ID == ID) {    // if there already is a root with this id we just update the content

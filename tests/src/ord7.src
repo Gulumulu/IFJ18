@@ -1,4 +1,4 @@
 # test for build-in function ord => incompatible parameters
-print("ASCII value of 5 is: )
+print("ASCII value of 5 is: ")
 a=ord(5, 1)
 print(a)

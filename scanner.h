@@ -92,5 +92,6 @@ typedef struct token {
 Token global_token;
 
 int token_generate(FILE *file);
+void destroy_token(Token* token);
 
 #endif

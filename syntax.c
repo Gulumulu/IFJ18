@@ -25,8 +25,9 @@ tFunctionTracker* functionTracker;
  */
 void tFunctionTrackerInit(tFunctionTracker* stack) {
     stack->top = 1;
-    stack->function[0] = malloc(5);
-    stack->function[0] = "Main";
+    stack->function[0] = malloc(sizeof(char) * 5);
+    stack->function[0] = strcpy(stack->function[0], "Main");
+    stack->function[0][4] = '\0';
 }
 
 /**
@@ -39,7 +40,8 @@ void tFunctionTrackerDispose(tFunctionTracker* stack) {
         errorHandling(99);
     } else {
         while (stack->top != 0) {
-            stack->function[stack->top] = NULL;
+            free(stack->function[stack->top-1]);
+            //stack->function[stack->top] = NULL;
             stack->top--;
         }
     }
@@ -116,7 +118,7 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *file = fopen("test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
     char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
 
     // zacatek programu
@@ -277,7 +279,7 @@ void doMagic() {
                 tmp->var = "string";
                 BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
             }
-            else if ((tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
+            else if (arr_id > 0 && (tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
                 tmp->var = "string";
                 BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
             }
@@ -288,7 +290,7 @@ void doMagic() {
                 tmp->var = "float";
                 BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
             }
-            else if ((tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
+            else if (arr_id > 0 && (tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
                 tmp->var = "float";
                 BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
             }
@@ -299,10 +301,15 @@ void doMagic() {
                 tmp->var = "integer";
                 BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
             }
-            else if ((tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
+            else if (arr_id > 0 && (tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
                 tmp->var = "integer";
                 BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
             }
+        }
+        free(cnt);
+        if (global_token.type != ss_eof) {
+            destroy_token(&global_token);
+            global_token.type = kw_def;
         }
     }
 
@@ -310,7 +317,7 @@ void doMagic() {
 
         // second transit of compiler -- passing tokens to parser
         // helper stacks
-        tASTPointer *AST = malloc(sizeof(struct tAST) * 2);
+        tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
         tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
         tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 30);
         tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
@@ -356,7 +363,7 @@ void doMagic() {
                                 generateWhileHead(stackAST->body[stackAST->top]);
                             }
 
-                            generateExpression(AST,functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
+                            //generateExpression(AST,functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
 
                             // po vygenerovani vyrazu ho prirad zadane promenne
                             char *frame = get_frame(functionTracker);
@@ -364,12 +371,13 @@ void doMagic() {
                             assign++;
 
                             // clear tree after generating
-                            AST = malloc(sizeof(struct tAST) * 2);
+                            tASTDispose(AST);
+                            AST = malloc(sizeof(struct tAST) * 30);
                         }
                     }
                 }
 
-		// PREDIKTIVNI (AUTOMATICKA)
+		        // PREDIKTIVNI (AUTOMATICKA)
                 if (precedence == 0) {
                     // we are not dealing with expression => doing top down syntax analysis => need to simulate predictive SA
                     if (global_token.type == s_id) {
@@ -488,20 +496,35 @@ void doMagic() {
                     // clearing applied rules at the of one line
                     clearRulesApplied();
                 }
-
-
+                if (global_token.type != ss_eof) {
+                    destroy_token(&global_token);
+                    global_token.type = kw_def;
+                }
         }
 
         if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
             errorHandling(2);                       // some rule remained on the stack
         }
 
+        free(global_symtable);
+        free(array);
         free(tmpToken.content);
         tStackASTDispose(stackAST);
+        free(stackAST);
+        stackAST=NULL;
         dispose(expendedStack);
+        free(expendedStack);
+        expendedStack=NULL;
         tStackPredictiveDispose(predictiveStack);
-        //tASTDispose(AST);
+        free(predictiveStack);
+        predictiveStack=NULL;
+        tASTDispose(AST);
+        free(AST);
+        AST = NULL;
         tFunctionTrackerDispose(functionTracker);
+        free(functionTracker);
+        functionTracker=NULL;
+        destroy_token(&global_token);
 
         if(ERROR_TYPE == 0) { // tisk obsahu souboru pokud se neobjevila chyba
 

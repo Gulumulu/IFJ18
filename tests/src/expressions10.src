@@ -1,5 +1,5 @@
 # test for expressions => zero variable devided by constant
 a=0
-print(a, " divided by 1 is: )
+print(a, " divided by 1 is: ")
 a=a/1
 print(a)
