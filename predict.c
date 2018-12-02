@@ -554,6 +554,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                     free(inputFunctionName);
                     inputFunctionName = NULL;
                     tStackPredictiveDispose(argsTracker);
+                    free(argsTracker);
                     inputFunction = s_comma;
                 }
                 if (inputFunction == kw_print) {
@@ -608,9 +609,13 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 end = 3;
             }
 
+            free(predictiveStackTop);
             predictiveStackTop = NULL;
         } while (rule != 0 && end == 0);
-        free(predictiveStackTop);
+        if (predictiveStackTop != NULL) {
+            free(predictiveStackTop);
+            predictiveStackTop = NULL;
+        }
         /*if (strcmp(predictiveStack->content[predictiveStack->top-1],"<expr>") == 0 && printing != 1) {
             // expression will be calculated next
             precedence = 1;

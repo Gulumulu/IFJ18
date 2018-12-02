@@ -52,6 +52,18 @@ void BSTDispose(BSTNodePtr* root) {
     }
 }
 
+void BSTContentDispose(BSTNodeContentPtr* content) {
+    if (content != NULL) {
+        free(content->type);
+        content->type = NULL;
+        free(content->var);
+        content->var = NULL;
+        free(content->name);
+        content->name = NULL;
+        //free(content);
+    }
+}
+
 /**
  * Function inserts content into BT depending on the ID
  *
@@ -76,17 +88,16 @@ void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned long ID, u
         (*root)->content->name = malloc(sizeof(char) * (strlen(content->name)+1));
         (*root)->content->name = strcpy((*root)->content->name, content->name);
         (*root)->content->name[strlen((*root)->content->name)] = '\0';
-        (*root)->content->var = malloc(sizeof(char) * (strlen(content->var)+1));
+        /*(*root)->content->var = malloc(sizeof(char) * (strlen(content->var)+1));
         (*root)->content->var = strcpy((*root)->content->var, content->var);
-        (*root)->content->var[strlen((*root)->content->var)] = '\0';
+        (*root)->content->var[strlen((*root)->content->var)] = '\0';*/
         (*root)->LeftPtr = NULL;
         (*root)->RightPtr = NULL;
             //*root = tmp;
-            /*free(tmp->content->var);
-            free(tmp->content->name);
-            free(tmp->content->type);
-            free(tmp->content);
-            free(tmp);*/
+//            free(content->var);
+//            free(content->name);
+//            free(content->type);
+//            free(content);
         //}
     } else {
         if ((*root)->ID == ID) {    // if there already is a root with this id we just update the content

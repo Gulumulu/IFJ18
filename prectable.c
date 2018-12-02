@@ -25,7 +25,9 @@ void checkMalloc(const char* checkedString) {
  */
 void init(tExpendedStack* stack) {
     stack->top = 1;
-    stack->content = "$";
+    stack->content = malloc(sizeof(char)*2);
+    stack->content = strcpy(stack->content, "$");
+    stack->content[1] = '\0';
 }
 
 /**
@@ -41,6 +43,7 @@ void dispose(tExpendedStack* stack) {
             free(stack->content);
             stack->content = NULL;
         }
+        free(stack);
     }
 }
 
@@ -99,7 +102,7 @@ void pop(tExpendedStack* stack) {
         errorHandling(99);
     } else {
         stack->top--;
-        char* tmp = malloc(sizeof(char)*(strlen(stack->content)*sizeof(char)));
+        char* tmp = malloc(sizeof(char)*(strlen(stack->content)));
         checkMalloc(tmp);
         tmp = memcpy(tmp, stack->content, strlen(stack->content)-1);
         tmp[strlen(stack->content)-1] = '\0';
@@ -303,7 +306,7 @@ void pushEndRuleSign(tExpendedStack* stack, char firstChar) {
             rest = malloc(sizeof(char) * 1);
             rest[0] = '\0';
         } else {
-            rest = malloc(strlen(strrchr(stack->content, firstChar))+1);
+            rest = malloc(sizeof(char)*(strlen(strrchr(stack->content, firstChar))+1));
             if (rest == NULL) {
                 errorHandling(99);
             }
@@ -331,7 +334,7 @@ void pushEndRuleSign(tExpendedStack* stack, char firstChar) {
             //strcat(beginning, "\0");
             beginning[len2+strlen(rest)] = '\0';
         }
-        //free(stack->content);
+        free(stack->content);
         stack->content = malloc((strlen(beginning)+1)*sizeof(char));
         stack->content = memcpy(stack->content, beginning, strlen(beginning));
         stack->content[strlen(beginning)] = '\0';
@@ -465,7 +468,9 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
         char* emptyString = malloc(sizeof(char) * 2);
         int end = 0;
         if (stackPredictive == NULL) {
-            functionName = "";
+            functionName = malloc(sizeof(char)*1);
+            functionName = strcpy(functionName, "");
+            functionName[0] = '\0';
             stackPredictive = malloc(sizeof(tStackPredictive)*15);
             tStackPredictiveInit(stackPredictive);
             tStackPredictivePop(stackPredictive);
@@ -502,6 +507,8 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 if (row == 13 && col == 13) {
                     pop(expendedStack);                     // precedence SA is done, pop stack, there should only be 'E' left
                     tStackPredictiveDispose(stackPredictive);
+                    free(stackPredictive);
+                    stackPredictive = NULL;
                     break;
                 } else if (row > 13 || col > 13) {
                     errorHandling(44);                      // symbol doesn't occur in precedence table
@@ -581,9 +588,18 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 }
             } else if (strcmp(c, "f") == 0) {
                 // assigning a function in expression => need to load other tokens as well
-                char* tmpFuncName = malloc(sizeof(char)*strlen(functionName));
+                char *tmpFuncName = NULL;
+                if (functionName != NULL) {
+                    tmpFuncName = malloc(sizeof(char) * (strlen(functionName)+1));
+                } else {
+                    tmpFuncName = malloc(sizeof(char)*1);
+                    functionName = malloc(sizeof(char)*1);
+                    functionName = strcpy(functionName, "");
+                    functionName[0] = '\0';
+                }
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
+                free(functionName);
                 functionName = malloc(sizeof(char)*(strlen(functionName)+strlen(token.content)+1));
                 //functionName = catStrings(functionName, tmpFuncName);
                 //functionName = catStrings(functionName, token.content);
@@ -597,9 +613,10 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 free(tmpFuncName);
             } else if (token.type == s_lbrac || token.type == s_comma || token.type == s_id || token.type == s_int || token.type == s_float || token.type == s_exp_int || token.type == s_exp_int_s || token.type == s_exp_f || token.type == s_exp_f_s || token.type == s_string) {
                 // assigning a function in expression => need to load other tokens as well
-                char* tmpFuncName = malloc(sizeof(char)*strlen(functionName));
+                char* tmpFuncName = malloc(sizeof(char)*(strlen(functionName))+1);
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
+                free(functionName);
                 functionName = malloc(sizeof(char)*(strlen(functionName)+strlen(token.content)+1));
                 //functionName = catStrings(functionName, tmpFuncName);
                 //functionName = catStrings(functionName, token.content);
@@ -615,6 +632,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 char* tmpFuncName = malloc(sizeof(char)*strlen(functionName));
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
+                free(functionName);
                 functionName = malloc(sizeof(char)*(strlen(functionName)+strlen(token.content)+1));
                 //functionName = catStrings(functionName, tmpFuncName);
                 //functionName = catStrings(functionName, token.content);

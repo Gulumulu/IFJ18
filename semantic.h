@@ -22,7 +22,7 @@ int precedence;
 // structure for AST
 typedef struct tAST {
     char* ID;
-    char* changed;
+    //char* changed;
     //tNodePointer* content;
     BSTNodeContentPtr* content;
     struct tAST* LeftPointer;

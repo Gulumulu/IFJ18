@@ -59,7 +59,8 @@ void tFunctionTrackerPush(tFunctionTracker* stack, char* pushedFunction) {
     } else {
         stack->function[stack->top] = malloc(sizeof(strlen(pushedFunction))+1);
         checkMalloc(stack->function[stack->top]);
-        stack->function[stack->top] = pushedFunction;
+        stack->function[stack->top] = strcpy(stack->function[stack->top], pushedFunction);
+        stack->function[stack->top][strlen(pushedFunction)] = '\0';
         stack->top++;
     }
 }
@@ -118,14 +119,14 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *file = fopen("../test.txt", "r");
-    char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
+    FILE *file = fopen("test.txt", "r");
+    //char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
 
     // zacatek programu
+    //global_token = malloc(sizeof(struct token));
 
-
-    generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"),list_str);
-    generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"),list_str);
+    //generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"),list_str);
+    //generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"),list_str);
 
     BSTNodeContentPtr* tmp;
     int not_int = 0;            // true if variable is float or string
@@ -140,8 +141,10 @@ void doMagic() {
     unsigned long func_id = 0;  // function id to be put into local id content
     unsigned long var_id = 0;   // variable id to be used when assigning variable a type (int, float or string)
 
-    BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));       // global symtable storing the function ids
+    BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));
     BSTInit(global_symtable);
+    //BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));       // global symtable storing the function ids
+    //BSTInit(global_symtable);
 
     struct BSTNode **array;         // array storing local symtables
     array = malloc(10000 * sizeof(struct BSTNode *));
@@ -155,7 +158,17 @@ void doMagic() {
     Token tmpToken = global_token;
     while (global_token.type != ss_eof) {
         token_generate(file);   // calling lexical analysis to get another token
+        /*tmp = malloc(sizeof(struct BSTNodeContent));
+        cnt = malloc(sizeof(struct BSTNodeContent));*/
+
+        tmp = malloc(sizeof(struct BSTNodeContent));
         cnt = malloc(sizeof(struct BSTNodeContent));
+        tmp->name = malloc(sizeof(char) * 100);
+        tmp->var = malloc(sizeof(char) * 10);
+        tmp->type = malloc(sizeof(char) * 20);
+        cnt->name = malloc(sizeof(char) * 100);
+        cnt->var = malloc(sizeof(char) * 10);
+        cnt->type = malloc(sizeof(char) * 20);
         if (global_token.type == kw_def) {  // after the def keyword we are expecting the function id, all id in function are local
             is_func = 1;
             is_global = 0;
@@ -170,15 +183,18 @@ void doMagic() {
             is_stat = 0;
         }
         if ((is_func == 1) && (global_token.type == s_id)) {    // push the function id into the global symtable
-            cnt->type = "function";
+            cnt->type = strcpy(cnt->type, "function");
+            cnt->type[strlen("function")] = '\0';
             cnt->defined = 1;
-            cnt->name = global_token.content;
+            cnt->name = strcpy(cnt->name, global_token.content);
+            cnt->name[strlen(global_token.content)] = '\0';
             cnt->func_params = 0;
-            cnt->var = "";
+            cnt->var[0] = '\0';
             BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
-            BSTNodePtr* local_symtable = malloc(sizeof(struct BSTNode));    // allocating memory for a new local symtable storing local identifiers
-            BSTInit(local_symtable);    // initialization of the local symtable
-            array[arr_id] = *local_symtable;    // storing the local symtable into the array of local symtables
+            //BSTNodePtr* local_symtable = malloc(sizeof(struct BSTNode));    // allocating memory for a new local symtable storing local identifiers
+            //array[arr_id] = malloc(sizeof(struct BSTNode));
+            BSTInit(&array[arr_id]);    // initialization of the local symtable
+            //array[arr_id] = *local_symtable;    // storing the local symtable into the array of local symtables
             arr_id++;
             func_id = hash_id(global_token.content);    // storing the hash of function id for later use
             is_func = 0;    // no longer expecting a function id
@@ -201,20 +217,24 @@ void doMagic() {
             }
         }
         else if ((func_params == 1) && (global_token.type == s_id)) {   // pushes function params into local symtable and changes the number of params in global symtable
-            cnt->type = "func_parameter";
+            cnt->type = strcpy(cnt->type, "func_parameter");
+            cnt->type[strlen("func_parameter")] = '\0';
             cnt->defined = 1;
-            cnt->name = global_token.content;
+            cnt->name = strcpy(cnt->name, global_token.content);
+            cnt->name[strlen(global_token.content)] = '\0';
             cnt->func_params = 0;
-            cnt->var = "";
+            cnt->var[0] = '\0';
             BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
             num_of_func_params++;
-            cnt = malloc(sizeof(struct BSTNodeContent));
-            cnt->type = "function";
+            //cnt = malloc(sizeof(struct BSTNodeContent));
+            BSTSearch(global_symtable, func_id)->func_params = num_of_func_params;
+            cnt->type = strcpy(cnt->type, "function");
+            cnt->type[strlen("function")] = '\0';
             cnt->defined = 1;
-            cnt->name = (*global_symtable)->content->name;
-            cnt->func_params = num_of_func_params;
-            cnt->var = "";
-            BSTInsert(global_symtable, cnt, func_id, 0);
+            cnt->name = strcpy(cnt->name, global_token.content);
+            cnt->name[strlen(global_token.content)] = '\0';
+            cnt->func_params = 0;
+            cnt->var[0] = '\0';
         }
         else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign, if and while statements are defined
             if (((array[0] == NULL) && (*global_symtable == NULL)) || ((array[0] == NULL) && (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL))) {
@@ -228,22 +248,26 @@ void doMagic() {
                 }
                 else {  // if the identifier was used before, it is defined
                     if (BSTSearch(global_symtable, hash_id(global_token.content)) != NULL) {    // if the identifier is a function id it is added as such
-                        cnt->type = "function";
+                        cnt->type = strcpy(cnt->type, "function");
+                        cnt->type[strlen("function")] = '\0';
                         cnt->defined = 1;
-                        cnt->name = global_token.content;
+                        cnt->name = strcpy(cnt->name, global_token.content);
+                        cnt->name[strlen(global_token.content)] = '\0';
                         cnt->func_params = 0;
-                        cnt->var = "";
+                        cnt->var[0] = '\0';
                         BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
                     }
-                    else if ((tmp = BSTSearch(&array[arr_id-1], hash_id(global_token.content))) != NULL) {  // if the identifier is already in the local symtable
-                        BSTInsert(&array[arr_id-1], tmp, hash_id(global_token.content), func_id);
+                    else if (BSTSearch(&array[arr_id-1], hash_id(global_token.content)) != NULL) {  // if the identifier is already in the local symtable
+                        BSTInsert(&array[arr_id-1], BSTSearch(&array[arr_id-1], hash_id(global_token.content)), hash_id(global_token.content), func_id);
                     }
                     else {  // otherwise it is added as a variable
-                        cnt->type = "variable";
+                        cnt->type = strcpy(cnt->type, "variable");
+                        cnt->type[strlen("variable")] = '\0';
                         cnt->defined = 1;
-                        cnt->name = global_token.content;
+                        cnt->name = strcpy(cnt->name, global_token.content);
+                        cnt->name[strlen(global_token.content)] = '\0';
                         cnt->func_params = 0;
-                        cnt->var = "";
+                        cnt->var[0] = '\0';
                         BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
                     }
                 }
@@ -251,82 +275,110 @@ void doMagic() {
         }
         else if ((is_global == 1) && (global_token.type == s_id)) {     // pushes the global ids into global symtable
             if (BSTSearch(global_symtable, hash_id(global_token.content)) == NULL) {
-                cnt->type = "variable";
+                cnt->type = strcpy(cnt->type, "variable");
+                cnt->type[strlen("variable")] = '\0';
                 cnt->defined = 1;
-                cnt->name = global_token.content;
+                cnt->name = strcpy(cnt->name, global_token.content);
+                cnt->name[strlen(global_token.content)] = '\0';
                 cnt->func_params = 0;
-                cnt->var = "";
+                cnt->var[0] = '\0';
                 BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
                 var_id = hash_id(global_token.content);
             }
         }
         else if (global_token.type == s_id) {   // push the id into the local symtable for the specific function
             if (BSTSearch(global_symtable, hash_id(global_token.content)) != NULL) {    // if the identifier is a function id it is added as such
-                cnt->type = "function";
+                cnt->type = strcpy(cnt->type, "function");
+                cnt->type[strlen("function")] = '\0';
                 cnt->defined = 1;
-                cnt->name = global_token.content;
+                cnt->name = strcpy(cnt->name, global_token.content);
+                cnt->name[strlen(global_token.content)] = '\0';
                 cnt->func_params = 0;
-                cnt->var = "";
+                cnt->var[0] = '\0';
                 BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
             }
-            else if ((tmp = BSTSearch(&array[arr_id-1], hash_id(global_token.content))) != NULL) {  // if the identifier is already in the local symtable
-                BSTInsert(&array[arr_id-1], tmp, hash_id(global_token.content), func_id);
+            else if (BSTSearch(&array[arr_id-1], hash_id(global_token.content)) != NULL) {  // if the identifier is already in the local symtable
+                BSTInsert(&array[arr_id-1], BSTSearch(&array[arr_id-1], hash_id(global_token.content)), hash_id(global_token.content), func_id);
             }
             else {  // otherwise it is added as a variable
-                cnt->type = "variable";
+                cnt->type = strcpy(cnt->type, "variable");
+                cnt->type[strlen("variable")] = '\0';
                 cnt->defined = 1;
-                cnt->name = global_token.content;
+                cnt->name = strcpy(cnt->name, global_token.content);
+                cnt->name[strlen(global_token.content)] = '\0';
                 cnt->func_params = 0;
-                cnt->var = "";
+                cnt->var[0] = '\0';
                 BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
                 var_id = hash_id(global_token.content);
             }
         }
         else if ((after_eq == 1) && (global_token.type == s_string)) {
-            if ((tmp = BSTSearch(global_symtable, var_id)) != NULL) {
-                tmp->var = "string";
-                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            if (BSTSearch(global_symtable, var_id) != NULL) {
+                BSTSearch(global_symtable, var_id)->var = malloc(sizeof(char) * 10);
+                BSTSearch(global_symtable, var_id)->var = strcpy(BSTSearch(global_symtable, var_id)->var, "string");
+                BSTSearch(global_symtable, var_id)->var[strlen(BSTSearch(global_symtable, var_id)->var)] = '\0';
+                BSTInsert(global_symtable, BSTSearch(global_symtable, var_id), var_id, 0);  // inserts the function id into the global symtable
             }
-            else if (arr_id > 0 && (tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
-                tmp->var = "string";
-                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            else if (arr_id > 0 && (BSTSearch(&array[arr_id-1], var_id)) != NULL) {
+                BSTSearch(&array[arr_id-1], var_id)->var = malloc(sizeof(char) * 10);
+                BSTSearch(&array[arr_id-1], var_id)->var = strcpy(BSTSearch(&array[arr_id-1], var_id)->var, "string");
+                BSTSearch(&array[arr_id-1], var_id)->var[strlen(BSTSearch(&array[arr_id-1], var_id)->var)] = '\0';
+                BSTInsert(&array[arr_id-1], BSTSearch(&array[arr_id-1], var_id), var_id, 0);  // inserts the function id into the global symtable
             }
             not_int = 1;
         }
         else if ((after_eq == 1) && (global_token.type == s_float || global_token.type == s_exp_f)) {
-            if ((tmp = BSTSearch(global_symtable, var_id)) != NULL) {
-                tmp->var = "float";
-                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            if (BSTSearch(global_symtable, var_id) != NULL) {
+                BSTSearch(global_symtable, var_id)->var = malloc(sizeof(char) * 10);
+                BSTSearch(global_symtable, var_id)->var = strcpy(BSTSearch(global_symtable, var_id)->var, "float");
+                BSTSearch(global_symtable, var_id)->var[strlen(BSTSearch(global_symtable, var_id)->var)] = '\0';
+                BSTInsert(global_symtable, BSTSearch(global_symtable, var_id), var_id, 0);  // inserts the function id into the global symtable
             }
-            else if (arr_id > 0 && (tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
-                tmp->var = "float";
-                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            else if (arr_id > 0 && (BSTSearch(&array[arr_id-1], var_id)) != NULL) {
+                BSTSearch(&array[arr_id-1], var_id)->var = malloc(sizeof(char) * 10);
+                BSTSearch(&array[arr_id-1], var_id)->var = strcpy(BSTSearch(&array[arr_id-1], var_id)->var, "float");
+                BSTSearch(&array[arr_id-1], var_id)->var[strlen(BSTSearch(&array[arr_id-1], var_id)->var)] = '\0';
+                BSTInsert(&array[arr_id-1], BSTSearch(&array[arr_id-1], var_id), var_id, 0);  // inserts the function id into the global symtable
             }
             not_int = 1;
         }
         else if ((after_eq == 1) && (not_int != 1) && (global_token.type == s_int || global_token.type == s_exp_int)) {
-            if ((tmp = BSTSearch(global_symtable, var_id)) != NULL) {
-                tmp->var = "integer";
-                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            if (BSTSearch(global_symtable, var_id) != NULL) {
+                BSTSearch(global_symtable, var_id)->var = malloc(sizeof(char) * 10);
+                BSTSearch(global_symtable, var_id)->var = strcpy(BSTSearch(global_symtable, var_id)->var, "integer");
+                BSTSearch(global_symtable, var_id)->var[strlen(BSTSearch(global_symtable, var_id)->var)] = '\0';
+                BSTInsert(global_symtable, BSTSearch(global_symtable, var_id), var_id, 0);  // inserts the function id into the global symtable
             }
-            else if (arr_id > 0 && (tmp = BSTSearch(&array[arr_id-1], var_id)) != NULL) {
-                tmp->var = "integer";
-                BSTInsert(global_symtable, tmp, var_id, 0);  // inserts the function id into the global symtable
+            else if (arr_id > 0 && (BSTSearch(&array[arr_id-1], var_id)) != NULL) {
+                BSTSearch(&array[arr_id-1], var_id)->var = malloc(sizeof(char) * 10);
+                BSTSearch(&array[arr_id-1], var_id)->var = strcpy(BSTSearch(&array[arr_id-1], var_id)->var, "integer");
+                BSTSearch(&array[arr_id-1], var_id)->var[strlen(BSTSearch(&array[arr_id-1], var_id)->var)] = '\0';
+                BSTInsert(&array[arr_id-1], BSTSearch(&array[arr_id-1], var_id), var_id, 0);  // inserts the function id into the global symtable
             }
         }
+        BSTContentDispose(cnt);
         free(cnt);
+        cnt = NULL;
+        BSTContentDispose(tmp);
+        free(tmp);
+        tmp = NULL;
+        /*free(cnt);
+        free(tmp);*/
         if (global_token.type != ss_eof) {
             destroy_token(&global_token);
             global_token.type = kw_def;
         }
     }
 
+    destroy_token(&global_token);
+    //free(&global_token);
+
     rewind(file);   // rewinding the file for another transit
 
     // second transit of compiler -- passing tokens to parser
     // helper stacks
-    tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
-    tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
+    //tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
+    //tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
     tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 30);
     tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
     tExpendedStack *expendedStack = malloc(sizeof(tExpendedStack) * 30);
@@ -352,6 +404,7 @@ void doMagic() {
                 tmpToken.type = decideID(global_token);
                 // simulate predictive SA for previous token
                 simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
+                destroy_token(&tmpToken);
             }
             // simulate predictive SA for current token
             simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
@@ -363,24 +416,24 @@ void doMagic() {
                 // assign newly created AST
                 if (stackAST != NULL && ERROR_TYPE == 0) {
                     // result of precedence will be stored in AST - abstract syntax tree
-                    *AST = *stackAST->body[stackAST->top];
+                    //*AST = *stackAST->body[stackAST->top];
                     if (ifStatement == 1 && global_token.type == kw_then) {
-                        generateIfHead(stackAST->body[stackAST->top]);
+                        //generateIfHead(stackAST->body[stackAST->top]);
                     }
                     if (whileStatement == 1 && global_token.type == kw_do) {
-                        generateWhileHead(stackAST->body[stackAST->top]);
+                        //generateWhileHead(stackAST->body[stackAST->top]);
                     }
 
-                    //generateExpression(AST,functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
+                    //generateExpression(stackAST->body[stackAST->top],functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
 
                     // po vygenerovani vyrazu ho prirad zadane promenne
                     char *frame = get_frame(functionTracker);
-                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign),list_str);
+                    //generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign),list_str);
                     assign++;
 
                     // clear tree after generating
-                    tASTDispose(AST);
-                            AST = malloc(sizeof(struct tAST) * 30);
+                    //tASTDispose(AST);
+                     //       AST = malloc(sizeof(struct tAST) * 30);
                 }
             }
         }
@@ -402,6 +455,7 @@ void doMagic() {
                         if (precedence == 1) {
                             simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         }
+                        destroy_token(&tmpToken);
                     }
                     if (printing == 1) {
                         // need to print this expression
@@ -434,7 +488,7 @@ void doMagic() {
                     // assign newly created AST
                     if (stackAST != NULL && ERROR_TYPE == 0) {
                         // result of precedence will be stored in AST - abstract syntax tree
-                        *AST = *stackAST->body[stackAST->top];
+                        //*AST = *stackAST->body[stackAST->top];
                         if (ifStatement == 1 && global_token.type == kw_then) {
                             generateIfHead(stackAST->body[stackAST->top]);
                         }
@@ -442,15 +496,15 @@ void doMagic() {
                             generateWhileHead(stackAST->body[stackAST->top]);
                         }
 
-                        //generateExpression(AST,functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
+                        //generateExpression(stackAST->body[stackAST->top],functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
 
                         // clear tree after generating
-                        AST = malloc(sizeof(struct tAST) * 2);
+                        //AST = malloc(sizeof(struct tAST) * 2);
                     }
                     simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
                 }
             }
-            generateCodeParek(&global_token);
+            //generateCodeParek(&global_token);
 
             /*
              * Create function generateCode(char* predictiveStackTop) and pass top of predictiveStack.
@@ -511,31 +565,38 @@ void doMagic() {
         errorHandling(2);                       // some rule remained on the stack
     }
 
-    //BSTDispose(global_symtable);
-    free(global_symtable);
+    BSTDispose(global_symtable);
+    //free(global_symtable);
     while (arr_id > 0) {
         BSTDispose(&array[arr_id]);
-        free(&array[arr_id]);
+        //free(&array[arr_id]);
         arr_id--;
     }
+    //BSTDispose(&array[0]);
+    /*for (int j = 0; j < 10000; j++) {
+        free(&array[j]);
+    }*/
         free(array);
         free(tmpToken.content);
-        //tStackASTDispose(stackAST);
+        tStackASTDispose(stackAST);
         free(stackAST);
         stackAST=NULL;
         dispose(expendedStack);
-        free(expendedStack);
         expendedStack=NULL;
     tStackPredictiveDispose(predictiveStack);
     free(predictiveStack);
         predictiveStack=NULL;
         //tASTDispose(AST);
-        free(AST);
-        AST = NULL;
+        //free(AST);
+        //AST = NULL;
         tFunctionTrackerDispose(functionTracker);
         free(functionTracker);
         functionTracker=NULL;
         destroy_token(&global_token);
+        destroy_token(&tmpToken);
+        //free(&global_token.content);
+        free(global_symtable);
+        global_symtable = NULL;
 
     if(ERROR_TYPE == 0) { // tisk obsahu souboru pokud se neobjevila chyba
 
