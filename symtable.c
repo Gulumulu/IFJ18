@@ -59,13 +59,28 @@ void BSTDispose(BSTNodePtr* root) {
 void BSTInsert(BSTNodePtr* root, BSTNodeContentPtr* content, unsigned long ID, unsigned long func_id) {
     if (*root == NULL) {    // if the tree is empty we need to create a new root
         BSTNodePtr tmp = malloc(sizeof(struct BSTNode));    // allocating space for the node
+        tmp->content = malloc(sizeof(struct BSTNodeContent));
         if (tmp != NULL) {  // filling the node with information
             tmp->ID = ID;
             tmp->func_id = func_id;
-            tmp->content = content;
+            tmp->content->type = malloc(sizeof(char) * strlen(content->type));
+            tmp->content->type = strcpy(tmp->content->type, content->type);
+            tmp->content->type[strlen(tmp->content->type)] = '\0';
+            tmp->content->defined = content->defined;
+            tmp->content->func_params = content->func_params;
+            tmp->content->name = malloc(sizeof(char) * strlen(content->name));
+            tmp->content->name = strcpy(tmp->content->name, content->name);
+            tmp->content->name[strlen(tmp->content->name)] = '\0';
+            tmp->content->var = malloc(sizeof(char) * strlen(content->var));
+            tmp->content->var = strcpy(tmp->content->var, content->var);
+            tmp->content->var[strlen(tmp->content->var)] = '\0';
             tmp->LeftPtr = NULL;
             tmp->RightPtr = NULL;
             *root = tmp;
+            free(tmp->content->var);
+            free(tmp->content->name);
+            free(tmp->content->type);
+            free(tmp->content);
             free(tmp);
         }
     } else {

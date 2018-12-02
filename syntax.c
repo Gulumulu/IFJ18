@@ -118,7 +118,7 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *file = fopen("test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
     char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
 
     // zacatek programu
@@ -174,6 +174,7 @@ void doMagic() {
             cnt->defined = 1;
             cnt->name = global_token.content;
             cnt->func_params = 0;
+            cnt->var = "";
             BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
             BSTNodePtr* local_symtable = malloc(sizeof(struct BSTNode));    // allocating memory for a new local symtable storing local identifiers
             BSTInit(local_symtable);    // initialization of the local symtable
@@ -204,6 +205,7 @@ void doMagic() {
             cnt->defined = 1;
             cnt->name = global_token.content;
             cnt->func_params = 0;
+            cnt->var = "";
             BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
             num_of_func_params++;
             cnt = malloc(sizeof(struct BSTNodeContent));
@@ -211,6 +213,7 @@ void doMagic() {
             cnt->defined = 1;
             cnt->name = (*global_symtable)->content->name;
             cnt->func_params = num_of_func_params;
+            cnt->var = "";
             BSTInsert(global_symtable, cnt, func_id, 0);
         }
         else if ((undef == 1) && (global_token.type == s_id)) { // controls if ids after the equals sign, if and while statements are defined
@@ -229,6 +232,7 @@ void doMagic() {
                         cnt->defined = 1;
                         cnt->name = global_token.content;
                         cnt->func_params = 0;
+                        cnt->var = "";
                         BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
                     }
                     else if ((tmp = BSTSearch(&array[arr_id-1], hash_id(global_token.content))) != NULL) {  // if the identifier is already in the local symtable
@@ -239,6 +243,7 @@ void doMagic() {
                         cnt->defined = 1;
                         cnt->name = global_token.content;
                         cnt->func_params = 0;
+                        cnt->var = "";
                         BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
                     }
                 }
@@ -250,6 +255,7 @@ void doMagic() {
                 cnt->defined = 1;
                 cnt->name = global_token.content;
                 cnt->func_params = 0;
+                cnt->var = "";
                 BSTInsert(global_symtable, cnt, hash_id(global_token.content), 0);  // inserts the function id into the global symtable
                 var_id = hash_id(global_token.content);
             }
@@ -260,6 +266,7 @@ void doMagic() {
                 cnt->defined = 1;
                 cnt->name = global_token.content;
                 cnt->func_params = 0;
+                cnt->var = "";
                 BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
             }
             else if ((tmp = BSTSearch(&array[arr_id-1], hash_id(global_token.content))) != NULL) {  // if the identifier is already in the local symtable
@@ -270,6 +277,7 @@ void doMagic() {
                 cnt->defined = 1;
                 cnt->name = global_token.content;
                 cnt->func_params = 0;
+                cnt->var = "";
                 BSTInsert(&array[arr_id-1], cnt, hash_id(global_token.content), func_id);
                 var_id = hash_id(global_token.content);
             }
