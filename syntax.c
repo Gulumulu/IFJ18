@@ -118,7 +118,7 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("test.txt", "r");
     char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
 
     // zacatek programu
@@ -315,67 +315,67 @@ void doMagic() {
 
     rewind(file);   // rewinding the file for another transit
 
-        // second transit of compiler -- passing tokens to parser
-        // helper stacks
-        tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
-        tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
-        tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 30);
-        tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
-        tExpendedStack *expendedStack = malloc(sizeof(tExpendedStack) * 30);
-        init(expendedStack);                    // contains symbols meant to be simplified in precedence SA
-        tStackASTPtr *stackAST = malloc(sizeof(struct tStackAST) * 20);
-        tStackASTInit(stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
-        global_token = tmpToken;
-        //char *currentFunction = "";
-        tFunctionTracker* functionTracker = malloc(sizeof(struct tFT) * 12);            // helper stack to keep track of the function name we are currently in
-        tFunctionTrackerInit(functionTracker);
+    // second transit of compiler -- passing tokens to parser
+    // helper stacks
+    tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
+    tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
+    tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 30);
+    tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
+    tExpendedStack *expendedStack = malloc(sizeof(tExpendedStack) * 30);
+    init(expendedStack);                    // contains symbols meant to be simplified in precedence SA
+    tStackASTPtr *stackAST = malloc(sizeof(struct tStackAST) * 20);
+    tStackASTInit(stackAST);                // helper stack for precedence SA, contains nodes meant to be merged together
+    global_token = tmpToken;
+    //char *currentFunction = "";
+    tFunctionTracker* functionTracker = malloc(sizeof(struct tFT) * 12);            // helper stack to keep track of the function name we are currently in
+    tFunctionTrackerInit(functionTracker);
 
-        while (global_token.type != ss_eof && ERROR_TYPE == 0) {
-            // call lexical analysis
-            token_generate(file);
-            // call syntax analysis
-                if ((precedence == 1 || ((global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0)) && strcmp(tStackPredictiveGetTop(predictiveStack), "<print-expr>") != 0 && strcmp(tStackPredictiveGetTop(predictiveStack), "<next-print-expr>") != 0) {
-                    // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
-                    precedence = 1;
-                    if (global_token.type == s_id) {
-                        // if current token is id => need to call next token to decide whether current token is variable or function id
-                        tmpToken = global_token;
-                        token_generate(file);
-                        tmpToken.type = decideID(global_token);
-                        // simulate predictive SA for previous token
-                        simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
+    while (global_token.type != ss_eof && ERROR_TYPE == 0) {
+        // call lexical analysis
+        token_generate(file);
+        // call syntax analysis
+        if ((precedence == 1 || ((global_token.type == s_int || global_token.type == s_float || global_token.type == s_exp_int || global_token.type == s_exp_int_s || global_token.type == s_exp_f || global_token.type == s_exp_f_s) && checkingArgs == 0)) && strcmp(tStackPredictiveGetTop(predictiveStack), "<print-expr>") != 0 && strcmp(tStackPredictiveGetTop(predictiveStack), "<next-print-expr>") != 0) {
+            // we are dealing with expression => doing down top syntax analysis => need to simulate precedence
+            precedence = 1;
+            if (global_token.type == s_id) {
+                // if current token is id => need to call next token to decide whether current token is variable or function id
+                tmpToken = global_token;
+                token_generate(file);
+                tmpToken.type = decideID(global_token);
+                // simulate predictive SA for previous token
+                simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
+            }
+            // simulate predictive SA for current token
+            simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
+
+            // PRECEDENCNI ANALYZA EXPRESSION (SEM  SE VOLA Z PREDIKTIVNI)
+            if (precedence == 0) {
+                // precedence has finished => need to pop rule from predictive stack
+                tStackPredictivePop(predictiveStack);
+                // assign newly created AST
+                if (stackAST != NULL && ERROR_TYPE == 0) {
+                    // result of precedence will be stored in AST - abstract syntax tree
+                    *AST = *stackAST->body[stackAST->top];
+                    if (ifStatement == 1 && global_token.type == kw_then) {
+                        generateIfHead(stackAST->body[stackAST->top]);
                     }
-                    // simulate predictive SA for current token
-                    simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
+                    if (whileStatement == 1 && global_token.type == kw_do) {
+                        generateWhileHead(stackAST->body[stackAST->top]);
+                    }
 
-		    // PRECEDENCNI ANALYZA EXPRESSION (SEM  SE VOLA Z PREDIKTIVNI)
-                    if (precedence == 0) {
-                        // precedence has finished => need to pop rule from predictive stack
-                        tStackPredictivePop(predictiveStack);
-                        // assign newly created AST
-                        if (stackAST != NULL && ERROR_TYPE == 0) {
-                            // result of precedence will be stored in AST - abstract syntax tree
-                            *AST = *stackAST->body[stackAST->top];
-                            if (ifStatement == 1 && global_token.type == kw_then) {
-                                generateIfHead(stackAST->body[stackAST->top]);
-                            }
-                            if (whileStatement == 1 && global_token.type == kw_do) {
-                                generateWhileHead(stackAST->body[stackAST->top]);
-                            }
+                    //generateExpression(AST,functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
 
-                            //generateExpression(AST,functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
+                    // po vygenerovani vyrazu ho prirad zadane promenne
+                    char *frame = get_frame(functionTracker);
+                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign),list_str);
+                    assign++;
 
-                            // po vygenerovani vyrazu ho prirad zadane promenne
-                            char *frame = get_frame(functionTracker);
-                            generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign),list_str);
-                            assign++;
-
-                            // clear tree after generating
-                            tASTDispose(AST);
+                    // clear tree after generating
+                    tASTDispose(AST);
                             AST = malloc(sizeof(struct tAST) * 30);
-                        }
-                    }
                 }
+            }
+        }
 
 		        // PREDIKTIVNI (AUTOMATICKA)
                 if (precedence == 0) {
@@ -398,115 +398,112 @@ void doMagic() {
                     if (printing == 1) {
                         // need to print this expression
 
+                generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
 
-                        generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
+                //generateCodeParek(&tmpToken);
+                // todo: generate code
+                /*
+                 * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
+                 */
+                // pop <print-expr> rule from stack
+                /*if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
+                    tStackPredictivePop(predictiveStack);
+                }*/
+                // we will not be printing anymore
+                printing = 0;
+            }
+            if (precedence == 0) {
+                // simulate predictive SA for next token
+                simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
 
-                        printf("dochazi k tisku.\n");
-
-                        //generateCodeParek(&tmpToken);
-                        // todo: generate code
-                        /*
-                         * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
-                         */
-                        // pop <print-expr> rule from stack
-                        /*if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
-                            tStackPredictivePop(predictiveStack);
-                        }*/
-                        // we will not be printing anymore
-                        printing = 0;
-                    }
-                    if (precedence == 0) {
-                        // simulate predictive SA for next token
-                        simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
-
-                    }
-                    if (precedence == 1){
-                        simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
-                        //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
-                        if (precedence == 0) {
-                            // precedence has finished => need to pop rule from predictive stack
-                            tStackPredictivePop(predictiveStack);
-                            // assign newly created AST
-                            if (stackAST != NULL && ERROR_TYPE == 0) {
-                                // result of precedence will be stored in AST - abstract syntax tree
-                                *AST = *stackAST->body[stackAST->top];
-                                if (ifStatement == 1 && global_token.type == kw_then) {
-                                    generateIfHead(stackAST->body[stackAST->top]);
-                                }
-                                if (whileStatement == 1 && global_token.type == kw_do) {
-                                    generateWhileHead(stackAST->body[stackAST->top]);
-                                }
-
-                                generateExpression(AST,functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
-
-                                // clear tree after generating
-                                AST = malloc(sizeof(struct tAST) * 2);
-                            }
-                            simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
+            }
+            if (precedence == 1){
+                simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
+                //simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, currentFunction));
+                if (precedence == 0) {
+                    // precedence has finished => need to pop rule from predictive stack
+                    tStackPredictivePop(predictiveStack);
+                    // assign newly created AST
+                    if (stackAST != NULL && ERROR_TYPE == 0) {
+                        // result of precedence will be stored in AST - abstract syntax tree
+                        *AST = *stackAST->body[stackAST->top];
+                        if (ifStatement == 1 && global_token.type == kw_then) {
+                            generateIfHead(stackAST->body[stackAST->top]);
                         }
+                        if (whileStatement == 1 && global_token.type == kw_do) {
+                            generateWhileHead(stackAST->body[stackAST->top]);
+                        }
+
+                        generateExpression(AST,functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
+
+                        // clear tree after generating
+                        AST = malloc(sizeof(struct tAST) * 2);
                     }
-                    generateCodeParek(&global_token);
-
-                    /*
-                     * Create function generateCode(char* predictiveStackTop) and pass top of predictiveStack.
-                     * Look at the top of predictiveStack: predictiveStack->content[predictiveStack->top-1] =>
-                     *
-                     * For example if it contains "EOL" and rules 1,2,4,6,7 were applied (stored in rulesApplied[]) => generate function declaration
-                     * Generated code: label nasobeni
-                     *
-                     * P.S. maybe there is no need for checking applied rules
-                     */
-                     //generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied);
-
+                    simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
                 }
+            }
+            generateCodeParek(&global_token);
 
-              	// NEJAKEJ PRINTING
-		        if (printing == 1 ) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
-                    // need to print this expression
+            /*
+             * Create function generateCode(char* predictiveStackTop) and pass top of predictiveStack.
+             * Look at the top of predictiveStack: predictiveStack->content[predictiveStack->top-1] =>
+             *
+             * For example if it contains "EOL" and rules 1,2,4,6,7 were applied (stored in rulesApplied[]) => generate function declaration
+             * Generated code: label nasobeni
+             *
+             * P.S. maybe there is no need for checking applied rules
+             */
+            //generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied);
 
-                    generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker));
+        }
 
-                    //generateCodeParek(&global_token);
-                    // todo: generate code
-                    /*
-                     * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
-                     */
-                    // pop <print-expr> rule from stack
-                   /* if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
-                        tStackPredictivePop(predictiveStack);
-                    }*/
-                    // we will not be printing anymore
-                    printing = 0;
-                }
-                if (global_token.type == kw_if) {
-                    // current token was if-condition or while-loop => expression will follow => need to simulate precedence
-                    precedence = 1;
-                    ifStatement = 1;
-                }
-                if (global_token.type == kw_while) {
-                    precedence = 1;
-                    whileStatement = 1;
-                }
-                if (global_token.type == ss_eol || global_token.type == s_rbrac) {
-                    if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {
-                        // we are in main function => rule 3 was applied => unset tracker of current function
-                        //currentFunction = "";
-                        tFunctionTrackerPop(functionTracker);
-                    }
-                    // clearing applied rules at the of one line
-                    clearRulesApplied();
-                }
+        // NEJAKEJ PRINTING
+        if (printing == 1 ) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
+            // need to print this expression
+
+            generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker));
+
+            //generateCodeParek(&global_token);
+            // todo: generate code
+            /*
+             * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
+             */
+            // pop <print-expr> rule from stack
+            /* if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
+                 tStackPredictivePop(predictiveStack);
+             }*/
+            // we will not be printing anymore
+            printing = 0;
+        }
+        if (global_token.type == kw_if) {
+            // current token was if-condition or while-loop => expression will follow => need to simulate precedence
+            precedence = 1;
+            ifStatement = 1;
+        }
+        if (global_token.type == kw_while) {
+            precedence = 1;
+            whileStatement = 1;
+        }
+        if (global_token.type == ss_eol || global_token.type == s_rbrac) {
+            if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {
+                // we are in main function => rule 3 was applied => unset tracker of current function
+                //currentFunction = "";
+                tFunctionTrackerPop(functionTracker);
+            }
+            // clearing applied rules at the of one line
+            clearRulesApplied();
+        }
                 if (global_token.type != ss_eof) {
                     destroy_token(&global_token);
                     global_token.type = kw_def;
                 }
-        }
+    }
 
-        if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
-            errorHandling(2);                       // some rule remained on the stack
-        }
+    if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
+        errorHandling(2);                       // some rule remained on the stack
+    }
 
-        free(global_symtable);
+    free(global_symtable);
         free(array);
         free(tmpToken.content);
         tStackASTDispose(stackAST);
@@ -515,8 +512,8 @@ void doMagic() {
         dispose(expendedStack);
         free(expendedStack);
         expendedStack=NULL;
-        tStackPredictiveDispose(predictiveStack);
-        free(predictiveStack);
+    tStackPredictiveDispose(predictiveStack);
+    free(predictiveStack);
         predictiveStack=NULL;
         tASTDispose(AST);
         free(AST);
@@ -526,14 +523,13 @@ void doMagic() {
         functionTracker=NULL;
         destroy_token(&global_token);
 
-        if(ERROR_TYPE == 0) { // tisk obsahu souboru pokud se neobjevila chyba
+    if(ERROR_TYPE == 0) { // tisk obsahu souboru pokud se neobjevila chyba
 
-            printf("%s",list_str);
+        printf("%s",list_str);
 
-        }
+    }
 
     free(list_str);
     fclose(file);
 
 }
-

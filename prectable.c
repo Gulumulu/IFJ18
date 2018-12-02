@@ -56,11 +56,13 @@ void push(tExpendedStack* stack, char* c) {
     } else {
         size_t len = strlen(stack->content);
         char *tmp = malloc(sizeof(char)*(strlen(stack->content) + strlen(c) + 1));
+        //char *tmp = malloc((strlen(stack->content) + strlen(c))*sizeof(char));
         checkMalloc(tmp);
         strcpy(tmp, stack->content);
         tmp[strlen(stack->content)] = '\0';
         free(stack->content);
         stack->content = malloc(sizeof(char)*(strlen(tmp) + strlen(c) + 1));
+        //stack->content = malloc((strlen(tmp) + strlen(c))*sizeof(char));
         checkMalloc(stack->content);
         // todo: pushing < into the stack that is not endRuleSign
         if (strcmp(c, "<=") == 0) {     // in case we are pushing two chars
@@ -97,7 +99,7 @@ void pop(tExpendedStack* stack) {
         errorHandling(99);
     } else {
         stack->top--;
-        char* tmp = malloc(sizeof(char)*(strlen(stack->content)));
+        char* tmp = malloc(sizeof(char)*(strlen(stack->content)*sizeof(char)));
         checkMalloc(tmp);
         tmp = memcpy(tmp, stack->content, strlen(stack->content)-1);
         tmp[strlen(stack->content)-1] = '\0';
@@ -276,7 +278,7 @@ void appendChar(char* string, char addedChar) {
 }
 
 char* catStrings(char* string1, char* string2) {
-    char* returnedString = malloc(strlen(string1)+strlen(string2)+1);
+    char* returnedString = malloc((strlen(string1)+strlen(string2)+1)*sizeof(char));
     checkMalloc(returnedString);
     strcpy(returnedString, string1);
     returnedString[strlen(string1)] = '\0';
@@ -310,7 +312,7 @@ void pushEndRuleSign(tExpendedStack* stack, char firstChar) {
             rest[len] = '\0';
         }
         //rest[strlen(strrchr(stack->content, firstChar))] = '\0';
-        char *beginning = malloc(strlen(stack->content) + 2);
+        char *beginning = malloc((strlen(stack->content) + 2)*sizeof(char));
         memcpy(beginning, stack->content, (strlen(stack->content) - strlen(rest)) + 1);
         beginning[(strlen(stack->content) - strlen(rest)) + 1] = '<';
         beginning[(strlen(stack->content) - strlen(rest)) + 2] = '\0';
@@ -330,7 +332,7 @@ void pushEndRuleSign(tExpendedStack* stack, char firstChar) {
             beginning[len2+strlen(rest)] = '\0';
         }
         //free(stack->content);
-        stack->content = malloc(strlen(beginning)+1);
+        stack->content = malloc((strlen(beginning)+1)*sizeof(char));
         stack->content = memcpy(stack->content, beginning, strlen(beginning));
         stack->content[strlen(beginning)] = '\0';
         //stack->content = beginning;
