@@ -13,7 +13,7 @@
 #include "errors.h"
 #include "list.h"
 
-int dyn_length = 4096; // dyn poc delka listu pro tisk
+int dyn_length = 1024; // dyn poc delka listu pro tisk
 int list_length = 0; // ukazatel na pozici v listu
 char* asciistr; // je tu kvuli funkci convert_string, aby se dalo dat free() kdekoliv kde je funkce zavolana
 bool issingle = false; // urceni jestli je single node (strom vel. 1)
@@ -789,7 +789,8 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 if((left && right) || (left_func && right_func) || (left_str && right_str)) { // L R promenne a funkce a retezce
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_string$%d %s@$type_%s$%d string@string\n",counter,frame, left_supply, counter),list_str); // skoc pokud neni levej string
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@string\n",counter,frame, right_supply, counter),list_str); // proved concat jestli je pravej taky string
-                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_concat_op$%d\n",counter),list_str); // skoc na concat
+                    //generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter),list_str);
                     generate_to_list2(sprintf(list_str+list_length,"LABEL $label_left_not_string$%d\n",counter),list_str); // je jasne ze to neni retezec
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_int$%d %s@$type_%s$%d string@int\n",counter,frame, left_supply, counter),list_str); // skoc pokud je levy jiny nez int
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_same_types$%d %s@$type_%s$%d string@int\n",counter,frame, right_supply, counter),list_str); // levy je int, otestuj pravy na int
@@ -818,12 +819,17 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                             generate_to_list2(sprintf(list_str+list_length,"INT2FLOAT %s@$temp_%s$%d %s@$temp_%s$%d\n", frame, Root->RightPointer->content->name, counter, frame, Root->RightPointer->content->name, counter),list_str);
                         }
                     }
+                    else {
+                        if((!strcmp(Root->LeftPointer->content->type,"string")) || (!strcmp(Root->RightPointer->content->type,"string")))
+                            generate_to_list2(sprintf(list_str+list_length,"JUMP $label_concat_op$%d\n",counter),list_str); // skoc na concat
+                    }
                 }
             }
             else if(left_operator && right_operator) { // OP OP
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_string$%d %s@$type_%s string@string\n",counter,frame, left_supply),list_str); // skoc pokud neni levej string
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s string@string\n",counter,frame, right_supply),list_str); // proved concat jestli je pravej taky string
-                generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter),list_str);
+                generate_to_list2(sprintf(list_str+list_length,"JUMP $label_concat_op$%d\n",counter),list_str); // skoc na concat
+                //generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter),list_str);
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_left_not_string$%d\n",counter),list_str); // je jasne ze to neni retezec
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_int$%d %s@$type_%s string@int\n",counter,frame, left_supply),list_str); // skoc pokud je levy jiny nez int
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_same_types$%d %s@$type_%s string@int\n",counter,frame, right_supply),list_str); // levy je int, otestuj pravy na int
@@ -844,7 +850,8 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 if(left_operator) { // OP R
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_string$%d %s@$type_%s string@string\n",counter,frame, left_supply),list_str); // skoc pokud neni levej string
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@string\n",counter,frame, right_supply, counter),list_str); // proved concat jestli je pravej taky string
-                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_concat_op$%d\n",counter),list_str); // skoc na concat
+                    //generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter),list_str);
                     generate_to_list2(sprintf(list_str+list_length,"LABEL $label_left_not_string$%d\n",counter),list_str); // je jasne ze to neni retezec
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_int$%d %s@$type_%s string@int\n",counter,frame, left_supply),list_str); // skoc pokud je levy jiny nez int
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_same_types$%d %s@$type_%s$%d string@int\n",counter,frame, right_supply, counter),list_str); // levy je int, otestuj pravy na int
@@ -864,7 +871,8 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 else { // L OP
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_string$%d %s@$type_%s$%d string@string\n",counter,frame, left_supply, counter),list_str); // skoc pokud neni levej string
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s string@string\n",counter,frame, right_supply),list_str); // proved concat jestli je pravej taky string
-                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter),list_str);
+                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_concat_op$%d\n",counter),list_str); // skoc na concat
+                    //generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter),list_str);
                     generate_to_list2(sprintf(list_str+list_length,"LABEL $label_left_not_string$%d\n",counter),list_str); // je jasne ze to neni retezec
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_int$%d %s@$type_%s$%d string@int\n",counter,frame, left_supply, counter),list_str); // skoc pokud je levy jiny nez int
                     generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_same_types$%d %s@$type_%s string@int\n",counter,frame, right_supply),list_str); // levy je int, otestuj pravy na int
@@ -957,10 +965,7 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
     postorder(Root->LeftPointer,q, functionTracker, list_str);
     postorder(Root->RightPointer,q, functionTracker, list_str);
 
-    // PROCESSING SINGLE NODE
-
     char* frame = get_frame(functionTracker); // vyhledej ve ktere jsme funkci
-
     if(issingle || (Root->LeftPointer != NULL && Root->RightPointer != NULL)) // vylouceni listu z type_control, krome single node
         type_control(Root, Root->ID,q,frame, list_str); // typova kontrola
 
@@ -973,8 +978,8 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
         op = "MUL";
     else if(!strcmp(Root->ID,"/"))
         op = "DIV";
-    else
-        return ;
+    // else
+    //return ;
 
     generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%i\n",frame, counter),list_str); // operace, chystam tedy novou promennou
     int leftvar; // leva strana
@@ -1000,6 +1005,34 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
         queueGet(q, &rightvar);
         generate_to_list2(sprintf(list_str+list_length,"%s %s@%%%i %s@%%%i %s@%%%i\n", op, frame, counter, frame, leftvar, frame, rightvar),list_str);
     }
+    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_op_finished$%i\n",counter),list_str); // skoc tesne za concat op
+
+    // FAKE CONCAT START
+    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_concat_op$%i\n",counter),list_str);
+    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%i\n",frame, counter),list_str);
+    if(!left_operator && !right_operator) { // ani jeden z L R neni operator, tisk operace
+        generate_to_list2(sprintf(list_str+list_length,"CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%s$%d\n", frame, counter, frame, left_supply, counter, frame, right_supply, counter),list_str);
+    }
+    else if((left_operator &&!right_operator) || (!left_operator && right_operator)) { // jeden z L R je operace
+        // tisk operace kdyz je pouze jedna strana (L || R) operaator
+        if(left_operator) { // L je operator
+            queueGet(q, &leftvar);
+            generate_to_list2(sprintf(list_str+list_length,"CONCAT %s@%%%i %s@$temp_%%%i %s@$temp_%s$%d\n", frame, counter, frame, leftvar, frame, right_supply, counter),list_str);
+        }
+        else { // R je operator
+            queueGet(q, &rightvar);
+            generate_to_list2(sprintf(list_str+list_length,"CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%%%i\n", frame, counter, frame, left_supply, counter, frame, rightvar),list_str);
+        }
+    }
+    else { // tisk operace kdyz je operator L i R
+        queueGet(q, &leftvar);
+        queueGet(q, &rightvar);
+        generate_to_list2(sprintf(list_str+list_length,"CONCAT %s@%%%i %s@%%%i %s@%%%i\n", frame, counter, frame, leftvar, frame, rightvar),list_str);
+    }
+    // FAKE CONCAT END
+
+    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_op_finished$%i\n",counter),list_str);
+
     // TISK OPERACE END
 
     queueUp(q,counter); // nahravas do fronty pokazde kdyz delas vyraz, kde je root operator
