@@ -1,4 +1,4 @@
 # test for expressions => incompatible types 
-print("2+9*4.2/1-50+20+"hidden string"-1 is: ")
+print("2+9*4.2/1-50+20+hidden string-1 is: ")
 a=2+9*4.2/1-50+20+"hidden string"-1
 print(a)

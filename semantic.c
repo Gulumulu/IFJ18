@@ -266,10 +266,10 @@ void findVariable(BSTNodePtr node, Token* token, BSTNodeContentPtr* nodeContentP
  * @return pointer to AST structure is newly created leaf
  */
 void makeLeaf(BSTNodePtr node, Token* token, tASTPointer* AST) {
-    if (node == NULL) {
+    /*if (node == NULL) {
         errorHandling(99);
         AST = NULL;
-    } else {
+    } else {*/
         //tASTPointer* newLeaf = malloc(sizeof(struct tAST));
         /*if (newLeaf == NULL) {
             errorHandling(99);
@@ -320,7 +320,7 @@ void makeLeaf(BSTNodePtr node, Token* token, tASTPointer* AST) {
             //free(newLeaf);
             //newLeaf = NULL;
         //}
-    }
+    //}
 }
 
 /**
@@ -625,7 +625,7 @@ void tStackASTInit(tStackASTPtr* stack) {
  * @param AST pointer to tAST structure is AST that is pushed onto the stack
  */
 void tStackASTPush(tStackASTPtr* stack, BSTNodePtr node, Token* token, char* operator, tASTPointer* leftSide, tASTPointer* righSide) {
-    if (stack == NULL || stack->top == MAX || node == NULL) {
+    if (stack == NULL || stack->top == MAX) {
         errorHandling(99);
     } else {
         stack->top++;

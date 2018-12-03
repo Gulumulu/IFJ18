@@ -119,7 +119,7 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *file = fopen("test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
     dyn_length = 50240; // dyn poc delka listu pro tisk
     list_length = 0; // ukazatel na pozici v listu
@@ -323,46 +323,71 @@ void doMagic() {
         }
         else if ((after_eq == 1) && (global_token.type == s_string)) {
             if (BSTSearch(global_symtable, var_id) != NULL) {
-                BSTSearch(global_symtable, var_id)->var = malloc(sizeof(char) * 10);
-                BSTSearch(global_symtable, var_id)->var = strcpy(BSTSearch(global_symtable, var_id)->var, "string");
-                BSTSearch(global_symtable, var_id)->var[strlen(BSTSearch(global_symtable, var_id)->var)] = '\0';
-                BSTInsert(global_symtable, BSTSearch(global_symtable, var_id), var_id, 0);  // inserts the function id into the global symtable
+                if (BSTSearch(global_symtable, var_id)->var == NULL) {
+                    BSTSearch(global_symtable, var_id)->var = malloc(sizeof(char) * 10);
+                    BSTSearch(global_symtable, var_id)->var = strcpy(BSTSearch(global_symtable, var_id)->var, "string");
+                    BSTSearch(global_symtable, var_id)->var[strlen(BSTSearch(global_symtable, var_id)->var)] = '\0';
+                    BSTInsert(global_symtable, BSTSearch(global_symtable, var_id), var_id,
+                              0);  // inserts the function id into the global symtable
+                }
             }
             else if (arr_id > 0 && (BSTSearch(&array[arr_id-1], var_id)) != NULL) {
-                BSTSearch(&array[arr_id-1], var_id)->var = malloc(sizeof(char) * 10);
-                BSTSearch(&array[arr_id-1], var_id)->var = strcpy(BSTSearch(&array[arr_id-1], var_id)->var, "string");
-                BSTSearch(&array[arr_id-1], var_id)->var[strlen(BSTSearch(&array[arr_id-1], var_id)->var)] = '\0';
-                BSTInsert(&array[arr_id-1], BSTSearch(&array[arr_id-1], var_id), var_id, 0);  // inserts the function id into the global symtable
+                if (BSTSearch(&array[arr_id-1], var_id)->var == NULL) {
+                    BSTSearch(&array[arr_id - 1], var_id)->var = malloc(sizeof(char) * 10);
+                    BSTSearch(&array[arr_id - 1], var_id)->var = strcpy(BSTSearch(&array[arr_id - 1], var_id)->var,
+                                                                        "string");
+                    BSTSearch(&array[arr_id - 1], var_id)->var[strlen(
+                            BSTSearch(&array[arr_id - 1], var_id)->var)] = '\0';
+                    BSTInsert(&array[arr_id - 1], BSTSearch(&array[arr_id - 1], var_id), var_id,
+                              0);  // inserts the function id into the global symtable
+                }
             }
             not_int = 1;
         }
         else if ((after_eq == 1) && (global_token.type == s_float || global_token.type == s_exp_f)) {
             if (BSTSearch(global_symtable, var_id) != NULL) {
-                BSTSearch(global_symtable, var_id)->var = malloc(sizeof(char) * 10);
-                BSTSearch(global_symtable, var_id)->var = strcpy(BSTSearch(global_symtable, var_id)->var, "float");
-                BSTSearch(global_symtable, var_id)->var[strlen(BSTSearch(global_symtable, var_id)->var)] = '\0';
-                BSTInsert(global_symtable, BSTSearch(global_symtable, var_id), var_id, 0);  // inserts the function id into the global symtable
+                if (BSTSearch(global_symtable, var_id)->var == NULL || strcmp(BSTSearch(global_symtable, var_id)->var, "integer") == 0) {
+                    BSTSearch(global_symtable, var_id)->var = malloc(sizeof(char) * 10);
+                    BSTSearch(global_symtable, var_id)->var = strcpy(BSTSearch(global_symtable, var_id)->var, "float");
+                    BSTSearch(global_symtable, var_id)->var[strlen(BSTSearch(global_symtable, var_id)->var)] = '\0';
+                    BSTInsert(global_symtable, BSTSearch(global_symtable, var_id), var_id,
+                              0);  // inserts the function id into the global symtable
+                }
             }
             else if (arr_id > 0 && (BSTSearch(&array[arr_id-1], var_id)) != NULL) {
-                BSTSearch(&array[arr_id-1], var_id)->var = malloc(sizeof(char) * 10);
-                BSTSearch(&array[arr_id-1], var_id)->var = strcpy(BSTSearch(&array[arr_id-1], var_id)->var, "float");
-                BSTSearch(&array[arr_id-1], var_id)->var[strlen(BSTSearch(&array[arr_id-1], var_id)->var)] = '\0';
-                BSTInsert(&array[arr_id-1], BSTSearch(&array[arr_id-1], var_id), var_id, 0);  // inserts the function id into the global symtable
+                if (BSTSearch(&array[arr_id-1], var_id)->var == NULL || strcmp(BSTSearch(&array[arr_id-1], var_id)->var, "integer") == 0) {
+                    BSTSearch(&array[arr_id - 1], var_id)->var = malloc(sizeof(char) * 10);
+                    BSTSearch(&array[arr_id - 1], var_id)->var = strcpy(BSTSearch(&array[arr_id - 1], var_id)->var,
+                                                                        "float");
+                    BSTSearch(&array[arr_id - 1], var_id)->var[strlen(
+                            BSTSearch(&array[arr_id - 1], var_id)->var)] = '\0';
+                    BSTInsert(&array[arr_id - 1], BSTSearch(&array[arr_id - 1], var_id), var_id,
+                              0);  // inserts the function id into the global symtable
+                }
             }
             not_int = 1;
         }
         else if ((after_eq == 1) && (not_int != 1) && (global_token.type == s_int || global_token.type == s_exp_int)) {
             if (BSTSearch(global_symtable, var_id) != NULL) {
-                BSTSearch(global_symtable, var_id)->var = malloc(sizeof(char) * 10);
-                BSTSearch(global_symtable, var_id)->var = strcpy(BSTSearch(global_symtable, var_id)->var, "integer");
-                BSTSearch(global_symtable, var_id)->var[strlen(BSTSearch(global_symtable, var_id)->var)] = '\0';
-                BSTInsert(global_symtable, BSTSearch(global_symtable, var_id), var_id, 0);  // inserts the function id into the global symtable
+                if (BSTSearch(global_symtable, var_id)->var == NULL) {
+                    BSTSearch(global_symtable, var_id)->var = malloc(sizeof(char) * 10);
+                    BSTSearch(global_symtable, var_id)->var = strcpy(BSTSearch(global_symtable, var_id)->var,
+                                                                     "integer");
+                    BSTSearch(global_symtable, var_id)->var[strlen(BSTSearch(global_symtable, var_id)->var)] = '\0';
+                    BSTInsert(global_symtable, BSTSearch(global_symtable, var_id), var_id,
+                              0);  // inserts the function id into the global symtable
+                }
             }
             else if (arr_id > 0 && (BSTSearch(&array[arr_id-1], var_id)) != NULL) {
-                BSTSearch(&array[arr_id-1], var_id)->var = malloc(sizeof(char) * 10);
-                BSTSearch(&array[arr_id-1], var_id)->var = strcpy(BSTSearch(&array[arr_id-1], var_id)->var, "integer");
-                BSTSearch(&array[arr_id-1], var_id)->var[strlen(BSTSearch(&array[arr_id-1], var_id)->var)] = '\0';
-                BSTInsert(&array[arr_id-1], BSTSearch(&array[arr_id-1], var_id), var_id, 0);  // inserts the function id into the global symtable
+                if (BSTSearch(&array[arr_id - 1], var_id)->var == NULL) {
+                    BSTSearch(&array[arr_id - 1], var_id)->var = malloc(sizeof(char) * 10);
+                    BSTSearch(&array[arr_id - 1], var_id)->var = strcpy(BSTSearch(&array[arr_id - 1], var_id)->var,
+                                                                        "integer");
+                    BSTSearch(&array[arr_id - 1], var_id)->var[strlen(
+                            BSTSearch(&array[arr_id - 1], var_id)->var)] = '\0';
+                    BSTInsert(&array[arr_id - 1], BSTSearch(&array[arr_id - 1], var_id), var_id,
+                              0);  // inserts the function id into the global symtable
+                }
             }
         }
         BSTContentDispose(cnt);
