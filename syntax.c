@@ -429,17 +429,16 @@ void doMagic() {
                     if (ifStatement == 1 && global_token.type == kw_then) {
                         generateIfHead(stackAST->body[stackAST->top],functionTracker);
                     }
-                    if (whileStatement == 1 && global_token.type == kw_do) {
+                    else if (whileStatement == 1 && global_token.type == kw_do) {
                         //generateWhileHead(stackAST->body[stackAST->top]);
                     }
+                    else { // assigning
+                        generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                        char *frame = get_frame(functionTracker);
+                        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign));
+                        assign++;
+                    }
 
-                    generateExpression(stackAST->body[stackAST->top],functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
-
-
-                    // po vygenerovani vyrazu ho prirad zadane promenne
-                    char *frame = get_frame(functionTracker);
-                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign));
-                    assign++;
                     //destroy_token(&tmpToken);
 
                     // clear tree after generating
@@ -506,15 +505,14 @@ void doMagic() {
                     if (stackAST != NULL && ERROR_TYPE == 0) {
                         // result of precedence will be stored in AST - abstract syntax tree
                         //*AST = *stackAST->body[stackAST->top];
-                        if (ifStatement == 1 && global_token.type == kw_then) {
-                            //generateIfHead(stackAST->body[stackAST->top]);
+                        if(ifStatement == 1 && global_token.type == kw_then) {
+                            generateIfHead(stackAST->body[stackAST->top],functionTracker);
                         }
-                        if (whileStatement == 1 && global_token.type == kw_do) {
+                        else if(whileStatement == 1 && global_token.type == kw_do) {
                             //generateWhileHead(stackAST->body[stackAST->top]);
                         }
-
-
-                        generateExpression(stackAST->body[stackAST->top],functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
+                        else
+                            generateExpression(stackAST->body[stackAST->top],functionTracker,list_str,0); // vygeneruj do seznamu instrukce vyrazu
 
                         // clear tree after generating
                         //AST = malloc(sizeof(struct tAST) * 2);
