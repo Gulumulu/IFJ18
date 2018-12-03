@@ -99,7 +99,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -117,9 +117,12 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);
+    fclose(fp);*/
 
     FILE *file = fopen("test.txt", "r");
+
+    dyn_length = 1024; // dyn poc delka listu pro tisk
+    list_length = 0; // ukazatel na pozici v listu
 
     list_str = malloc(sizeof(char)*(dyn_length+1)); // tisk do bufferu misto do ext souboru
     issingle = false;
@@ -130,10 +133,8 @@ void doMagic() {
     //global_token = malloc(sizeof(struct token));
 
 
-    dyn_length = 10000; // dyn poc delka listu pro tisk
-    list_length = 0; // ukazatel na pozici v listu
-    generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"),list_str);
-    generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"),list_str);
+    generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"));
+    generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
 
 
     BSTNodeContentPtr* tmp;
@@ -149,14 +150,14 @@ void doMagic() {
     unsigned long func_id = 0;  // function id to be put into local id content
     unsigned long var_id = 0;   // variable id to be used when assigning variable a type (int, float or string)
 
-    BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));
+    BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode)*1000);
     BSTInit(global_symtable);
     //BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));       // global symtable storing the function ids
     //BSTInit(global_symtable);
 
     struct BSTNode **array;         // array storing local symtables
-    array = malloc(10000 * sizeof(struct BSTNode *));
-    for (int i = 0; i < 10000; i++) {
+    array = malloc(1000 * sizeof(struct BSTNode *));
+    for (int i = 0; i < 1000; i++) {
         array[i] = NULL;
     };
 
@@ -437,7 +438,7 @@ void doMagic() {
 
                     // po vygenerovani vyrazu ho prirad zadane promenne
                     char *frame = get_frame(functionTracker);
-                    //generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign),list_str);
+                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign));
                     assign++;
 
                     // clear tree after generating
@@ -502,10 +503,10 @@ void doMagic() {
                         // result of precedence will be stored in AST - abstract syntax tree
                         //*AST = *stackAST->body[stackAST->top];
                         if (ifStatement == 1 && global_token.type == kw_then) {
-                            generateIfHead(stackAST->body[stackAST->top]);
+                            //generateIfHead(stackAST->body[stackAST->top]);
                         }
                         if (whileStatement == 1 && global_token.type == kw_do) {
-                            generateWhileHead(stackAST->body[stackAST->top]);
+                            //generateWhileHead(stackAST->body[stackAST->top]);
                         }
 
 
@@ -572,11 +573,11 @@ void doMagic() {
                 }
     }
 
-    printf("Debug.\n");
-
     if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
         errorHandling(2);                       // some rule remained on the stack
     }
+
+
 
 
     BSTDispose(global_symtable);
@@ -616,10 +617,10 @@ void doMagic() {
         destroy_token(&global_token);
         destroy_token(&tmpToken);
         //free(&global_token.content);
-        free(global_symtable);
+        //free(global_symtable);
         global_symtable = NULL;
 
-    free(list_str);
+    //free(list_str);
     fclose(file);
 
 }

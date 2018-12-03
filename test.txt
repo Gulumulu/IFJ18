@@ -1,5 +1,5 @@
 # test for build-in function substr => incompatable types
 b=1
-a=substr("foobar", "zero", b)
+a= 2 + 87 + 7 + 7 + 7 + 9
 print("substring of foobar is: ")
 print(a)

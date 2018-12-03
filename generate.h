@@ -21,7 +21,7 @@ void generateCode(char* stackTop, int rules[]);
 void type_control(tASTPointer* Root, char* operation, tQueue* q, char* frame, char* list_str);
 
 void generate_to_list(int ad, int* ptr_list_length, int* ptr_dyn_length, char* list_str);
-void generate_to_list2(int ad,char* str);
+void generate_to_list2(int ad);
 
 void call_function(int id, char* frame, tASTPointer* Root, char* list_str);
 
