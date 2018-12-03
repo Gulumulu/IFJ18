@@ -643,10 +643,10 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
             }
             else { // je to konstanta
                 left_supply = Root->LeftPointer->content->name;
-                generate_to_list2(sprintf(list_str+list_length, "llDEFVAR %s@$type_%s$%d\n", frame, left_supply, counter));
-                generate_to_list2(sprintf(list_str+list_length, "llDEFVAR %s@$temp_%s$%d\n", frame, left_supply, counter));
-                generate_to_list2(sprintf(list_str+list_length, "llTYPE %s@$type_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
-                generate_to_list2(sprintf(list_str+list_length, "llMOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
+                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, left_supply, counter));
+                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, left_supply, counter));
+                generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
+                generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
             }
 
             // GENEROVANI R
@@ -663,7 +663,10 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
     }
     else if(right_operator) {
         int front;
-        queueFront(q, &front);
+        if (left_operator) // pokud byla leva operator, sahni do fronty o jeden dal
+            queuePreFront(q, &front);
+        else // vlevo nebyl operator, sahni normalne
+            queueFront(q, &front);
         char buffer[10];
         sprintf(buffer, "%%%d", front);
         right_supply = buffer;
@@ -681,10 +684,10 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
     }
     else { // je to konstanta
         right_supply = Root->RightPointer->content->name;
-        generate_to_list2(sprintf(list_str+list_length, "rrDEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
-        generate_to_list2(sprintf(list_str+list_length, "rrDEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
-        generate_to_list2(sprintf(list_str+list_length, "rrTYPE %s@$type_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
-        generate_to_list2(sprintf(list_str+list_length, "rrMOVE %s@$temp_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
+        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
     }
 
         // vypis vestavene funkce pro VSECHNY OPERACE (/*+-)
