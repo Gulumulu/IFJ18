@@ -597,13 +597,13 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                     right_func_id = i;
                 }
             }
-            if (Root->LeftPointer->content->name == NULL) // vlevo je operator
+            if (!strcmp(Root->LeftPointer->content->name,"")) // vlevo je operator
                 left_operator = true;
             else if (!strcmp(Root->LeftPointer->content->type, "variable")) // leva strana je VAR
                 left = true;
             else if(!strcmp(Root->LeftPointer->content->type,"string")) // leva je retezec
                 left_str = true;
-            if (Root->RightPointer->content->name == NULL) // vpravo je operator
+            if (!strcmp(Root->RightPointer->content->name,"")) // vpravo je operator
                 right_operator = true;
             else if (!strcmp(Root->RightPointer->content->type, "variable")) // prava strana je VAR
                 right = true;
@@ -643,10 +643,10 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
             }
             else { // je to konstanta
                 left_supply = Root->LeftPointer->content->name;
-                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, left_supply, counter));
-                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, left_supply, counter));
-                generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
-                generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
+                generate_to_list2(sprintf(list_str+list_length, "llDEFVAR %s@$type_%s$%d\n", frame, left_supply, counter));
+                generate_to_list2(sprintf(list_str+list_length, "llDEFVAR %s@$temp_%s$%d\n", frame, left_supply, counter));
+                generate_to_list2(sprintf(list_str+list_length, "llTYPE %s@$type_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
+                generate_to_list2(sprintf(list_str+list_length, "llMOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
             }
 
             // GENEROVANI R
@@ -681,10 +681,10 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
     }
     else { // je to konstanta
         right_supply = Root->RightPointer->content->name;
-        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
-        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
-        generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
-        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
+        generate_to_list2(sprintf(list_str+list_length, "rrDEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "rrDEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "rrTYPE %s@$type_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
+        generate_to_list2(sprintf(list_str+list_length, "rrMOVE %s@$temp_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
     }
 
         // vypis vestavene funkce pro VSECHNY OPERACE (/*+-)
@@ -968,7 +968,6 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
     }
     else if(!strcmp(Root->ID,"-")) {
         op = "SUB";
-        printf("SUB..\n");
         printOp = true;
     }
     else if(!strcmp(Root->ID,"*")) {
@@ -1019,35 +1018,42 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
             queueGet(q, &rightvar);
             generate_to_list2(sprintf(list_str + list_length, "%s %s@%%%i %s@%%%i %s@%%%i\n", op, frame, counter, frame, leftvar, frame, rightvar));
         }
-        generate_to_list2(sprintf(
-                list_str + list_length, "JUMP $label_op_finished$%i\n", counter)); // skoc tesne za concat op
 
-        // FAKE CONCAT START
-        generate_to_list2(sprintf(list_str + list_length, "LABEL $label_concat_op$%i\n", counter));
-        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%%%i\n", frame, counter));
-        if (!left_operator && !right_operator) { // ani jeden z L R neni operator, tisk operace
-            generate_to_list2(sprintf(list_str + list_length, "CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%s$%d\n", frame, counter, frame, left_supply, counter, frame, right_supply, counter));
-        } else if ((left_operator && !right_operator) || (!left_operator && right_operator)) { // jeden z L R je operace
-            // tisk operace kdyz je pouze jedna strana (L || R) operaator
-            if (left_operator) { // L je operator
+        if(!strcmp(Root->ID,"+")) { // concat ukaz jen kdyz je tam +
+            generate_to_list2(sprintf(list_str + list_length, "JUMP $label_op_finished$%i\n", counter)); // skoc tesne za concat op
+
+            // FAKE CONCAT START
+            generate_to_list2(sprintf(list_str + list_length, "LABEL $label_concat_op$%i\n", counter));
+            generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%%%i\n", frame, counter));
+            if (!left_operator && !right_operator) { // ani jeden z L R neni operator, tisk operace
+                generate_to_list2(sprintf(list_str +
+                                          list_length, "CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%s$%d\n", frame, counter, frame, left_supply, counter, frame, right_supply, counter));
+            } else if ((left_operator && !right_operator) ||
+                       (!left_operator && right_operator)) { // jeden z L R je operace
+                // tisk operace kdyz je pouze jedna strana (L || R) operaator
+                if (left_operator) { // L je operator
+                    queueGet(q, &leftvar);
+                    generate_to_list2(sprintf(list_str +
+                                              list_length, "CONCAT %s@%%%i %s@$temp_%%%i %s@$temp_%s$%d\n", frame, counter, frame, leftvar, frame, right_supply, counter));
+                } else { // R je operator
+                    queueGet(q, &rightvar);
+                    generate_to_list2(sprintf(list_str +
+                                              list_length, "CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%%%i\n", frame, counter, frame, left_supply, counter, frame, rightvar));
+                }
+            } else { // tisk operace kdyz je operator L i R
                 queueGet(q, &leftvar);
-                generate_to_list2(sprintf(list_str + list_length, "CONCAT %s@%%%i %s@$temp_%%%i %s@$temp_%s$%d\n", frame, counter, frame, leftvar, frame, right_supply, counter));
-            } else { // R je operator
                 queueGet(q, &rightvar);
-                generate_to_list2(sprintf(list_str + list_length, "CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%%%i\n", frame, counter, frame, left_supply, counter, frame, rightvar));
+                generate_to_list2(sprintf(list_str +
+                                          list_length, "CONCAT %s@%%%i %s@%%%i %s@%%%i\n", frame, counter, frame, leftvar, frame, rightvar));
             }
-        } else { // tisk operace kdyz je operator L i R
-            queueGet(q, &leftvar);
-            queueGet(q, &rightvar);
-            generate_to_list2(sprintf(list_str + list_length, "CONCAT %s@%%%i %s@%%%i %s@%%%i\n", frame, counter, frame, leftvar, frame, rightvar));
-        }
-        // FAKE CONCAT END
+            // FAKE CONCAT END
 
-        generate_to_list2(sprintf(list_str + list_length, "LABEL $label_op_finished$%i\n", counter));
+            generate_to_list2(sprintf(list_str + list_length, "LABEL $label_op_finished$%i\n", counter));
+        }
 
         // TISK OPERACE END
 
-    } // BUG: tohle ma byt mozna az za RESET blokem
+    }
 
     queueUp(q,counter); // nahravas do fronty pokazde kdyz delas vyraz, kde je root operator
     // reset promennych pro typ tisku operace
