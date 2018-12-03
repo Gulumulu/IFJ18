@@ -427,7 +427,7 @@ void doMagic() {
                     // result of precedence will be stored in AST - abstract syntax tree
                     //*AST = *stackAST->body[stackAST->top];
                     if (ifStatement == 1 && global_token.type == kw_then) {
-                        //generateIfHead(stackAST->body[stackAST->top]);
+                        generateIfHead(stackAST->body[stackAST->top],functionTracker);
                     }
                     if (whileStatement == 1 && global_token.type == kw_do) {
                         //generateWhileHead(stackAST->body[stackAST->top]);

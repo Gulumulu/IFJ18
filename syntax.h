@@ -12,7 +12,7 @@
 #include "symtable.h"
 #include "predict.h"
 #include "semantic.h"
-#include "if-generate.h"
+//#include "if-generate.h"
 #include <string.h>
 
 // structure for stack of functions
@@ -21,7 +21,7 @@ typedef struct tFT{
     char* function[];
 } tFunctionTracker;
 
-extern tFunctionTracker* functionTracker;
+//tFunctionTracker* functionTracker;
 
 // function that does all the work
 void doMagic();

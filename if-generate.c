@@ -94,7 +94,7 @@ int tLabelStackGetTop(tLabelStack* stack) {
  *
  * @param AST structure tASTPointer is pointer to AST
  */
-void generateIfHead(tASTPointer *AST) {
+void generateIfHead(tASTPointer *AST, tFunctionTracker* functionTracker) {
     if (AST == NULL) {
         errorHandling(99);
     } else {
@@ -109,7 +109,7 @@ void generateIfHead(tASTPointer *AST) {
             tLabelStackInit(tmpVariables);
         }
         if (strcmp(AST->ID, "!=") == 0) {
-            generateExpression(AST, functionTracker, list_str); // M
+            // gener
             ifLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber));
             tLabelStackPush(labelStack, ifLabelNumber);
@@ -190,7 +190,7 @@ void generateWhileHead(tASTPointer *AST) {
             tLabelStackInit(endLabelStack);
         }
         if (strcmp(AST->ID, "!=") == 0) {
-            generateExpression(AST, functionTracker, list_str); // M
+            //generateExpression(AST, functionTracker, list_str); // M
             whileLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
@@ -198,7 +198,7 @@ void generateWhileHead(tASTPointer *AST) {
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "==") == 0) {
-            generateExpression(AST, functionTracker, list_str); // M
+            //generateExpression(AST, functionTracker, list_str); // M
             whileLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
