@@ -13,7 +13,7 @@
 #include "list.h"
 
 // externi promenne
-char* list_str;
+//char* list_str;
 tFunctionTracker* functionTracker;
 
 #define BUF_SIZE 1024
@@ -119,11 +119,14 @@ void doMagic() {
     fclose(fp);*/
 
     FILE *file = fopen("test.txt", "r");
-    char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
+    list_str = malloc(sizeof(char)*(dyn_length+1)); // tisk do bufferu misto do ext souboru
+    issingle = false;
 
     // zacatek programu
 
 
+    dyn_length = 10000; // dyn poc delka listu pro tisk
+    list_length = 0; // ukazatel na pozici v listu
     generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"),list_str);
     generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"),list_str);
 
@@ -325,8 +328,8 @@ void doMagic() {
 
     // second transit of compiler -- passing tokens to parser
     // helper stacks
-    tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
-    tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
+    //tASTPointer *AST = malloc(sizeof(struct tAST) * 30);
+    //tASTInit(AST);                          // AST - abstract syntax tree - contains expression after precedence SA finished (down top SA)
     tStackPredictive *predictiveStack = malloc(sizeof(tStackPredictive) * 30);
     tStackPredictiveInit(predictiveStack);  // contains rules meant to be expanded in predictive SA (top down SA)
     tExpendedStack *expendedStack = malloc(sizeof(tExpendedStack) * 30);
@@ -363,7 +366,7 @@ void doMagic() {
                 // assign newly created AST
                 if (stackAST != NULL && ERROR_TYPE == 0) {
                     // result of precedence will be stored in AST - abstract syntax tree
-                    *AST = *stackAST->body[stackAST->top];
+                    //*AST = *stackAST->body[stackAST->top];
                     if (ifStatement == 1 && global_token.type == kw_then) {
                         generateIfHead(stackAST->body[stackAST->top]);
                     }
@@ -371,7 +374,7 @@ void doMagic() {
                         generateWhileHead(stackAST->body[stackAST->top]);
                     }
 
-                    generateExpression(AST,functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
+                    generateExpression(stackAST->body[stackAST->top],functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
 
                     // po vygenerovani vyrazu ho prirad zadane promenne
                     char *frame = get_frame(functionTracker);
@@ -379,8 +382,8 @@ void doMagic() {
                     assign++;
 
                     // clear tree after generating
-                    tASTDispose(AST); // SEGFAULT
-                            AST = malloc(sizeof(struct tAST) * 30);
+                    /*tASTDispose(AST); // SEGFAULT
+                            AST = malloc(sizeof(struct tAST) * 30);*/
                 }
             }
         }
@@ -435,7 +438,7 @@ void doMagic() {
                     // assign newly created AST
                     if (stackAST != NULL && ERROR_TYPE == 0) {
                         // result of precedence will be stored in AST - abstract syntax tree
-                        *AST = *stackAST->body[stackAST->top];
+                        //*AST = *stackAST->body[stackAST->top];
                         if (ifStatement == 1 && global_token.type == kw_then) {
                             generateIfHead(stackAST->body[stackAST->top]);
                         }
@@ -443,10 +446,10 @@ void doMagic() {
                             generateWhileHead(stackAST->body[stackAST->top]);
                         }
 
-                        //generateExpression(AST,functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
+                        generateExpression(stackAST->body[stackAST->top],functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
 
                         // clear tree after generating
-                        AST = malloc(sizeof(struct tAST) * 2);
+                        //AST = malloc(sizeof(struct tAST) * 2);
                     }
                     simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
                 }
@@ -537,8 +540,8 @@ void doMagic() {
     free(predictiveStack);
         predictiveStack=NULL;
         //tASTDispose(AST);
-        free(AST);
-        AST = NULL;
+        //free(AST);
+        //AST = NULL;
         tFunctionTrackerDispose(functionTracker);
         free(functionTracker);
         functionTracker=NULL;

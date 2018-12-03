@@ -13,10 +13,8 @@
 #include "errors.h"
 #include "list.h"
 
-int dyn_length = 1024; // dyn poc delka listu pro tisk
-int list_length = 0; // ukazatel na pozici v listu
-char* asciistr; // je tu kvuli funkci convert_string, aby se dalo dat free() kdekoliv kde je funkce zavolana
-bool issingle = false; // urceni jestli je single node (strom vel. 1)
+//asciistr; // je tu kvuli funkci convert_string, aby se dalo dat free() kdekoliv kde je funkce zavolana
+//bool issingle = false; // urceni jestli je single node (strom vel. 1)
 char* left_supply; // zastupny symbol za levy uzel Root->LeftPointer->content->name
 char* right_supply; // zastupny symbol za pravy uzel Root->RightPointer->content->name
 char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs"}; // seznam podporovanych funkci
@@ -34,7 +32,9 @@ void generate_to_list2(int ad,char* str) { // generovani do seznamu misto do sou
     if(ad > dyn_length - list_length) { // uz tam neni dost mista, realloc
         dyn_length *= 2;
         printf("debug: zvetsuju list.\n");
-        str = realloc(str,dyn_length);
+        printf("debug: %d\n",dyn_length);
+        str = realloc(str, dyn_length);
+
     }
     list_length += ad; // pridej nove vygenerovanou delku ze sprintf do ukazatele na pozici v listu
 }

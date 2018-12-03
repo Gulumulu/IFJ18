@@ -494,7 +494,7 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
                 strcpy(AST->ID, "!=");
                 AST->ID[2] = '\0';
             } else {
-                AST->ID = malloc(sizeof(char)*strlen(ID));
+                AST->ID = malloc(sizeof(char)*(strlen(ID)+1));
                 strcpy(AST->ID, ID);
                 AST->ID[strlen(ID)] = '\0';
             }
