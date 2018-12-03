@@ -430,7 +430,7 @@ void doMagic() {
                         generateIfHead(stackAST->body[stackAST->top],functionTracker);
                     }
                     else if (whileStatement == 1 && global_token.type == kw_do) {
-                        //generateWhileHead(stackAST->body[stackAST->top]);
+                        generateWhileHead(stackAST->body[stackAST->top],functionTracker);
                     }
                     else { // assigning
                         generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
@@ -509,7 +509,7 @@ void doMagic() {
                             generateIfHead(stackAST->body[stackAST->top],functionTracker);
                         }
                         else if(whileStatement == 1 && global_token.type == kw_do) {
-                            //generateWhileHead(stackAST->body[stackAST->top]);
+                            generateWhileHead(stackAST->body[stackAST->top],functionTracker);
                         }
                         else
                             generateExpression(stackAST->body[stackAST->top],functionTracker,list_str,0); // vygeneruj do seznamu instrukce vyrazu

@@ -65,7 +65,7 @@ void generateIfMid();
 void generateIfEnd();
 void generatePrint(Token* token, char* currentFunction);
 
-void generateWhileHead(tASTPointer *AST);
+void generateWhileHead(tASTPointer *AST,tFunctionTracker* functionTracker);
 void generateWhileEnd();
 
 // functions for working with stack

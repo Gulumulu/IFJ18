@@ -2,7 +2,6 @@
 // Created by root on 11/23/18.
 //
 
-
 #include "generate.h"
 #include "semantic.h"
 #include "queue.h"
@@ -121,49 +120,54 @@ void generateIfHead(tASTPointer *AST, tFunctionTracker* functionTracker) {
             tLabelStackInit(tmpVariables);
         }
         if (strcmp(AST->ID, "!=") == 0) {
-            // gener
+            generateExpression(AST, functionTracker, list_str, 1);
             ifLabelNumber++;
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber));
+            char* frame = get_frame(functionTracker);
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d %s@comp_l$%i %s@comp_r$%i\n", myIfLabel, ifLabelNumber, frame, counter-1, frame, counter-1));
             tLabelStackPush(labelStack, ifLabelNumber);
 
         } else if (strcmp(AST->ID, "==") == 0) {
             generateExpression(AST, functionTracker, list_str, 1);
             ifLabelNumber++;
             char* frame = get_frame(functionTracker);
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d %s@comp_l$%i %s@comp_r$%i\n", myIfEndLabel, ifLabelNumber, frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d %s@comp_l$%i %s@comp_r$%i\n", myIfLabel, ifLabelNumber, frame, counter-1, frame, counter-1));
             tLabelStackPush(labelStack, ifLabelNumber);
 
         } else if (strcmp(AST->ID, "<") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str, 1);
             ifLabelNumber++;
             tmpVariableNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"LT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"LT TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true \n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber));
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, "<=") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str, 1);
             ifLabelNumber++;
             tmpVariableNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"AND TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d $symb2 \n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"AND TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d %s@comp_r$%i\n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber, frame, counter-1));
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, ">") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str, 1);
             ifLabelNumber++;
             tmpVariableNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"GT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"GT TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber, frame, counter-1, frame, counter-1));
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true\n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber));
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, ">=") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str, 1);
             ifLabelNumber++;
             tmpVariableNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d $symb1 \n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber, frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d %s@comp_l$%i\n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber, frame, counter-1));
             tLabelStackPush(labelStack, ifLabelNumber);
         }
     }
@@ -193,7 +197,7 @@ void generateIfEnd() {
  *
  * @param AST structure tASTPointer is pointer to AST
  */
-void generateWhileHead(tASTPointer *AST) {
+void generateWhileHead(tASTPointer *AST,tFunctionTracker* functionTracker) {
     if (AST == NULL) {
         errorHandling(99);
     } else {
@@ -205,59 +209,66 @@ void generateWhileHead(tASTPointer *AST) {
             tLabelStackInit(endLabelStack);
         }
         if (strcmp(AST->ID, "!=") == 0) {
-            //generateExpression(AST, functionTracker, list_str, 1); // M
+            generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d %s@comp_l$%i %s@comp_r$%i \n", myWhileEndLabel, whileEndLabelNumber,frame, counter-1, frame, counter-1));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "==") == 0) {
-            //generateExpression(AST, functionTracker, list_str, 1); // M
+            generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d %s@comp_l$%i %s@comp_r$%i \n", myWhileEndLabel, whileEndLabelNumber,frame, counter-1, frame, counter-1));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "<") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"LT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"LT TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "<=") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d\n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"AND TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d $symb2 \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"AND TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d %s@comp_r$%i\n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber,frame,counter-1));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, ">") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"GT TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"GT TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "<=") == 0) {
-            printf("still need to calculate expression.\n");
+            generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
+            char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d\n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d $symb1 $symb2 \n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d $symmb1 \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d %s@comp_l$%i\n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber,frame,counter-1));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         }
     }
