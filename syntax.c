@@ -9,7 +9,6 @@
 #include "symtable.h"
 #include "queue.h"
 #include "generate.h"
-#include "if-generate.h"
 #include "list.h"
 
 // externi promenne
@@ -478,7 +477,7 @@ void doMagic() {
                         generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
                         //destroy_token(&tmpToken);
 
-                //generateCodeParek(&tmpToken);
+                generateCodeParek(&tmpToken);
                 // todo: generate code
                 /*
                  * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
@@ -520,7 +519,7 @@ void doMagic() {
                     simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
                 }
             }
-            //generateCodeParek(&global_token);
+            generateCodeParek(&global_token);
 
             /*
              * Create function generateCode(char* predictiveStackTop) and pass top of predictiveStack.
@@ -540,7 +539,7 @@ void doMagic() {
             // need to print this expression
             generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker)); // BUG
             // tenhle tisk se pouziva ve vyrazu print(xxxxxx) || print xx
-            //generateCodeParek(&global_token);
+            generateCodeParek(&global_token);
             // todo: generate code
             /*
              * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.

@@ -9,7 +9,6 @@
 #include <ctype.h>
 #include "errors.h"
 #include "list.h"
-#include "if-generate.h"
 #include "predict.h"
 
 //asciistr; // je tu kvuli funkci convert_string, aby se dalo dat free() kdekoliv kde je funkce zavolana
@@ -1205,7 +1204,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
             }
         }
 
-        else { // DIV: musi byt oba float a pravej nesmi byt nula
+        else if(!strcmp(operation,"/")) { // DIV: musi byt oba float a pravej nesmi byt nula
 
             if(!left_operator && !right_operator) { // L R
                 if((left && right) || (left_func && right_func)) { // L R promenne a funkce
@@ -1266,7 +1265,66 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 }
             }
         }
-
+        else { // JEDEN ZE SESTI COMP OPERATORU
+            if(!left_operator && !right_operator) { // L R
+                if((left && right) || (left_func && right_func)) { // L R promenne a funkce
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s$%d int@0\n",counter,frame, right_supply, counter)); // porovnani s int 0
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s$%d float@0.0\n",counter,frame, right_supply, counter)); // porovnani s float 0 // BUG
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@float\n",counter,frame, left_supply, counter)); // skoc pokud je levy jiny nez float
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@float\n",counter,frame, right_supply, counter)); // levy je float, otestuj pravy na float
+                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter));
+                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error$%d\n",counter)); // chyba typu
+                    generate_to_list2(sprintf(list_str+list_length,"ERROR int@4\n"));
+                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_div$%d\n",counter)); // chyba deleni
+                    generate_to_list2(sprintf(list_str+list_length,"ERROR int@9\n"));
+                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_same_types$%d\n",counter));
+                }
+                else if(!left && !right && !left_func && !right_func) { // L R konstanty
+                    if(!strcmp(right_supply,"0") || !strcmp(right_supply,"0.0")) { // BUG: pridej i exponencialni tvar
+                        generate_to_list2(sprintf(list_str+list_length,"ERROR int@9\n"));
+                        errorHandling(9);
+                    }
+                }
+            }
+            else if(left_operator && right_operator) { // OP OP
+                generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s int@0\n",counter,frame, right_supply)); // porovnani s int 0
+                generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s float@0.0\n",counter,frame, right_supply)); // porovnani s float 0 // BUG
+                generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s string@float\n",counter,frame, left_supply)); // skoc pokud je levy jiny nez float
+                generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s string@float\n",counter,frame, right_supply)); // levy je float, otestuj pravy na float
+                generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter));
+                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error$%d\n",counter)); // chyba typu
+                generate_to_list2(sprintf(list_str+list_length,"ERROR int@4\n"));
+                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_div$%d\n",counter)); // chyba deleni
+                generate_to_list2(sprintf(list_str+list_length,"ERROR int@9\n"));
+                generate_to_list2(sprintf(list_str+list_length,"LABEL $label_same_types$%d\n",counter));
+            }
+            else { // OP R || L OP
+                if(left_operator) { // OP R
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s$%d int@0\n",counter,frame, right_supply, counter)); // porovnani s int 0
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s$%d float@0.0\n",counter,frame, right_supply, counter)); // porovnani s float 0 // BUG
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s string@float\n",counter,frame, left_supply)); // skoc pokud je levy jiny nez float
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@float\n",counter,frame, right_supply,counter)); // levy je float, otestuj pravy na float
+                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter));
+                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error$%d\n",counter)); // chyba typu
+                    generate_to_list2(sprintf(list_str+list_length,"ERROR int@4\n"));
+                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_div$%d\n",counter)); // chyba deleni
+                    generate_to_list2(sprintf(list_str+list_length,"ERROR int@9\n"));
+                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_same_types$%d\n",counter));
+                }
+                else {
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s int@0\n",counter,frame, right_supply)); // porovnani s int 0
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s float@0.0\n",counter,frame, right_supply)); // porovnani s float 0 // BUG
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@float\n",counter,frame, left_supply, counter)); // skoc pokud je levy jiny nez float
+                    generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s string@float\n",counter,frame, right_supply)); // levy je float, otestuj pravy na float
+                    generate_to_list2(sprintf(list_str+list_length,"JUMP $label_same_types$%d\n",counter));
+                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error$%d\n",counter)); // chyba typu
+                    generate_to_list2(sprintf(list_str+list_length,"ERROR int@4\n"));
+                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_div$%d\n",counter)); // chyba deleni
+                    generate_to_list2(sprintf(list_str+list_length,"ERROR int@9\n"));
+                    generate_to_list2(sprintf(list_str+list_length,"LABEL $label_same_types$%d\n",counter));
+                }
+            }
+        }
 }
 
 
@@ -1300,14 +1358,7 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
         op = "DIV";
         printOp = true;
     }
-    else if(!strcmp(Root->ID,"==")) {
-        ;
-    }
-    else {
-        return;
-    }
-
-    if(!strcmp(Root->ID,"==")) {
+    else if(!strcmp(Root->ID,"==") || !strcmp(Root->ID,"!=") || !strcmp(Root->ID,"<") || !strcmp(Root->ID,">") || !strcmp(Root->ID,">=") || !strcmp(Root->ID,"<=")) {
 
         int leftvar;
         int rightvar;
@@ -1333,6 +1384,10 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
             generate_to_list2(sprintf(list_str + list_length, "MOVE %s@comp_l$%i %s@$temp_%%%i\n", frame, counter, frame, leftvar));
             generate_to_list2(sprintf(list_str + list_length, "MOVE %s@comp_r$%i %s@$temp_%%%i\n", frame, counter, frame, rightvar));
         }
+
+    }
+    else {
+        return;
     }
 
     if(printOp) {
@@ -1363,7 +1418,7 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
 
             // FAKE CONCAT START
             generate_to_list2(sprintf(list_str + list_length, "LABEL $label_concat_op$%i\n", counter));
-            generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%%%i\n", frame, counter));
+            //generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%%%i\n", frame, counter));
             if (!left_operator && !right_operator) { // ani jeden z L R neni operator, tisk operace
                 generate_to_list2(sprintf(list_str +
                                           list_length, "CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%s$%d\n", frame, counter, frame, left_supply, counter, frame, right_supply, counter));
