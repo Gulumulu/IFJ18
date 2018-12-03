@@ -995,9 +995,7 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
         printf("Root l: %s\n",Root->LeftPointer->ID);
         printf("Root r: %s\n",Root->RightPointer->ID);
         printf("Blok probehne, pokud je root ==, a to je jen jednou tady.\n");
-
     }
-
 
     if(printOp) {
         generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%%%i\n", frame, counter)); // operace, chystam tedy novou promennou
