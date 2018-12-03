@@ -1,10 +1,6 @@
-# test for user defined function => function contains more assignments and expressions
-def foo(a)
-	b=2
-	a=a*b
-	a=10-a
+a=1
+if a+34 == 2-45-54 then
+	print "a is equal to 1"
+else
+	print "a ain't equal to 1"
 end
-b=1
-print(b, " multiplied by 2 and subtracted from 10 is: ")
-b=foo(b)
-print(b)
