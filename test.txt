@@ -1,5 +1,5 @@
-# test for while-loop => missing key word end
-a=""
-while a < "aaa" do
-	print "a is ", a
-	a=a+"a"
+# test for build-in function substr => incompatable types
+b=1
+a=substr("foobar", "zero", b)
+print("substring of foobar is: ")
+print(a)

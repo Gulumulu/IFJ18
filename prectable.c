@@ -600,7 +600,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
                 free(functionName);
-                functionName = malloc(sizeof(char)*(strlen(functionName)+strlen(token.content)+1));
+                functionName = malloc(sizeof(char)*(strlen(tmpFuncName)+strlen(token.content)+1));
                 //functionName = catStrings(functionName, tmpFuncName);
                 //functionName = catStrings(functionName, token.content);
                 functionName = memcpy(functionName, tmpFuncName, strlen(tmpFuncName));
@@ -611,13 +611,14 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 simulatePredictive(token, stackPredictive, globalSymtable, node);
                 end = 1;
                 free(tmpFuncName);
+                tmpFuncName = NULL;
             } else if (token.type == s_lbrac || token.type == s_comma || token.type == s_id || token.type == s_int || token.type == s_float || token.type == s_exp_int || token.type == s_exp_int_s || token.type == s_exp_f || token.type == s_exp_f_s || token.type == s_string) {
                 // assigning a function in expression => need to load other tokens as well
                 char* tmpFuncName = malloc(sizeof(char)*(strlen(functionName))+1);
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
                 free(functionName);
-                functionName = malloc(sizeof(char)*(strlen(functionName)+strlen(token.content)+1));
+                functionName = malloc(sizeof(char)*(strlen(tmpFuncName)+strlen(token.content)+1));
                 //functionName = catStrings(functionName, tmpFuncName);
                 //functionName = catStrings(functionName, token.content);
                 functionName = memcpy(functionName, tmpFuncName, strlen(tmpFuncName));
@@ -627,13 +628,14 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 simulatePredictive(token, stackPredictive, globalSymtable, node);
                 end = 1;
                 free(tmpFuncName);
+                tmpFuncName = NULL;
             } else if (token.type == s_rbrac || token.type == ss_eol || token.type == ss_eof) {
                 // assigning a function in expression => need to load other tokens as well
                 char* tmpFuncName = malloc(sizeof(char)*strlen(functionName));
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
                 free(functionName);
-                functionName = malloc(sizeof(char)*(strlen(functionName)+strlen(token.content)+1));
+                functionName = malloc(sizeof(char)*(strlen(tmpFuncName)+strlen(token.content)+1));
                 //functionName = catStrings(functionName, tmpFuncName);
                 //functionName = catStrings(functionName, token.content);
                 functionName = memcpy(functionName, tmpFuncName, strlen(tmpFuncName));
@@ -643,6 +645,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 simulatePredictive(token, stackPredictive, globalSymtable, node);
                 isFunction = 0;
                 tStackPredictiveDispose(stackPredictive);
+                stackPredictive = NULL;
                 if (token.type == ss_eol || token.type == ss_eof) {
                     Token tmpToken;
                     tmpToken.type = s_func_expr;
@@ -651,13 +654,16 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                     tmpToken.content[strlen(functionName)] = '\0';
                     simulatePrecedence(tmpToken, expendedStack, stackAST, node, globalSymtable);
                     end = 0;
+                    //tStackPredictiveDispose(stackPredictive);
                 } else {
                     token.type = s_func_expr;
                     token.content = malloc(sizeof(char)*(strlen(functionName)+1));
                     token.content = strcpy(token.content, functionName);
                 }
                 free(functionName);
+                functionName = NULL;
                 free(tmpFuncName);
+                tmpFuncName = NULL;
             } else {
                 // something went wrong
                 errorHandling(2);

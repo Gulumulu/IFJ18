@@ -517,7 +517,7 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
                 strcpy(AST->ID, "!=");
                 AST->ID[2] = '\0';
             } else {
-                AST->ID = malloc(sizeof(char)*strlen(ID));
+                AST->ID = malloc(sizeof(char)*(strlen(ID)+1));
                 strcpy(AST->ID, ID);
                 AST->ID[strlen(ID)] = '\0';
             }
@@ -531,7 +531,9 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
                         case 1:
                             // either operand is variable or user-defined function => not changing type
                             //tmpContent->type = NULL;
-                            AST->content->type = NULL;
+                            AST->content->type = malloc(sizeof(char));
+                            AST->content->type = strcpy(AST->content->type, "");
+                            AST->content->type[0] = '\0';
                             break;
                         case 2:
                             // every operation  => changing type
@@ -540,19 +542,26 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
                                 AST->content->type = malloc(sizeof(char)*(typeLen + 2));
                                 memcpy(AST->content->type, decideType(leftPointer->content, rightPointer->content, ID),typeLen);
                                 AST->content->type[typeLen] = '\0';
+                            } else {
+                                AST->content->type = malloc(sizeof(char));
+                                AST->content->type = strcpy(AST->content->type, "");
+                                AST->content->type[0] = '\0';
                             }
                             break;
                         default:
                             // error
+                            AST->content->type = malloc(sizeof(char));
+                            AST->content->type = strcpy(AST->content->type, "");
+                            AST->content->type[0] = '\0';
                             break;
                     }
                     //tmpContent->defined = 1;
                     AST->content->var = malloc(sizeof(char));
                     AST->content->var = strcpy(AST->content->var, "");
                     AST->content->var[0] = '\0';
-                AST->content->name = malloc(sizeof(char));
-                AST->content->name = strcpy(AST->content->name, "");
-                AST->content->name[0] = '\0';
+                    AST->content->name = malloc(sizeof(char));
+                    AST->content->name = strcpy(AST->content->name, "");
+                    AST->content->name[0] = '\0';
                     AST->content->defined = 1;
                     //AST->changed= NULL;
                     //newTree->content = tmpContent;
@@ -568,8 +577,21 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
                     //newTree=NULL;
                 //}
             } else {
-                //errorHandling(4);
-                AST = NULL;
+                errorHandling(4);
+                //AST = NULL;
+                AST->content->type = malloc(sizeof(char));
+                AST->content->type = strcpy(AST->content->type, "");
+                AST->content->type[0] = '\0';
+                AST->content->name = malloc(sizeof(char));
+                AST->content->name = strcpy(AST->content->name, "");
+                AST->content->name[0] = '\0';
+                AST->content->defined = 1;
+                AST->content->var = malloc(sizeof(char));
+                AST->content->var = strcpy(AST->content->var, "");
+                AST->content->var[0] = '\0';
+                AST->ID = malloc(sizeof(char));
+                AST->ID = strcpy(AST->ID, "");
+                AST->ID[0] = '\0';
             }
         //}
     }
