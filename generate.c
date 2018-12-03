@@ -33,6 +33,7 @@ static int counter = 1; // globalni pocitadlo v uzlech. zaciname na %1
 void generate_to_list2(int ad,char* str) { // generovani do seznamu misto do souboru v2
     if(ad > dyn_length - list_length) { // uz tam neni dost mista, realloc
         dyn_length *= 2;
+        printf("debug: zvetsuju list.\n");
         str = realloc(str,dyn_length);
     }
     list_length += ad; // pridej nove vygenerovanou delku ze sprintf do ukazatele na pozici v listu
@@ -978,8 +979,8 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
         op = "MUL";
     else if(!strcmp(Root->ID,"/"))
         op = "DIV";
-    // else
-    //return ;
+    else
+        return ;
 
     generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%i\n",frame, counter),list_str); // operace, chystam tedy novou promennou
     int leftvar; // leva strana

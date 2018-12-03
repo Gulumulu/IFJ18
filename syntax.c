@@ -120,7 +120,9 @@ void doMagic() {
     fclose(fp);
 
     FILE *file = fopen("test.txt", "r");
-    //char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
+
+    char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
+
 
     // zacatek programu
     //global_token = malloc(sizeof(struct token));
@@ -424,7 +426,8 @@ void doMagic() {
                         //generateWhileHead(stackAST->body[stackAST->top]);
                     }
 
-                    //generateExpression(stackAST->body[stackAST->top],functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
+                    generateExpression(stackAST->body[stackAST->top],functionTracker, list_str); // vygeneruj do seznamu instrukce vyrazu
+
 
                     // po vygenerovani vyrazu ho prirad zadane promenne
                     char *frame = get_frame(functionTracker);
@@ -432,8 +435,10 @@ void doMagic() {
                     assign++;
 
                     // clear tree after generating
+
                     //tASTDispose(AST);
                      //       AST = malloc(sizeof(struct tAST) * 30);
+
                 }
             }
         }
@@ -460,7 +465,8 @@ void doMagic() {
                     if (printing == 1) {
                         // need to print this expression
 
-                //generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
+
+                generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
 
                 //generateCodeParek(&tmpToken);
                 // todo: generate code
@@ -522,9 +528,7 @@ void doMagic() {
         // NEJAKEJ PRINTING
         if (printing == 1 ) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
             // need to print this expression
-
-            //generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker));
-
+            generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker)); // BUG
             //generateCodeParek(&global_token);
             // todo: generate code
             /*
@@ -561,12 +565,22 @@ void doMagic() {
                 }
     }
 
+    printf("Debug.\n");
+
     if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
         errorHandling(2);                       // some rule remained on the stack
     }
 
+
     BSTDispose(global_symtable);
     //free(global_symtable);
+
+    if(ERROR_TYPE == 0) { // tisk obsahu souboru pokud se neobjevila chyba
+
+        printf("%s",list_str);
+
+    }
+
     while (arr_id > 0) {
         BSTDispose(&array[arr_id]);
         //free(&array[arr_id]);
@@ -597,12 +611,6 @@ void doMagic() {
         //free(&global_token.content);
         free(global_symtable);
         global_symtable = NULL;
-
-    if(ERROR_TYPE == 0) { // tisk obsahu souboru pokud se neobjevila chyba
-
-        printf("%s",list_str);
-
-    }
 
     free(list_str);
     fclose(file);

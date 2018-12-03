@@ -29,6 +29,7 @@ void tASTDispose(tASTPointer* AST) {
     if (AST == NULL) {
         return;
     } else {
+
         //tASTPointer* disposedNode = AST;
         tASTDispose(AST->LeftPointer);
         tASTDispose(AST->RightPointer);
@@ -40,6 +41,7 @@ void tASTDispose(tASTPointer* AST) {
         free(AST->content);
         free(AST);
         //disposedNode = NULL;
+
         AST = NULL;
     }
 }
