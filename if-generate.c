@@ -113,11 +113,13 @@ void generateIfHead(tASTPointer *AST, tFunctionTracker* functionTracker) {
             ifLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber));
             tLabelStackPush(labelStack, ifLabelNumber);
+
         } else if (strcmp(AST->ID, "==") == 0) {
-            generateExpression(AST, functionTracker, list_str); // M
+            generateExpression(AST, functionTracker, list_str);
             ifLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber));
             tLabelStackPush(labelStack, ifLabelNumber);
+
         } else if (strcmp(AST->ID, "<") == 0) {
             printf("still need to calculate expression.\n");
             ifLabelNumber++;

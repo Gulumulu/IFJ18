@@ -18,6 +18,8 @@
 char* left_supply; // zastupny symbol za levy uzel Root->LeftPointer->content->name
 char* right_supply; // zastupny symbol za pravy uzel Root->RightPointer->content->name
 char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs"}; // seznam podporovanych funkci
+bool left = false; // false = neni promenna
+bool right = false; // false = neni promenna
 bool left_func = false; // Root->Left je funkce
 bool right_func = false; // Root->Right je funkce
 // zvlastni zpracovani retezcu
@@ -235,11 +237,9 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         macro = "func"; // makro pro nazev promenne (%s%d)
 
         // vygeneruj zakl promenne, pracuje se s nimi pri vypsani operace
-       /* generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@func%d\n", frame, counter), list_str);
-        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@temp_%s$%d\n", frame, Root->content->type, counter),
-                list_str);
-        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@type_%s$%d\n", frame, Root->content->type, counter),
-                list_str);*/
+        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@func%d\n", frame, counter));
+        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@temp_%s$%d\n", frame, Root->content->type, counter));
+        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@type_%s$%d\n", frame, Root->content->type, counter));
     }
     else {
         macro = "%"; // makro pro nazev promenne, pokud je single node (%%%d)
@@ -557,9 +557,6 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
 void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, char* list_str) { // typova kontrola obsahu jednoho root uzlu (L + R)
 
-        bool left = false; // false = neni promenna
-        bool right = false; // false = neni promenna
-
         if(issingle) { // operace, ktere probihaji nad stromem se single node
 
             for(int i = 0; i < 7; i++) {
@@ -584,7 +581,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
 
         // ODTUD NENI SINGLE NODE
 
-            // DEFINICE CO JE NA KAZDE STRANE: FUNKCE | OPERATOR | PROMENNA
+            // DEFINICE CO JE NA KAZDE STRANE: FUNKCE | OPERATOR | PROMENNA | STRING
 
             int left_func_id; // id funkce v seznamu
             int right_func_id; // id funkce v seznamu
@@ -614,99 +611,81 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 right_str = true;
 
 
-
             // GENEROVANI DEFVAR PRO L
-            if (!left_operator && !left_func) { // leva strana neni operator ani funkce
-                if(left_str)
-                    left_supply = "lstr";
-                else
-                    left_supply = Root->LeftPointer->content->name;
 
+            if(left_str) {
+                left_supply = "lstr";
                 generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, left_supply, counter));
                 generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, left_supply, counter));
-                if (left) {
-                    generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, left_supply, counter, frame, left_supply));
-                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter, frame, left_supply));
-                }
-                if (left_str) {
-                    /*generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d string@%s\n", frame, left_supply, counter,
-                                              Root->LeftPointer->content->name));
-                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d string@%s\n", frame, left_supply, counter,
-                                              Root->LeftPointer->content->name));*/
-                }
-                else {
-                    generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
-                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
-                }
+                generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d string@%s\n", frame, left_supply, counter,convert_string(Root->LeftPointer->content->name)));
+                generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d string@%s\n", frame, left_supply, counter,convert_string(Root->LeftPointer->content->name)));
             }
-            else if(left_func) { // leva strana je funkce. v generovani funkce uz byly vytvoreny pro temp a type a byly do nich nahrany hodnoty
+            else if(left_func) {
                 left_supply = Root->LeftPointer->content->type; // JMENO FUNKCE JAKO JEJI NAME
             }
-            else { // leva strana je operator
+            else if(left_operator) {
                 int front;
                 queueFront(q, &front);
-
                 char buffer[10];
                 sprintf(buffer, "%%%d", front);
                 left_supply = buffer;
-
                 generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%%%d\n", frame, front));
                 generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%%%d\n", frame, front));
                 generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%%%d %s@%%%d\n", frame, front, frame, front));
                 generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%%%d %s@%%%d\n", frame, front, frame, front));
             }
-
-
-            // GENEROVANI DEFVAR PRO R
-            if (!right_operator && !right_func) { // prava strana neni operator
-                if(right_str)
-                    right_supply = "rstr";
-                else
-                    right_supply = Root->RightPointer->content->name;
-
-                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
-                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
-                if (right) {
-                    /*generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, right_supply, counter,
-                            frame, right_supply));
-                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, right_supply, counter,
-                            frame, right_supply));*/
-                }
-                if (right_str) {
-                    /*generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d string@%s\n", frame, right_supply, counter,
-                                              Root->RightPointer->content->name));
-                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d string@%s\n", frame, right_supply, counter,
-                                              Root->RightPointer->content->name));*/
-                }
-                else {
-                    /*generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, right_supply, counter,
-                            Root->RightPointer->content->type,
-                            right_supply));
-                    generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, right_supply, counter,
-                            Root->RightPointer->content->type,
-                            right_supply));*/
-                }
+            else if(left) {
+                left_supply = Root->LeftPointer->content->name;
+                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, left_supply, counter));
+                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, left_supply, counter));
+                generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, left_supply, counter, frame, left_supply));
+                generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter, frame, left_supply));
             }
-            else if(right_func) { // prava strana je funkce
-                right_supply = Root->RightPointer->content->name;
+            else { // je to konstanta
+                left_supply = Root->LeftPointer->content->name;
+                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, left_supply, counter));
+                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, left_supply, counter));
+                generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
+                generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter, Root->LeftPointer->content->type,left_supply));
             }
-            else { // prava strana je operator
-                int front;
 
-                if (left_operator) // pokud byla leva operator, sahni do fronty o jeden dal
-                    queuePreFront(q, &front);
-                else // vlevo nebyl operator, sahni normalne
-                    queueFront(q, &front);
+            // GENEROVANI R
 
-                char buffer[10];
-                sprintf(buffer, "%%%d", front);
-                right_supply = buffer;
-
-                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%%%d\n", frame, front));
-                generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%%%d\n", frame, front));
-                generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%%%d %s@%%%d\n", frame, front, frame, front));
-                generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%%%d %s@%%%d\n", frame, front, frame, front));
-            }
+    if(right_str) {
+        right_supply = "rstr";
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d string@%s\n", frame, right_supply, counter,convert_string(Root->LeftPointer->content->name)));
+        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d string@%s\n", frame, right_supply, counter,convert_string(Root->LeftPointer->content->name)));
+    }
+    else if(right_func) {
+        right_supply = Root->RightPointer->content->type; // JMENO FUNKCE JAKO JEJI NAME
+    }
+    else if(right_operator) {
+        int front;
+        queueFront(q, &front);
+        char buffer[10];
+        sprintf(buffer, "%%%d", front);
+        right_supply = buffer;
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%%%d\n", frame, front));
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%%%d\n", frame, front));
+        generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%%%d %s@%%%d\n", frame, front, frame, front));
+        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%%%d %s@%%%d\n", frame, front, frame, front));
+    }
+    else if(right) {
+        right_supply = Root->RightPointer->content->name;
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, right_supply, counter, frame, right_supply));
+        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, right_supply, counter, frame, right_supply));
+    }
+    else { // je to konstanta
+        right_supply = Root->RightPointer->content->name;
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
+        generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
+        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, right_supply, counter, Root->RightPointer->content->type,right_supply));
+    }
 
         // vypis vestavene funkce pro VSECHNY OPERACE (/*+-)
         if(left_func) { // vlevo je funkce
@@ -989,6 +968,7 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
     }
     else if(!strcmp(Root->ID,"-")) {
         op = "SUB";
+        printf("SUB..\n");
         printOp = true;
     }
     else if(!strcmp(Root->ID,"*")) {
@@ -1000,44 +980,44 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
         printOp = true;
     }
     else if(!strcmp(Root->ID,"==")) {
-        printf("--, provadim divny operace.\n");
+        ;
     }
     else {
         return;
     }
 
     if(!strcmp(Root->ID,"==")) {
+        printf("zacatek bloku.\n");
         printf("Left: %s\n",Root->LeftPointer->content->name);
         printf("Right: %s\n",Root->RightPointer->content->name);
+        printf("Root l: %s\n",Root->LeftPointer->ID);
+        printf("Root r: %s\n",Root->RightPointer->ID);
+        printf("Blok probehne, pokud je root ==, a to je jen jednou tady.\n");
+
     }
 
 
     if(printOp) {
-        generate_to_list2(sprintf(
-                list_str + list_length, "DEFVAR %s@%%%i\n", frame, counter)); // operace, chystam tedy novou promennou
+        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%%%i\n", frame, counter)); // operace, chystam tedy novou promennou
         int leftvar; // leva strana
         int rightvar; // prava strana
 
         // TISK OPERACE START
         if (!left_operator && !right_operator) { // ani jeden z L R neni operator, tisk operace
-            generate_to_list2(sprintf(list_str +
-                                      list_length, "%s %s@%%%i %s@$temp_%s$%d %s@$temp_%s$%d\n", op, frame, counter, frame, left_supply, counter, frame, right_supply, counter));
+            generate_to_list2(sprintf(list_str + list_length, "%s %s@%%%i %s@$temp_%s$%d %s@$temp_%s$%d\n", op, frame, counter, frame, left_supply, counter, frame, right_supply, counter));
         } else if ((left_operator && !right_operator) || (!left_operator && right_operator)) { // jeden z L R je operace
             // tisk operace kdyz je pouze jedna strana (L || R) operaator
             if (left_operator) { // L je operator
                 queueGet(q, &leftvar);
-                generate_to_list2(sprintf(list_str +
-                                          list_length, "%s %s@%%%i %s@$temp_%%%i %s@$temp_%s$%d\n", op, frame, counter, frame, leftvar, frame, right_supply, counter));
+                generate_to_list2(sprintf(list_str + list_length, "%s %s@%%%i %s@$temp_%%%i %s@$temp_%s$%d\n", op, frame, counter, frame, leftvar, frame, right_supply, counter));
             } else { // R je operator
                 queueGet(q, &rightvar);
-                generate_to_list2(sprintf(list_str +
-                                          list_length, "%s %s@%%%i %s@$temp_%s$%d %s@$temp_%%%i\n", op, frame, counter, frame, left_supply, counter, frame, rightvar));
+                generate_to_list2(sprintf(list_str + list_length, "%s %s@%%%i %s@$temp_%s$%d %s@$temp_%%%i\n", op, frame, counter, frame, left_supply, counter, frame, rightvar));
             }
         } else { // tisk operace kdyz je operator L i R
             queueGet(q, &leftvar);
             queueGet(q, &rightvar);
-            generate_to_list2(sprintf(list_str +
-                                      list_length, "%s %s@%%%i %s@%%%i %s@%%%i\n", op, frame, counter, frame, leftvar, frame, rightvar));
+            generate_to_list2(sprintf(list_str + list_length, "%s %s@%%%i %s@%%%i %s@%%%i\n", op, frame, counter, frame, leftvar, frame, rightvar));
         }
         generate_to_list2(sprintf(
                 list_str + list_length, "JUMP $label_op_finished$%i\n", counter)); // skoc tesne za concat op
@@ -1046,24 +1026,20 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
         generate_to_list2(sprintf(list_str + list_length, "LABEL $label_concat_op$%i\n", counter));
         generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%%%i\n", frame, counter));
         if (!left_operator && !right_operator) { // ani jeden z L R neni operator, tisk operace
-            generate_to_list2(sprintf(list_str +
-                                      list_length, "CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%s$%d\n", frame, counter, frame, left_supply, counter, frame, right_supply, counter));
+            generate_to_list2(sprintf(list_str + list_length, "CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%s$%d\n", frame, counter, frame, left_supply, counter, frame, right_supply, counter));
         } else if ((left_operator && !right_operator) || (!left_operator && right_operator)) { // jeden z L R je operace
             // tisk operace kdyz je pouze jedna strana (L || R) operaator
             if (left_operator) { // L je operator
                 queueGet(q, &leftvar);
-                generate_to_list2(sprintf(list_str +
-                                          list_length, "CONCAT %s@%%%i %s@$temp_%%%i %s@$temp_%s$%d\n", frame, counter, frame, leftvar, frame, right_supply, counter));
+                generate_to_list2(sprintf(list_str + list_length, "CONCAT %s@%%%i %s@$temp_%%%i %s@$temp_%s$%d\n", frame, counter, frame, leftvar, frame, right_supply, counter));
             } else { // R je operator
                 queueGet(q, &rightvar);
-                generate_to_list2(sprintf(list_str +
-                                          list_length, "CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%%%i\n", frame, counter, frame, left_supply, counter, frame, rightvar));
+                generate_to_list2(sprintf(list_str + list_length, "CONCAT %s@%%%i %s@$temp_%s$%d %s@$temp_%%%i\n", frame, counter, frame, left_supply, counter, frame, rightvar));
             }
         } else { // tisk operace kdyz je operator L i R
             queueGet(q, &leftvar);
             queueGet(q, &rightvar);
-            generate_to_list2(sprintf(list_str +
-                                      list_length, "CONCAT %s@%%%i %s@%%%i %s@%%%i\n", frame, counter, frame, leftvar, frame, rightvar));
+            generate_to_list2(sprintf(list_str + list_length, "CONCAT %s@%%%i %s@%%%i %s@%%%i\n", frame, counter, frame, leftvar, frame, rightvar));
         }
         // FAKE CONCAT END
 
@@ -1081,6 +1057,8 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
     right_func = false;
     left_str = false;
     right_str = false;
+    left = false;
+    right = false;
     counter++; // pricti 1 k promenne
 }
 
@@ -1091,7 +1069,6 @@ void generateExpression(tASTPointer* AST, tFunctionTracker* functionTracker, cha
         queueInit(q); // inicializuj frontu
         if(AST->LeftPointer == NULL && AST->RightPointer == NULL) {
             issingle = true;
-            printf("this is single: AST %s\n",AST->ID);
         }
 
         postorder(AST,q,functionTracker, list_str); // rekurzivni postorder stromem
