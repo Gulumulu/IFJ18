@@ -631,7 +631,7 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 tmpFuncName = NULL;
             } else if (token.type == s_rbrac || token.type == ss_eol || token.type == ss_eof) {
                 // assigning a function in expression => need to load other tokens as well
-                char* tmpFuncName = malloc(sizeof(char)*strlen(functionName));
+                char* tmpFuncName = malloc(sizeof(char)*(strlen(functionName)+1));
                 strcpy(tmpFuncName, functionName);
                 tmpFuncName[strlen(functionName)] = '\0';
                 free(functionName);

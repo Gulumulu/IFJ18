@@ -99,7 +99,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    /*if (feof(stdin))
+    if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -117,7 +117,7 @@ void doMagic() {
 
     printf("Done writing\n");
 
-    fclose(fp);*/
+    fclose(fp);
 
     FILE *file = fopen("test.txt", "r");
     //char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
