@@ -9,10 +9,10 @@
 #########################################################################################################################
 
 # define global variables
-$recursive = 0;                     # recursion desired
-$path = getcwd();                   # path to tests
-$parseFile = "compiler";           # parse
-$intFile = "interpret.py";          # interpret
+$recursive = 1;                     # recursion desired
+$path = "tests";                    # path to tests
+$parseFile = "compiler";            # parse
+$intFile = "icl18int";              # interpret
 $src = array();                     # array of .src files
 $in = array();                      # array of .in files
 $out = array();                     # array of .out files
@@ -168,6 +168,7 @@ function testParse()
     $table->appendChild($tr);
     $body->appendChild($table);
 
+    exec("make");
     foreach ($src as $source) {
         $sourceName = explode(".src", $source, -1);
         exec("./$parseFile < $source > $sourceName[0].tmp 2> /dev/null",$output, $returnCode);
@@ -272,7 +273,7 @@ function testInterpret()
         }
 
         # run test
-        exec("python3.6 $intFile --source=$source < $inFile > $sourceName[0].int 2> /dev/null",$output, $returnCode);
+        exec("$intFile $source < $inFile > $sourceName[0].int 2> /dev/null",$output, $returnCode);
 
         # get requested return code from .rc file
         $rcFile = getRC($testName[count($testName)-1]);

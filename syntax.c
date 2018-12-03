@@ -413,7 +413,7 @@ void doMagic() {
                 tmpToken.type = decideID(global_token);
                 // simulate predictive SA for previous token
                 simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
-                destroy_token(&tmpToken);
+
             }
             // simulate predictive SA for current token
             simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
@@ -440,6 +440,7 @@ void doMagic() {
                     char *frame = get_frame(functionTracker);
                     generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign));
                     assign++;
+                    //destroy_token(&tmpToken);
 
                     // clear tree after generating
 
@@ -468,7 +469,7 @@ void doMagic() {
                             simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         }
                         if (printing == 0) {
-                            destroy_token(&tmpToken);
+                            //destroy_token(&tmpToken);
                         }
                     }
                     if (printing == 1 && checkAssignRule() == 0) {
@@ -476,7 +477,7 @@ void doMagic() {
 
 
                         generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
-                        destroy_token(&tmpToken);
+                        //destroy_token(&tmpToken);
 
                 //generateCodeParek(&tmpToken);
                 // todo: generate code

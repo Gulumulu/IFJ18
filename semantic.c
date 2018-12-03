@@ -184,9 +184,9 @@ void findVariable(BSTNodePtr node, Token* token, BSTNodeContentPtr* nodeContentP
                 nodeContentPtr->var = strcpy(nodeContentPtr->var, BSTSearch(&node, hash_id(token->content))->var);
                 nodeContentPtr->var[strlen(BSTSearch(&node, hash_id(token->content))->var)] = '\0';
             } else {
-                nodeContentPtr->var = malloc(sizeof(char)*2);
-                nodeContentPtr->var = strcpy(nodeContentPtr->var, "x");
-                nodeContentPtr->var[1] = '\0';
+                nodeContentPtr->var = malloc(sizeof(char)*1);
+                //nodeContentPtr->var = strcpy(nodeContentPtr->var, "x");
+                nodeContentPtr->var[0] = '\0';
             }
 
         } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float || token->type == s_exp_f || token->type == s_string || token->type == kw_length || token->type == s_func_expr) {
@@ -219,9 +219,9 @@ void findVariable(BSTNodePtr node, Token* token, BSTNodeContentPtr* nodeContentP
                     case s_func_expr:
                         if (getFunctionName(token->content) == NULL) {
                             errorHandling(6);               // 4 or 6?
-                            nodeContentPtr->type = malloc(sizeof(char)*2);
-                            nodeContentPtr->type = strcpy(nodeContentPtr->type, "x");
-                            nodeContentPtr->type[1] = '\0';
+                            nodeContentPtr->type = malloc(sizeof(char)*1);
+                            //nodeContentPtr->type = strcpy(nodeContentPtr->type, "x");
+                            nodeContentPtr->type[0] = '\0';
                         } else {
                             nodeContentPtr->type = malloc(sizeof(char)*(strlen(getFunctionName(token->content))+1));
                             nodeContentPtr->type = strcpy(nodeContentPtr->type, getFunctionName(token->content));
@@ -237,9 +237,9 @@ void findVariable(BSTNodePtr node, Token* token, BSTNodeContentPtr* nodeContentP
                 //tmpNode->defined = 1;
                 nodeContentPtr->defined = 1;
                 nodeContentPtr->func_params = 0;
-                nodeContentPtr->var = malloc(sizeof(char)*2);
-                nodeContentPtr->var = strcpy(nodeContentPtr->var, "x");
-                nodeContentPtr->var[1] = '\0';
+                nodeContentPtr->var = malloc(sizeof(char)*1);
+                //nodeContentPtr->var = strcpy(nodeContentPtr->var, "x");
+                nodeContentPtr->var[0] = '\0';
                 //nodeContentPtr->type = malloc(sizeof(char)*strlen(tmpNode->type));
                 //nodeContentPtr->type = strcpy(nodeContentPtr->type, tmpNode->type);
                 //nodeContentPtr->type[strlen(tmpNode->type)] = '\0';
@@ -543,9 +543,9 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
                         case 1:
                             // either operand is variable or user-defined function => not changing type
                             //tmpContent->type = NULL;
-                            AST->content->type = malloc(sizeof(char)*2);
-                            AST->content->type = strcpy(AST->content->type, "x");
-                            AST->content->type[1] = '\0';
+                            AST->content->type = malloc(sizeof(char)*1);
+                            //AST->content->type = strcpy(AST->content->type, "x");
+                            AST->content->type[0] = '\0';
                             break;
                         case 2:
                             // every operation  => changing type
@@ -555,25 +555,25 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
                                 memcpy(AST->content->type, decideType(leftPointer->content, rightPointer->content, ID),typeLen);
                                 AST->content->type[typeLen] = '\0';
                             } else {
-                                AST->content->type = malloc(sizeof(char)*2);
-                                AST->content->type = strcpy(AST->content->type, "x");
-                                AST->content->type[1] = '\0';
+                                AST->content->type = malloc(sizeof(char)*1);
+                                //AST->content->type = strcpy(AST->content->type, "x");
+                                AST->content->type[0] = '\0';
                             }
                             break;
                         default:
                             // error
-                            AST->content->type = malloc(sizeof(char)*2);
-                            AST->content->type = strcpy(AST->content->type, "x");
-                            AST->content->type[1] = '\0';
+                            AST->content->type = malloc(sizeof(char)*1);
+                            //AST->content->type = strcpy(AST->content->type, "x");
+                            AST->content->type[0] = '\0';
                             break;
                     }
                     //tmpContent->defined = 1;
-                    AST->content->var = malloc(sizeof(char)*2);
-                    AST->content->var = strcpy(AST->content->var, "x");
-                    AST->content->var[1] = '\0';
-                    AST->content->name = malloc(sizeof(char)*2);
-                    AST->content->name = strcpy(AST->content->name, "x");
-                    AST->content->name[1] = '\0';
+                    AST->content->var = malloc(sizeof(char)*1);
+                    //AST->content->var = strcpy(AST->content->var, "x");
+                    AST->content->var[0] = '\0';
+                    AST->content->name = malloc(sizeof(char)*1);
+                    //AST->content->name = strcpy(AST->content->name, "x");
+                    AST->content->name[0] = '\0';
                     AST->content->defined = 1;
                     //AST->changed= NULL;
                     //newTree->content = tmpContent;
@@ -591,19 +591,19 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
             } else {
                 errorHandling(4);
                 //AST = NULL;
-                AST->content->type = malloc(sizeof(char) * 2);
-                AST->content->type = strcpy(AST->content->type, "x");
-                AST->content->type[1] = '\0';
-                AST->content->name = malloc(sizeof(char) * 2);
-                AST->content->name = strcpy(AST->content->name, "x");
-                AST->content->name[1] = '\0';
+                AST->content->type = malloc(sizeof(char) * 1);
+                //AST->content->type = strcpy(AST->content->type, "x");
+                AST->content->type[0] = '\0';
+                AST->content->name = malloc(sizeof(char) * 1);
+                //AST->content->name = strcpy(AST->content->name, "x");
+                AST->content->name[0] = '\0';
                 AST->content->defined = 1;
-                AST->content->var = malloc(sizeof(char) * 2);
-                AST->content->var = strcpy(AST->content->var, "x");
-                AST->content->var[1] = '\0';
-                AST->ID = malloc(sizeof(char) * 2);
-                AST->ID = strcpy(AST->ID, "x");
-                AST->ID[1] = '\0';
+                AST->content->var = malloc(sizeof(char) * 1);
+                //AST->content->var = strcpy(AST->content->var, "x");
+                AST->content->var[0] = '\0';
+                AST->ID = malloc(sizeof(char) * 1);
+                //AST->ID = strcpy(AST->ID, "x");
+                AST->ID[0] = '\0';
             }
         //}
     }
