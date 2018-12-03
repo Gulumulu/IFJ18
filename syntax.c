@@ -13,7 +13,7 @@
 #include "list.h"
 
 // externi promenne
-char* list_str;
+//char* list_str;
 tFunctionTracker* functionTracker;
 
 #define BUF_SIZE 1024
@@ -121,14 +121,20 @@ void doMagic() {
 
     FILE *file = fopen("test.txt", "r");
 
-    char* list_str = malloc(dyn_length * sizeof(char)); // tisk do bufferu misto do ext souboru
+    list_str = malloc(sizeof(char)*(dyn_length+1)); // tisk do bufferu misto do ext souboru
+    issingle = false;
+
 
 
     // zacatek programu
     //global_token = malloc(sizeof(struct token));
 
-    //generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"),list_str);
-    //generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"),list_str);
+
+    dyn_length = 10000; // dyn poc delka listu pro tisk
+    list_length = 0; // ukazatel na pozici v listu
+    generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"),list_str);
+    generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"),list_str);
+
 
     BSTNodeContentPtr* tmp;
     int not_int = 0;            // true if variable is float or string
@@ -436,8 +442,8 @@ void doMagic() {
 
                     // clear tree after generating
 
-                    //tASTDispose(AST);
-                     //       AST = malloc(sizeof(struct tAST) * 30);
+                    /*tASTDispose(AST); // SEGFAULT
+                            AST = malloc(sizeof(struct tAST) * 30);*/
 
                 }
             }
@@ -502,7 +508,8 @@ void doMagic() {
                             generateWhileHead(stackAST->body[stackAST->top]);
                         }
 
-                        //generateExpression(stackAST->body[stackAST->top],functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
+
+                        generateExpression(stackAST->body[stackAST->top],functionTracker,list_str); // vygeneruj do seznamu instrukce vyrazu
 
                         // clear tree after generating
                         //AST = malloc(sizeof(struct tAST) * 2);
