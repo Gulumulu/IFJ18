@@ -119,7 +119,7 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("test.txt", "r");
 
     dyn_length = 50240; // dyn poc delka listu pro tisk
     list_length = 0; // ukazatel na pozici v listu
@@ -413,7 +413,7 @@ void doMagic() {
                 tmpToken.type = decideID(global_token);
                 // simulate predictive SA for previous token
                 simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
-
+                //destroy_token(&tmpToken);
             }
             // simulate predictive SA for current token
             simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
@@ -427,7 +427,7 @@ void doMagic() {
                     // result of precedence will be stored in AST - abstract syntax tree
                     //*AST = *stackAST->body[stackAST->top];
                     if (ifStatement == 1 && global_token.type == kw_then) {
-                        //generateIfHead(stackAST->body[stackAST->top]);
+                        generateIfHead(stackAST->body[stackAST->top],functionTracker);
                     }
                     if (whileStatement == 1 && global_token.type == kw_do) {
                         //generateWhileHead(stackAST->body[stackAST->top]);
@@ -541,6 +541,7 @@ void doMagic() {
         if (printing == 1 && checkAssignRule() == 0) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
             // need to print this expression
             generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker)); // BUG
+            // tenhle tisk se pouziva ve vyrazu print(xxxxxx) || print xx
             //generateCodeParek(&global_token);
             // todo: generate code
             /*
@@ -624,7 +625,7 @@ void doMagic() {
         //free(global_symtable);
         global_symtable = NULL;
 
-    //free(list_str);
+    free(list_str);
     fclose(file);
 
 }

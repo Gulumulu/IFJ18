@@ -9,6 +9,7 @@
 #include "scanner.h"
 #include "semantic.h"
 #include <stdio.h>
+#include "syntax.h"
 
 // stack for if labels
 typedef struct tLabelStack {
@@ -19,6 +20,9 @@ typedef struct tLabelStack {
 tLabelStack* labelStack;         // stack for if labels
 tLabelStack* endLabelStack;      // stack for if end labels
 tLabelStack* tmpVariables;      // stack for tmp variables
+
+float str2fl(char* str);
+char* str2str(char * str);
 
 // helper vars
 int firstTime;
@@ -35,7 +39,7 @@ int tmpVariableNumber;
 
 // functions for generating
 void generateCodeParek(Token* token);
-void generateIfHead(tASTPointer *AST);
+void generateIfHead(tASTPointer *AST, tFunctionTracker* functionTracker);
 void generateIfMid();
 void generateIfEnd();
 void generatePrint(Token* token, char* currentFunction);

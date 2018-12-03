@@ -14,6 +14,23 @@ char* myIfEndLabel = "$myIfEndLabel";
 char* myWhileLabel = "$myWhileLabel";
 char* myWhileEndLabel = "$myWhileEndLabel";
 char* myTmpVariable = "$myTmpVariable";
+
+float str2fl(char* str) {
+    char* float_rest;
+    return strtof(str,&float_rest);
+}
+
+char* str2str(char * str) {
+    char *read = str;
+    char *repl = str;
+    while (*read) {
+        *repl = *read++;
+        *repl += (*repl != '\"');
+    }
+    *repl = '\0';
+    return repl;
+}
+
 /**
  * Function initializes stack to store label numbers.
  *
@@ -77,7 +94,7 @@ int tLabelStackGetTop(tLabelStack* stack) {
  *
  * @param AST structure tASTPointer is pointer to AST
  */
-void generateIfHead(tASTPointer *AST) {
+void generateIfHead(tASTPointer *AST, tFunctionTracker* functionTracker) {
     if (AST == NULL) {
         errorHandling(99);
     } else {
@@ -92,7 +109,7 @@ void generateIfHead(tASTPointer *AST) {
             tLabelStackInit(tmpVariables);
         }
         if (strcmp(AST->ID, "!=") == 0) {
-            generateExpression(AST, functionTracker, list_str); // M
+            // gener
             ifLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d $symb1 $symb2\n", myIfLabel, ifLabelNumber));
             tLabelStackPush(labelStack, ifLabelNumber);
@@ -173,7 +190,7 @@ void generateWhileHead(tASTPointer *AST) {
             tLabelStackInit(endLabelStack);
         }
         if (strcmp(AST->ID, "!=") == 0) {
-            generateExpression(AST, functionTracker, list_str); // M
+            //generateExpression(AST, functionTracker, list_str); // M
             whileLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
@@ -181,7 +198,7 @@ void generateWhileHead(tASTPointer *AST) {
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d $symb1 $symb2 \n", myWhileEndLabel, whileEndLabelNumber));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, "==") == 0) {
-            generateExpression(AST, functionTracker, list_str); // M
+            //generateExpression(AST, functionTracker, list_str); // M
             whileLabelNumber++;
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
@@ -251,11 +268,11 @@ void generatePrint(Token* token, char* currentFunction) {
     if (token == NULL) {
         errorHandling(99);
     } else {
+
         if (token->type == s_string) {
             generate_to_list2(sprintf(list_str+list_length,"WRITE string@%s\n", convert_string(token->content)));
             free(asciistr);
         } else if (token->type == s_int) {
-
             generate_to_list2(sprintf(list_str+list_length,"WRITE int@%s\n", token->content));
         } else if (token->type == s_float) {
             generate_to_list2(sprintf(list_str+list_length,"WRITE float@%s\n", token->content));
@@ -265,6 +282,9 @@ void generatePrint(Token* token, char* currentFunction) {
             } else {
                 generate_to_list2(sprintf(list_str+list_length,"WRITE LF@%s\n", token->content));
             }
+        }
+        else if (token->type == s_exp_int || token->type == s_exp_f ) {
+            generate_to_list2(sprintf(list_str+list_length,"WRITE float@%a\n", str2fl(token->content)));
         }
     }
 }
