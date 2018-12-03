@@ -15,6 +15,7 @@
 void tASTInit(tASTPointer* AST) {
     AST->content = NULL;
     AST->ID = NULL;
+    //AST->changed = NULL;
     AST->LeftPointer = NULL;
     AST->RightPointer = NULL;
 }
@@ -28,17 +29,17 @@ void tASTDispose(tASTPointer* AST) {
     if (AST == NULL) {
         return;
     } else {
-        tASTPointer* disposedNode = AST;
-        tASTDispose(disposedNode->LeftPointer);
-        tASTDispose(disposedNode->RightPointer);
-        free(disposedNode->ID);
-        // free(disposedNode->changed); // BUG
-        //free(disposedNode->content->type);
-        //free(disposedNode->content->name);
-        //free(disposedNode->content->var);
-        free(disposedNode->content);
-        free(disposedNode);
-        disposedNode = NULL;
+        //tASTPointer* disposedNode = AST;
+        tASTDispose(AST->LeftPointer);
+        tASTDispose(AST->RightPointer);
+        free(AST->ID);
+        //free(disposedNode->changed);
+        free((*AST).content->type);
+        free(AST->content->name);
+        free(AST->content->var);
+        free(AST->content);
+        free(AST);
+        //disposedNode = NULL;
         AST = NULL;
     }
 }
@@ -127,7 +128,7 @@ char* getFunctionName(char* functionName) {
         if ((arguments = getArguments(functionName)) == NULL) {
             return NULL;
         } else {
-            if (match(arguments, "\\(((\".*\")|(([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*) |([0-9]*[0-9]+))\\)") != 1 && match(arguments, "(substr)((\".*\")|(([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+))") != 1) {
+            if (match(arguments, "\\(((\".*\")|(([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+))\\)") != 1 && match(arguments, "(substr)((\".*\")|(([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+)),((([a-z]|_){1}([0-9]|[a-z]|[A-Z]|_)*)|([0-9]*[0-9]+))") != 1) {
                 return NULL;
             }
         }
@@ -168,7 +169,24 @@ void findVariable(BSTNodePtr node, Token* token, BSTNodeContentPtr* nodeContentP
     } else {
         if (token->type == s_id) {
             // find variable in symtable
-            nodeContentPtr = BSTSearch(&node, hash_id(token->content));
+            nodeContentPtr->func_params = BSTSearch(&node, hash_id(token->content))->func_params;
+            nodeContentPtr->defined = BSTSearch(&node, hash_id(token->content))->defined;
+            nodeContentPtr->name = malloc(sizeof(char)*(strlen(BSTSearch(&node, hash_id(token->content))->name)+1));
+            nodeContentPtr->name = strcpy(nodeContentPtr->name, BSTSearch(&node, hash_id(token->content))->name);
+            nodeContentPtr->name[strlen(BSTSearch(&node, hash_id(token->content))->name)] = '\0';
+            nodeContentPtr->type = malloc(sizeof(char)*(strlen(BSTSearch(&node, hash_id(token->content))->type)+1));
+            nodeContentPtr->type = strcpy(nodeContentPtr->type, BSTSearch(&node, hash_id(token->content))->type);
+            nodeContentPtr->type[strlen(BSTSearch(&node, hash_id(token->content))->type)] = '\0';
+            if (BSTSearch(&node, hash_id(token->content))->var != NULL) {
+                nodeContentPtr->var = malloc(sizeof(char)*(strlen(BSTSearch(&node, hash_id(token->content))->var)+1));
+                nodeContentPtr->var = strcpy(nodeContentPtr->var, BSTSearch(&node, hash_id(token->content))->var);
+                nodeContentPtr->var[strlen(BSTSearch(&node, hash_id(token->content))->var)] = '\0';
+            } else {
+                nodeContentPtr->var = malloc(sizeof(char)*2);
+                nodeContentPtr->var = strcpy(nodeContentPtr->var, "x");
+                nodeContentPtr->var[1] = '\0';
+            }
+
         } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float || token->type == s_exp_f || token->type == s_string || token->type == kw_length || token->type == s_func_expr) {
             // leaf will be a constant therefore creation of new BSTNode is needed
             //BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
@@ -185,27 +203,41 @@ void findVariable(BSTNodePtr node, Token* token, BSTNodeContentPtr* nodeContentP
                     case s_exp_int:
                     case s_exp_int_s:
                     case kw_length:
-                        nodeContentPtr->type = "int";
+                        nodeContentPtr->type = malloc(sizeof(char)*4);
+                        nodeContentPtr->type = strcpy(nodeContentPtr->type, "int");
+                        nodeContentPtr->type[3] = '\0';
                         break;
                     case s_float:
                     case s_exp_f:
                     case s_exp_f_s:
-                        nodeContentPtr->type = "float";
+                        nodeContentPtr->type = malloc(sizeof(char)*6);
+                        nodeContentPtr->type = strcpy(nodeContentPtr->type, "float");
+                        nodeContentPtr->type[5] = '\0';
                         break;
                     case s_func_expr:
-                        nodeContentPtr->type = getFunctionName(token->content);
-                        if (nodeContentPtr->type == NULL) {
+                        if (getFunctionName(token->content) == NULL) {
                             errorHandling(6);               // 4 or 6?
-                            nodeContentPtr = NULL;
+                            nodeContentPtr->type = malloc(sizeof(char)*2);
+                            nodeContentPtr->type = strcpy(nodeContentPtr->type, "x");
+                            nodeContentPtr->type[1] = '\0';
+                        } else {
+                            nodeContentPtr->type = malloc(sizeof(char)*(strlen(getFunctionName(token->content))+1));
+                            nodeContentPtr->type = strcpy(nodeContentPtr->type, getFunctionName(token->content));
+                            nodeContentPtr->type[strlen(getFunctionName(token->content))] = '\0';
                         }
                         break;
                     default:
-                        nodeContentPtr->type = "string";
+                        nodeContentPtr->type = malloc(sizeof(char)*7);
+                        nodeContentPtr->type = strcpy(nodeContentPtr->type, "string");
+                        nodeContentPtr->type[6] = '\0';
                         break;
                 }
                 //tmpNode->defined = 1;
                 nodeContentPtr->defined = 1;
                 nodeContentPtr->func_params = 0;
+                nodeContentPtr->var = malloc(sizeof(char)*2);
+                nodeContentPtr->var = strcpy(nodeContentPtr->var, "x");
+                nodeContentPtr->var[1] = '\0';
                 //nodeContentPtr->type = malloc(sizeof(char)*strlen(tmpNode->type));
                 //nodeContentPtr->type = strcpy(nodeContentPtr->type, tmpNode->type);
                 //nodeContentPtr->type[strlen(tmpNode->type)] = '\0';
@@ -261,6 +293,7 @@ void makeLeaf(BSTNodePtr node, Token* token, tASTPointer* AST) {
             AST->ID = malloc(sizeof(char)*2);
             strcpy(AST->ID,"E");
             AST->ID[1] = '\0';
+            //AST->changed = NULL;
             //AST = newLeaf;
             //AST->LeftPointer = newLeaf->LeftPointer;
             //AST->RightPointer = newLeaf->RightPointer;
@@ -508,23 +541,39 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
                         case 1:
                             // either operand is variable or user-defined function => not changing type
                             //tmpContent->type = NULL;
-                            AST->content->type = NULL;
+                            AST->content->type = malloc(sizeof(char)*2);
+                            AST->content->type = strcpy(AST->content->type, "x");
+                            AST->content->type[1] = '\0';
                             break;
                         case 2:
                             // every operation  => changing type
                             if (decideType(leftPointer->content, rightPointer->content, ID) != NULL) {
                                 size_t typeLen = strlen(decideType(leftPointer->content, rightPointer->content, ID));
-                                AST->content->type = malloc(sizeof(char)*(typeLen + 1));
+                                AST->content->type = malloc(sizeof(char)*(typeLen + 2));
                                 memcpy(AST->content->type, decideType(leftPointer->content, rightPointer->content, ID),typeLen);
                                 AST->content->type[typeLen] = '\0';
+                            } else {
+                                AST->content->type = malloc(sizeof(char)*2);
+                                AST->content->type = strcpy(AST->content->type, "x");
+                                AST->content->type[1] = '\0';
                             }
                             break;
                         default:
                             // error
+                            AST->content->type = malloc(sizeof(char)*2);
+                            AST->content->type = strcpy(AST->content->type, "x");
+                            AST->content->type[1] = '\0';
                             break;
                     }
                     //tmpContent->defined = 1;
+                    AST->content->var = malloc(sizeof(char)*2);
+                    AST->content->var = strcpy(AST->content->var, "x");
+                    AST->content->var[1] = '\0';
+                    AST->content->name = malloc(sizeof(char)*2);
+                    AST->content->name = strcpy(AST->content->name, "x");
+                    AST->content->name[1] = '\0';
                     AST->content->defined = 1;
+                    //AST->changed= NULL;
                     //newTree->content = tmpContent;
                     //free(tmpContent);
                     //tmpContent=NULL;
@@ -538,8 +587,21 @@ void makeTree(char* ID, tASTPointer* leftPointer, tASTPointer* rightPointer, tAS
                     //newTree=NULL;
                 //}
             } else {
-                //errorHandling(4);
-                AST = NULL;
+                errorHandling(4);
+                //AST = NULL;
+                AST->content->type = malloc(sizeof(char) * 2);
+                AST->content->type = strcpy(AST->content->type, "x");
+                AST->content->type[1] = '\0';
+                AST->content->name = malloc(sizeof(char) * 2);
+                AST->content->name = strcpy(AST->content->name, "x");
+                AST->content->name[1] = '\0';
+                AST->content->defined = 1;
+                AST->content->var = malloc(sizeof(char) * 2);
+                AST->content->var = strcpy(AST->content->var, "x");
+                AST->content->var[1] = '\0';
+                AST->ID = malloc(sizeof(char) * 2);
+                AST->ID = strcpy(AST->ID, "x");
+                AST->ID[1] = '\0';
             }
         //}
     }
@@ -567,8 +629,8 @@ void tStackASTPush(tStackASTPtr* stack, BSTNodePtr node, Token* token, char* ope
         stack->top++;
         //tASTPointer* tmpAST = malloc(sizeof(struct tAST));
         //tmpAST->content = malloc(sizeof(struct BSTNodeContent));
-        stack->body[stack->top] = malloc(sizeof(struct tAST));
-        stack->body[stack->top]->content = malloc(sizeof(struct tAST));
+        stack->body[stack->top] = malloc(sizeof(struct tAST)*30);
+        stack->body[stack->top]->content = malloc(sizeof(struct BSTNodeContent));
         if (leftSide == NULL || righSide == NULL) {
             makeLeaf(node, token, stack->body[stack->top]);
         } else {
@@ -607,20 +669,21 @@ tASTPointer* tStackASTPop(tStackASTPtr* stack) {
  * @param stack pointer to tStackAST structure is stack that will be disposed
  */
 void tStackASTDispose(tStackASTPtr* stack) {
-    if (stack == NULL) {
-        errorHandling(99);
-    } else {
+    if (stack != NULL) {
         while (stack->top > 0) {
-            free(stack->body[stack->top]->changed);
+            tASTDispose(stack->body[stack->top]->LeftPointer);
+            tASTDispose(stack->body[stack->top]->RightPointer);
+            //free(stack->body[stack->top]->changed);
             free(stack->body[stack->top]->ID);
-            free(stack->body[stack->top]->LeftPointer);
-            free(stack->body[stack->top]->RightPointer);
             free(stack->body[stack->top]->content->var);
             free(stack->body[stack->top]->content->name);
             free(stack->body[stack->top]->content->type);
             free(stack->body[stack->top]->content);
+            free(stack->body[stack->top]);
+            stack->body[stack->top] = NULL;
             stack->top--;
         }
-        free(stack->body);
+    } else {
+        errorHandling(99);
     }
 }
