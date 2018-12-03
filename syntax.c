@@ -119,9 +119,9 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *file = fopen("test.txt", "r");
+    FILE *file = fopen("../test.txt", "r");
 
-    dyn_length = 1024; // dyn poc delka listu pro tisk
+    dyn_length = 50240; // dyn poc delka listu pro tisk
     list_length = 0; // ukazatel na pozici v listu
 
     list_str = malloc(sizeof(char)*(dyn_length+1)); // tisk do bufferu misto do ext souboru
@@ -467,13 +467,16 @@ void doMagic() {
                         if (precedence == 1) {
                             simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
                         }
-                        destroy_token(&tmpToken);
+                        if (printing == 0) {
+                            destroy_token(&tmpToken);
+                        }
                     }
-                    if (printing == 1) {
+                    if (printing == 1 && checkAssignRule() == 0) {
                         // need to print this expression
 
 
-                generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
+                        generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
+                        destroy_token(&tmpToken);
 
                 //generateCodeParek(&tmpToken);
                 // todo: generate code
@@ -534,7 +537,7 @@ void doMagic() {
         }
 
         // NEJAKEJ PRINTING
-        if (printing == 1 ) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
+        if (printing == 1 && checkAssignRule() == 0) { // && predictiveStack->content[predictiveStack->top-1] != "expr"
             // need to print this expression
             generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker)); // BUG
             //generateCodeParek(&global_token);

@@ -47,4 +47,5 @@ int checkNumberOfArgs(TokenType inputFunction, BSTNodePtr* globalSymtable);
 int checkMainFunction();
 void pushArg(Token* token, BSTNodePtr* node);
 int checkArgsType(TokenType function);
+int checkAssignRule();
 #endif //IFJ_PREDICT_H

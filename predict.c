@@ -432,13 +432,26 @@ int checkNumberOfArgs(TokenType inputFunction, BSTNodePtr* globalSymtable) {
 }
 
 /**
- * Function checks wheter rule #3 was applied. If it was we are in main function
+ * Function checks whether rule #3 was applied. If it was we are in main function
  *
  * @return non-zero value is returned if rule #3 was applied otherwise zero value is returned
  */
 int checkMainFunction() {
     for (int i = 0; i < 50; i++) {
         if (rulesApplied[i] == 3 || rulesApplied[i] == 5) {
+            return 1;
+        }
+    }
+    return 0;
+}
+/**
+ * Function checks whether rule #16 was applied. If it was an expression follows.
+ *
+ * @return non-zero value is returned if rule #16 was applied otherwise zero value is returned
+ */
+int checkAssignRule() {
+    for (int i = 0; i < 50; i++) {
+        if (rulesApplied[i] == 16) {
             return 1;
         }
     }
