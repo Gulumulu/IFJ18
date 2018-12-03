@@ -20,6 +20,9 @@ tLabelStack* labelStack;         // stack for if labels
 tLabelStack* endLabelStack;      // stack for if end labels
 tLabelStack* tmpVariables;      // stack for tmp variables
 
+float str2fl(char* str);
+char* str2str(char * str);
+
 // helper vars
 int firstTime;
 

@@ -208,6 +208,8 @@ char* convert_string(char* str) { // vytiskni ascii variantu retezce
             help[a] = '2';
             a++;
         }
+        else if(c == '"')
+            continue;
         else {
             help[a] = c;
             a++;

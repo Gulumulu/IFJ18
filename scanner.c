@@ -286,12 +286,12 @@ int token_generate(FILE *file)
                     state = s_comma;
                 }
                 else if (c == '"') {                    // string starting with "
-                    /*error = append_token(&global_token, c);
+                    error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
                         state = ss_error;
                         break;
-                    };*/
+                    };
                     state = s_string;
                 }
                 else if (c == EOF) {
@@ -701,12 +701,12 @@ int token_generate(FILE *file)
                     state = ss_error;
                 }
                 else if (c == '"') { // empty string
-                    /*error = append_token(&global_token, c);
+                    error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
                         state = ss_error;
                         break;
-                    };*/
+                    };
                     global_token.type = state;
                     state = ss_final;
                 }
@@ -823,12 +823,12 @@ int token_generate(FILE *file)
                     state = s_string;
                 }
                 else if (c == '"') { // empty string
-                    /*error = append_token(&global_token, c);
+                    error = append_token(&global_token, c);
                     if (error) {
                         destroy_token(&global_token);
                         state = ss_error;
                         break;
-                    };*/
+                    };
                     global_token.type = state;
                     state = ss_final;
                 }
