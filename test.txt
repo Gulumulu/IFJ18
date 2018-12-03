@@ -1,2 +1,5 @@
-a=2*3.3+5*6-8*9.9/4
-print(a, "a is: ")
+# test for build-in function substr => incompatable types
+b=1
+a=substr("foobar", "zero", b)
+print("substring of foobar is: ")
+print(a)

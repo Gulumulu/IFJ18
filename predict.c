@@ -455,7 +455,7 @@ void pushArg(Token* token, BSTNodePtr* node) {
     if (token == NULL || node == NULL) {
         errorHandling(99);
     } else {
-        BSTNodeContentPtr* tmpID = BSTSearch(node, hash_id(token->content));
+        //BSTNodeContentPtr* tmpID = BSTSearch(node, hash_id(token->content));
         //tmpID = BSTSearch(node, hash_id(token->content));
         switch (token->type) {
             case s_string:
@@ -468,10 +468,10 @@ void pushArg(Token* token, BSTNodePtr* node) {
                 tStackPredictivePush(argsTracker, "float");
                 break;
             case s_id:
-                if (tmpID != NULL) {
-                    if (tmpID->var != NULL) {
+                if (BSTSearch(node, hash_id(token->content)) != NULL) {
+                    if (BSTSearch(node, hash_id(token->content))->var != NULL) {
                         // push type of variable
-                        tStackPredictivePush(argsTracker, tmpID->var);
+                        tStackPredictivePush(argsTracker, BSTSearch(node, hash_id(token->content))->var);
                     } else {
                         // push undecided if type is not known yet
                         tStackPredictivePush(argsTracker, "undecided");
@@ -481,7 +481,7 @@ void pushArg(Token* token, BSTNodePtr* node) {
                 break;
         }
         //free(tmpID);
-        tmpID=NULL;
+        //tmpID=NULL;
     }
 }
 
@@ -554,6 +554,7 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                     free(inputFunctionName);
                     inputFunctionName = NULL;
                     tStackPredictiveDispose(argsTracker);
+                    free(argsTracker);
                     inputFunction = s_comma;
                 }
                 if (inputFunction == kw_print) {
@@ -608,9 +609,13 @@ void simulatePredictive(Token token, tStackPredictive* predictiveStack, BSTNodeP
                 end = 3;
             }
 
+            free(predictiveStackTop);
             predictiveStackTop = NULL;
         } while (rule != 0 && end == 0);
-        free(predictiveStackTop);
+        if (predictiveStackTop != NULL) {
+            free(predictiveStackTop);
+            predictiveStackTop = NULL;
+        }
         /*if (strcmp(predictiveStack->content[predictiveStack->top-1],"<expr>") == 0 && printing != 1) {
             // expression will be calculated next
             precedence = 1;
