@@ -1,5 +1,2 @@
-# test for while-loop => missing key word end
-a=""
-while a < "aaa" do
-	print "a is ", a
-	a=a+"a"
+# test for build-in function length => length used in user defined function
+a = 1 + 3.3

@@ -19,6 +19,7 @@ typedef struct BSTNodeContent {
     char* type;         //
     char* name;         // the string of the identifier
     char* var;
+    int used; // uz bylo DEFVAR
 } BSTNodeContentPtr;
 
 typedef struct BSTNode {

@@ -184,6 +184,7 @@ void doMagic() {
             cnt->type = strcpy(cnt->type, "function");
             cnt->type[strlen("function")] = '\0';
             cnt->defined = 1;
+            cnt->used = 0;
             cnt->name = strcpy(cnt->name, global_token.content);
             cnt->name[strlen(global_token.content)] = '\0';
             cnt->func_params = 0;
@@ -218,6 +219,7 @@ void doMagic() {
             cnt->type = strcpy(cnt->type, "func_parameter");
             cnt->type[strlen("func_parameter")] = '\0';
             cnt->defined = 1;
+            cnt->used = 0;
             cnt->name = strcpy(cnt->name, global_token.content);
             cnt->name[strlen(global_token.content)] = '\0';
             cnt->func_params = 0;
@@ -229,6 +231,7 @@ void doMagic() {
             cnt->type = strcpy(cnt->type, "function");
             cnt->type[strlen("function")] = '\0';
             cnt->defined = 1;
+            cnt->used = 0;
             cnt->name = strcpy(cnt->name, global_token.content);
             cnt->name[strlen(global_token.content)] = '\0';
             cnt->func_params = 0;
@@ -249,6 +252,7 @@ void doMagic() {
                         cnt->type = strcpy(cnt->type, "function");
                         cnt->type[strlen("function")] = '\0';
                         cnt->defined = 1;
+                        cnt->used = 0;
                         cnt->name = strcpy(cnt->name, global_token.content);
                         cnt->name[strlen(global_token.content)] = '\0';
                         cnt->func_params = 0;
@@ -262,6 +266,7 @@ void doMagic() {
                         cnt->type = strcpy(cnt->type, "variable");
                         cnt->type[strlen("variable")] = '\0';
                         cnt->defined = 1;
+                        cnt->used = 0;
                         cnt->name = strcpy(cnt->name, global_token.content);
                         cnt->name[strlen(global_token.content)] = '\0';
                         cnt->func_params = 0;
@@ -276,6 +281,7 @@ void doMagic() {
                 cnt->type = strcpy(cnt->type, "variable");
                 cnt->type[strlen("variable")] = '\0';
                 cnt->defined = 1;
+                cnt->used = 0;
                 cnt->name = strcpy(cnt->name, global_token.content);
                 cnt->name[strlen(global_token.content)] = '\0';
                 cnt->func_params = 0;
@@ -289,6 +295,7 @@ void doMagic() {
                 cnt->type = strcpy(cnt->type, "function");
                 cnt->type[strlen("function")] = '\0';
                 cnt->defined = 1;
+                cnt->used = 0;
                 cnt->name = strcpy(cnt->name, global_token.content);
                 cnt->name[strlen(global_token.content)] = '\0';
                 cnt->func_params = 0;
@@ -302,6 +309,7 @@ void doMagic() {
                 cnt->type = strcpy(cnt->type, "variable");
                 cnt->type[strlen("variable")] = '\0';
                 cnt->defined = 1;
+                cnt->used = 0;
                 cnt->name = strcpy(cnt->name, global_token.content);
                 cnt->name[strlen(global_token.content)] = '\0';
                 cnt->func_params = 0;
@@ -412,6 +420,7 @@ void doMagic() {
     //char *currentFunction = "";
     tFunctionTracker* functionTracker = malloc(sizeof(struct tFT) * 12);            // helper stack to keep track of the function name we are currently in
     tFunctionTrackerInit(functionTracker);
+    Token leftSideToken;
 
     while (global_token.type != ss_eof && ERROR_TYPE == 0) {
         // call lexical analysis
@@ -423,6 +432,9 @@ void doMagic() {
             if (global_token.type == s_id) {
                 // if current token is id => need to call next token to decide whether current token is variable or function id
                 tmpToken = global_token;
+                if (strcmp(predictiveStack->content[predictiveStack->top-1], "<st-list>") == 0) {
+                    leftSideToken = global_token;
+                }
                 token_generate(file);
                 tmpToken.type = decideID(global_token);
                 // simulate predictive SA for previous token
@@ -447,10 +459,21 @@ void doMagic() {
                         generateWhileHead(stackAST->body[stackAST->top],functionTracker);
                     }
                     else { // assigning
-                        generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                        /*generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
                         char *frame = get_frame(functionTracker);
                         generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@%s\n", frame, tmpToken.content));
                         generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@__assign%d\n", frame, tmpToken.content, frame,assign));
+                        assign++;*/
+                        generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                        char *frame = get_frame(functionTracker);
+
+                        if(BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)) == NULL || BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used == 0) {
+                            generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%s\n", frame, leftSideToken.content));
+                            //BSTInsert(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)).used = 1);
+                            BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used = 1;
+                        }
+
+                        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, leftSideToken.content, frame,assign));
                         assign++;
                     }
 
@@ -471,6 +494,9 @@ void doMagic() {
                     if (global_token.type == s_id) {
                         // if current token is id => need to call next token to decide whether current token is variable or function id
                         tmpToken = global_token;
+                        if (strcmp(predictiveStack->content[predictiveStack->top-1], "<st-list>") == 0 || strcmp(predictiveStack->content[predictiveStack->top-1], "<function>") == 0) {
+                            leftSideToken = global_token;
+                        }
                         token_generate(file);
                         tmpToken.type = decideID(global_token);
                         if (tmpToken.type == s_func_id && strcmp(predictiveStack->content[predictiveStack->top-1], "<assign>") != 0) {
@@ -527,10 +553,21 @@ void doMagic() {
                             generateWhileHead(stackAST->body[stackAST->top],functionTracker);
                         }
                         else {
-                            generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                            /*generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
                             char *frame = get_frame(functionTracker);
                             generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@%s\n", frame, tmpToken.content));
                             generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@__assign%d\n", frame, tmpToken.content, frame,assign));
+                            assign++;*/
+                            generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                            char *frame = get_frame(functionTracker);
+
+                            if(BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)) == NULL || BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used == 0) {
+                                generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%s\n", frame, leftSideToken.content));
+                                //BSTInsert(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)).used = 1);
+                                BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used = 1;
+                            }
+
+                            generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, leftSideToken.content, frame,assign));
                             assign++;
                         }
                         // clear tree after generating
