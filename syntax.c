@@ -98,27 +98,17 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    /*if (feof(stdin))
+    if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
-    if (fp == 0)
-        printf("...something went wrong opening file...\n");
-
     int read;
     while ((read = fread(content, 1, BUF_SIZE, stdin))) {
-        printf("Read %d bytes", read);
         fwrite(content, read, 1, fp);
-        printf("Writing %d\n", read);
     }
-    if (ferror(stdin))
-        printf("There was an error reading from file");
+    fclose(fp);
 
-    printf("Done writing\n");
-
-    fclose(fp);*/
-
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("test.txt", "r");
 
     dyn_length = 50240; // dyn poc delka listu pro tisk
     list_length = 0; // ukazatel na pozici v listu
