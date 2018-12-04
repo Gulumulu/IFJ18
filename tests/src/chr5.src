@@ -1,4 +1,6 @@
 # test for build-in function chr() => concatenate string and chr()
+b=48
 print ("ASCII value of ", b, " and foobar is:")
-b=chr(18)
+b=chr(48)
+b=b+"foobar"
 print b

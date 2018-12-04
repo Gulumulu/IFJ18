@@ -1,6 +1,6 @@
 # test for while-loop
 a=""
 while a !="aaa" do
-	print "a is ", a
+	print "a is ", a, ";"
 	a=a+"a"
 end
