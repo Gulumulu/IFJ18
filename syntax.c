@@ -118,7 +118,7 @@ void doMagic() {
 
     fclose(fp);*/
 
-    FILE *file = fopen("../test.txt", "r");
+    FILE *file = fopen("test.txt", "r");
 
     dyn_length = 50240; // dyn poc delka listu pro tisk
     list_length = 0; // ukazatel na pozici v listu
