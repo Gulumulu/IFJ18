@@ -12,7 +12,7 @@
 $recursive = 1;                     # recursion desired
 $path = "tests";                    # path to tests
 $parseFile = "compiler";            # parse
-$intFile = "icl18int";              # interpret
+$intFile = "ic18int";              # interpret
 $src = array();                     # array of .src files
 $in = array();                      # array of .in files
 $out = array();                     # array of .out files
@@ -38,13 +38,13 @@ loadTests($path);
 $body = testParse();
 
 # put output files from parse through interpret
-#testInterpret();
+testInterpret();
 
 # end editing html
 saveHTML();
 
 # delete .tmp files
-deleteTmpFiles();
+#deleteTmpFiles();
 
 /**
  * Function parses arguments, check if they are in right amount and if they meet required form.
@@ -184,7 +184,7 @@ function testParse()
         }
 
         # check return code value
-        if ($returnCode >= 0) {
+        if ($returnCode > 0) {
             $tr = $html->createElement("tr");
             $td = $html->createElement("td", $testName[count($testName)-1]);
             $tr->appendChild($td);
@@ -273,7 +273,7 @@ function testInterpret()
         }
 
         # run test
-        exec("$intFile $source < $inFile > $sourceName[0].int 2> /dev/null",$output, $returnCode);
+        exec("./$intFile $source < $inFile > $sourceName[0].int 2> /dev/null",$output, $returnCode);
 
         # get requested return code from .rc file
         $rcFile = getRC($testName[count($testName)-1]);
