@@ -1,0 +1,5 @@
+def nieco()
+	a = 1.1E+11
+	b = 2
+	c = a + b
+end

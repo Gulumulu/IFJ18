@@ -1,5 +1,1 @@
-def krat(a)
-	a=2*a
-	a=print("ahoj")
-	print "ahoj"
-end
+print "Zadejte cislo"
