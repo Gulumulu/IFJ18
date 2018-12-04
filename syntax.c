@@ -98,7 +98,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -107,7 +107,7 @@ void doMagic() {
         fwrite(content, read, 1, fp);
     }
     fclose(fp);
-
+*/
     FILE *file = fopen("test.txt", "r");
 
     dyn_length = 50240; // dyn poc delka listu pro tisk
@@ -449,6 +449,7 @@ void doMagic() {
                     else { // assigning
                         generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
                         char *frame = get_frame(functionTracker);
+                        generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@%s\n", frame, tmpToken.content));
                         generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign));
                         assign++;
                     }
@@ -525,9 +526,13 @@ void doMagic() {
                         else if(whileStatement == 1 && global_token.type == kw_do) {
                             generateWhileHead(stackAST->body[stackAST->top],functionTracker);
                         }
-                        else
-                            generateExpression(stackAST->body[stackAST->top],functionTracker,list_str,0); // vygeneruj do seznamu instrukce vyrazu
-
+                        else {
+                            generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                            char *frame = get_frame(functionTracker);
+                            generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@%s\n", frame, tmpToken.content));
+                            generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, tmpToken.content, frame,assign));
+                            assign++;
+                        }
                         // clear tree after generating
                         //AST = malloc(sizeof(struct tAST) * 2);
                     }
