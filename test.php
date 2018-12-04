@@ -38,7 +38,7 @@ loadTests($path);
 $body = testParse();
 
 # put output files from parse through interpret
-#testInterpret();
+testInterpret();
 
 # end editing html
 saveHTML();

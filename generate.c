@@ -605,7 +605,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
     }
     else if(id == 0) { // funkce ord(s,i)
 
-//        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro, counter));
+        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro, counter));
 
         char *str = arguments_parse(Root->content->name);
         long l = strlen(str);
@@ -672,7 +672,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter)); // bool true pokud je mensi jak 256
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter));
 
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
+                //generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
                 generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s %s@%s\n",frame,macro,counter,convert_string(s_help), frame, i_help));
                 //free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter));
@@ -698,7 +698,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                     generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d nil@nil\n",frame,macro,counter));
                 }
                 else { // index je v rozsahu
-                    generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
+                    //generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
                     generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d %s@%s int@%s\n",frame,macro,counter,frame, convert_string(s_help),i_help));
                     //free(asciistr);
                 }
@@ -721,7 +721,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter)); // bool true pokud je mensi jak 256
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter));
 
-                generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
+                //generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
                 generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d %s@%s %s@%s\n",frame,macro,counter,frame,convert_string(s_help), frame, i_help));
                 //free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter));
