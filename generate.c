@@ -15,7 +15,7 @@
 //bool issingle = false; // urceni jestli je single node (strom vel. 1)
 char* left_supply; // zastupny symbol za levy uzel Root->LeftPointer->content->name
 char* right_supply; // zastupny symbol za pravy uzel Root->RightPointer->content->name
-char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs"}; // seznam podporovanych funkci
+char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs","substr"}; // seznam podporovanych funkci
 bool left = false; // false = neni promenna
 bool right = false; // false = neni promenna
 bool left_func = false; // Root->Left je funkce
@@ -547,7 +547,7 @@ char* get_frame(tFunctionTracker* functionTracker) { // najdi aktualni ramec
     }
 }
 
-void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // napoveda: char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs"};
+void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // napoveda: char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs","substr"};
 
     char* macro;
 
@@ -606,7 +606,6 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
         //free(parsed);
     }
-
     else if(id == 0) { // funkce ord(s,i)
 
         generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro, counter));
@@ -809,6 +808,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
         for(int a = 0; a < l+1; a++) { // projizdim znak po znaku retezec s argumenty
 
+            // BUG: mozna zbytecna podminka na ukoncovaci znak
             if((!second_time && (str[a] == ',' || str[a] == '\0')) || (second_time && parse_text && (str[a] == ',' || str[a] == '\0'))) { // oddelovac nebo konec, kdyz uz byla nalezena druha '"'
 
                 strcpy(operand,s); // vytvoren retezec operand
@@ -865,6 +865,77 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         parse_text = false; // kdyby nahodou
 
     }
+    else if(id == 7) { // funkce substr(s,i,n)
+        generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame, counter));
+
+        char *str = arguments_parse(Root->content->name);
+        int l = strlen(str);
+        char s[l+1];
+        char i[l+1];
+        char n[l+1];
+        for(int a = 0; a < l+1; a++) {
+            s[a] = '\0';
+            i[a] = '\0';
+            n[a] = '\0';
+        }
+        bool pair = false; // zatim jeste nebyla nalezena parova '"'
+
+        bool second = false;
+        bool third = false;
+        int c = 0; // counter novych poli, kam se ukladaji jednotlive argumenty. 0..n, 0..n, 0..n
+
+        for(int a = 0; a < l; a++) { // projdi po znacich retezec s argumenty
+
+            if(parse_text && str[a] == '"') { // byla nalezena parova uvozovka, moznost nacitat, dalsi retezec
+                pair = true;
+                continue;
+            }
+            if((!pair && !parse_text && str[a] == ',' && !second) || (pair && parse_text && parse_text && str[a] == ',')) {
+                second = true;
+                pair = false;
+                c = 0;
+                continue;
+            }
+            if((!pair && str[a] == ',' && second && !third) || (pair && parse_text && str[a] == ',' && second && !third)) {
+                third = true;
+                c = 0;
+                continue;
+            }
+            if(second && !third) {
+                i[c] = str[a];
+                c++;
+            }
+            if(third) {
+                n[c] = str[a];
+                c++;
+            }
+            if(!second && !third) {
+                if(str[a] == '"') {
+                    parse_text = true;
+                    continue;
+                }
+                s[c] = str[a];
+                c++;
+            }
+        }
+        char* s_help = malloc(sizeof(char) * (l + 1));
+        char* i_help = malloc(sizeof(char) * (l + 1));
+        char* n_help = malloc(sizeof(char) * (l + 1));
+        strncpy(i_help,i,10);
+        strncpy(s_help,s,10);
+        strncpy(n_help,n,10);
+        char* i_ptr;
+        long i_ret = strtol(i_help,&i_ptr,10);
+        char* n_ptr;
+        long n_ret = strtol(n_help,&n_ptr,10);
+
+        
+
+        parse_text = false;
+        free(s_help);
+        free(i_help);
+        free(n_help);
+    }
 
     if(!issingle) {
         // vloz do hodnot vysledky, se kterymi se dale bude pracovat
@@ -877,7 +948,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
 
         if(issingle) { // operace, ktere probihaji nad stromem se single node
 
-            for(int i = 0; i < 7; i++) {
+            for(int i = 0; i < 8; i++) {
                 if (!strcmp(Root->content->type, funkce[i])) {
                     call_function(i, frame, Root, list_str); // zavolej funkci call_function jestli je to nektera z funkci
                     counter++; // nezapomen na counter
@@ -891,7 +962,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
             }
             else { // zbyva prirazeni konstanty
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter));
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d %s@%s\n",frame,counter,Root->content->type,Root->content->name));
+                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%%%d %s@%s\n",frame,counter,Root->content->type,convert_string(Root->content->name))); // BUG: bacha kdyby to hazelo kraviny, oddelej convert()
             }
             counter++; // operace probehla
             return ; // vyskoc ven
@@ -904,7 +975,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
             int left_func_id; // id funkce v seznamu
             int right_func_id; // id funkce v seznamu
 
-            for(int i = 0; i < 7; i++) {
+            for(int i = 0; i < 8; i++) {
                 if(!strcmp(Root->LeftPointer->content->type,funkce[i])) {
                     left_func = true; // leva je funkce
                     left_func_id = i;
