@@ -506,47 +506,47 @@ char* convert_string(char* str) { // vytiskni ascii variantu retezce
         sprintf(ret,"%d",s);
         if(s <= 32) {
             help[a] = '\\';
-            a++;
+            ++a;
             help[a] ='0';
-            a++;
-            if(a < 10) {
+            ++a;
+            if(s < 10) {
                 help[a] = '0';
-                a++;
+                ++a;
                 help[a] = ret[0];
-                a++;
+                ++a;
             }
             else {
                 help[a] = ret[0];
-                a++;
+                ++a;
                 help[a] = ret[1];
-                a++;
+                ++a;
             }
         }
         else if(s == 35) {
             help[a] = '\\';
-            a++;
+            ++a;
             help[a] = '0';
-            a++;
+            ++a;
             help[a] = '3';
-            a++;
+            ++a;
             help[a] = '5';
-            a++;
+            ++a;
         }
         else if(s == 92) {
             help[a] = '\\';
-            a++;
+            ++a;
             help[a] = '0';
-            a++;
+            ++a;
             help[a] = '9';
-            a++;
+            ++a;
             help[a] = '2';
-            a++;
+            ++a;
         }
         else if(c == '"')
             continue;
         else {
             help[a] = c;
-            a++;
+            ++a;
         }
     }
     strcpy(asciistr,help);
@@ -1135,7 +1135,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
     if(!strcmp(operation,"*") || !strcmp(operation,"-")) { // pro MUL a SUB oba musi byt float/int
 
         if(!left_operator && !right_operator) { // L R
-            if ((left && right) || (left_func && right_func)) { // L R pro funkce a promenne
+            if ((left && right) || (left_func && right_func) || (left && !right) || (!left && right)) { // L R pro funkce a promenne
                 generate_to_list2(sprintf(list_str + list_length, "JUMPIFNEQ $label_left_not_int$%d %s@$type_%s$%d string@int\n", counter,frame, left_supply, counter)); // skoc pokud je levy jiny nez int
                 generate_to_list2(sprintf(list_str + list_length, "JUMPIFEQ $label_same_types$%d %s@$type_%s$%d string@int\n", counter, frame, right_supply, counter)); // levy je int, otestuj pravy na int
                 generate_to_list2(sprintf(list_str + list_length, "JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@float\n",counter, frame, right_supply, counter)); // pokud pravy neni ani float, chyba
@@ -1210,7 +1210,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
     else if(!strcmp(operation,"+")) { // pro ADD oba musi byt float/int || string
 
         if(!left_operator && !right_operator) { // L R
-            if((left && right) || (left_func && right_func) || (left_str && right_str)) { // L R promenne a funkce a retezce
+            if((left && right) || (left_func && right_func) || (left_str && right_str) || (left && !right) || (!left && right)) { // L R promenne a funkce a retezce
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_left_not_string$%d %s@$type_%s$%d string@string\n",counter,frame, left_supply, counter)); // skoc pokud neni levej string
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@string\n",counter,frame, right_supply, counter)); // proved concat jestli je pravej taky string
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_concat_op$%d\n",counter)); // skoc na concat
@@ -1320,7 +1320,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
     else if(!strcmp(operation,"/")) { // IDIV a DIV: musi byt oba float a pravej nesmi byt nula
 
         if(!left_operator && !right_operator) { // L R
-            if((left && right) || (left_func && right_func)) { // L R promenne a funkce
+            if((left && right) || (left_func && right_func) || (left && !right) || (!left && right)) { // L R promenne a funkce
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s$%d int@0\n",counter,frame, right_supply, counter)); // porovnani s int 0
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_error_div$%d %s@$temp_%s$%d float@0x0p+0\n",counter,frame, right_supply, counter)); // porovnani s float 0 // BUG
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@float\n",counter,frame, left_supply, counter)); // skoc pokud je levy jiny nez float
@@ -1414,7 +1414,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
     }
     else { // JEDEN ZE SESTI COMP OPERATORU
         if(!left_operator && !right_operator) { // L R
-            if((left && right) || (left_func && right_func)) { // L R promenne a funkce
+            if((left && right) || (left_func && right_func) || (left && !right) || (!left && right)) { // L R promenne a funkce
                 if(strcmp(Root->ID,"==") && strcmp(Root->ID,"!=")) { // nejsou to tyhle dva spesl operatory
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_left_not_string$%d %s@$type_%s$%d string@string\n",counter,frame, left_supply, counter)); // skoc pokud neni levej string
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d string@string\n",counter,frame, right_supply, counter)); // skoc na error jestli neni pravej string
