@@ -1,4 +1,3 @@
-# test for buil-in function length => expression with length result
 print("length of string plus 2 is: ")
 a=length("string")+2
 print(a)

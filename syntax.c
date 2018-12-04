@@ -123,7 +123,7 @@ void doMagic() {
 
 
     generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"));
-    generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
+    //generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
 
 
     BSTNodeContentPtr* tmp;
