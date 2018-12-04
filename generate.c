@@ -560,7 +560,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@type_%s_%d\n", frame, Root->content->type, counter));
     }
     else {
-        macro = "%"; // makro pro nazev promenne, pokud je single node (__%d)
+        macro = "__"; // makro pro nazev promenne, pokud je single node (__%d)
     }
 
     if(id == 3) { // funkce length(string)
