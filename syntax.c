@@ -98,7 +98,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    if (feof(stdin))
+    /*if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -106,7 +106,7 @@ void doMagic() {
     while ((read = fread(content, 1, BUF_SIZE, stdin))) {
         fwrite(content, read, 1, fp);
     }
-    fclose(fp);
+    fclose(fp);*/
 
     FILE *file = fopen("test.txt", "r");
 
@@ -494,7 +494,7 @@ void doMagic() {
                     if (global_token.type == s_id) {
                         // if current token is id => need to call next token to decide whether current token is variable or function id
                         tmpToken = global_token;
-                        if (strcmp(predictiveStack->content[predictiveStack->top-1], "<st-list>") == 0 || strcmp(predictiveStack->content[predictiveStack->top-1], "<function>") == 0) {
+                        if (strcmp(predictiveStack->content[predictiveStack->top-1], "<st-list>") == 0 || strcmp(predictiveStack->content[predictiveStack->top-1], "<start>") == 0 || strcmp(predictiveStack->content[predictiveStack->top-1], "<function>") == 0) {
                             leftSideToken = global_token;
                         }
                         token_generate(file);

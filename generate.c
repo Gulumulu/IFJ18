@@ -23,6 +23,7 @@ bool left_operator = false; // true = vlevo je operator
 bool right_operator = false; // true = vpravo je operator
 bool parse_text = false; // jestli je parsovany vyraz "xx"
 static int counter = 1; // globalni pocitadlo v uzlech. zaciname na %1
+static int macro_counter = 1;
 
 /* to co bylo v if */
 
@@ -448,6 +449,7 @@ char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string
         help[j] = '\0';
     }
     bool startReading = false;
+    bool readWithout = false;
 
     for(int i = 0; i < l; i++) {
         if(str[i] == '(') {
@@ -455,7 +457,11 @@ char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string
             continue;
         }
 
-        if(startReading) {
+        if(str[i] == '"' && !startReading) {
+            readWithout = true;
+        }
+
+        if(startReading || readWithout) {
 
             if(str[i] == ')') {
                 strcpy(buff,help);
@@ -466,8 +472,9 @@ char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string
             continue;
         }
     }
+        strcpy(buff,help);
+        return buff;
 
-    return "";
 }
 
 char* convert_string(char* str) { // vytiskni ascii variantu retezce
@@ -545,18 +552,21 @@ char* get_frame(tFunctionTracker* functionTracker) { // najdi aktualni ramec
 
 void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // napoveda: char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs","substr"};
 
-    char* macro;
+    char* macro = malloc(20);
 
-    if (!issingle) {
-        macro = "func"; // makro pro nazev promenne (%s%d)
+    if (!issingle) { // neni single node
+        sprintf(macro,"func%d$",macro_counter);
+        macro_counter++;
+        // macro = "func"; // makro pro nazev promenne (%s%d)
 
         // vygeneruj zakl promenne, pracuje se s nimi pri vypsani operace
-        //generate_to_list2(sprintf(list_str + list_length, "xxDEFVAR %s@func%d\n", frame, counter));
+        //generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@func%d\n", frame, counter));
         generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@$temp_%s$%d\n", frame, Root->content->type, counter));
         generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@$type_%s$%d\n", frame, Root->content->type, counter));
     }
     else {
         macro = "%"; // makro pro nazev promenne, pokud je single node (%%%d)
+        macro_counter++;
     }
 
     if(id == 3) { // funkce length(string)
@@ -645,12 +655,16 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
         if(parse_text) { // zpracovavali jsme primo retezec
 
+            printf("lorem ipsum.\n");
+            printf("dfdfd; %s\n",i_ptr);
             if(strlen(i_ptr) == 0 && i_ret != 0) { // zadal tam platne cislo za i
+                printf("lorem ipsum.\n");
                 if(i_ret > (long)(strlen(s_help)-1)) { // i je mimo rozsah
                     generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d nil@nil\n",frame,macro,counter));
+                    generate_to_list2(sprintf(list_str+list_length,"EXIT int@58\n"));
                 }
                 else { // index je v rozsahu
-                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s int@%s\n",frame,macro,counter,convert_string(s_help),i_help));
+                    generate_to_list2(sprintf(list_str+list_length,"STRI2INT %s@%s%d string@%s int@%s\n",frame,macro,counter,convert_string(s_help),i_help));
                     //free(asciistr);
                 }
             }
@@ -669,16 +683,16 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@bool%d\n",frame,counter)); // novy bool pro porovnani
                 generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d int@-1 %s@$i%d\n",frame,counter,frame,counter)); // jestli vetsi nez -1 tak true do bool
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter)); // pokud bool false skoc do error
-                generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter)); // bool true pokud je mensi jak 256
+                generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter)); // bool true pokud je mensi nez retezec
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter));
 
                 //generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
-                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d string@%s %s@%s\n",frame,macro,counter,convert_string(s_help), frame, i_help));
+                generate_to_list2(sprintf(list_str+list_length,"STRI2INT %s@%s%d string@%s %s@%s\n",frame,macro,counter,convert_string(s_help), frame, i_help));
                 //free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter));
 
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter));
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d nil@nil\n",frame,macro,counter));
+                generate_to_list2(sprintf(list_str+list_length,"EXIT int@58\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter));
             }
 
@@ -699,7 +713,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 }
                 else { // index je v rozsahu
                     //generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
-                    generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d %s@%s int@%s\n",frame,macro,counter,frame, convert_string(s_help),i_help));
+                    generate_to_list2(sprintf(list_str+list_length,"STRI2INT %s@%s%d %s@%s int@%s\n",frame,macro,counter,frame, convert_string(s_help),i_help));
                     //free(asciistr);
                 }
             }
@@ -722,12 +736,12 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter));
 
                 //generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
-                generate_to_list2(sprintf(list_str+list_length,"GETCHAR %s@%s%d %s@%s %s@%s\n",frame,macro,counter,frame,convert_string(s_help), frame, i_help));
+                generate_to_list2(sprintf(list_str+list_length,"STRI2INT %s@%s%d %s@%s %s@%s\n",frame,macro,counter,frame,convert_string(s_help), frame, i_help));
                 //free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter));
 
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter));
-                generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d nil@nil\n",frame,macro,counter));
+                generate_to_list2(sprintf(list_str+list_length,"EXIT int@58\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter));
             }
         }
@@ -939,6 +953,9 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         generate_to_list2(sprintf(list_str + list_length, "MOVE %s@$temp_%s$%d %s@%s%d\n", frame, Root->content->type, counter, frame, macro, counter));
         generate_to_list2(sprintf(list_str + list_length, "TYPE %s@$type_%s$%d %s@%s%d\n", frame, Root->content->type, counter, frame, macro, counter));
     }
+
+    //free(macro);
+
 }
 
 void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, char* list_str) { // typova kontrola obsahu jednoho root uzlu (L + R)
@@ -1031,14 +1048,18 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
         generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter, frame, left_supply));
     }
     else { // je to konstanta
-        left_supply = Root->LeftPointer->content->type;
+        left_supply = malloc(20);
+        strcpy(left_supply,Root->LeftPointer->content->type); // bug
+        left_supply[strlen(left_supply)] = 'L';
+
         generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, left_supply, counter));
         generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, left_supply, counter));
-        if(!strcmp(Root->LeftPointer->content->type,"float")) {
+
+        if(!strcmp(Root->LeftPointer->content->type,"float")) { // jen pro float, nazvy %a
             generate_to_list2(sprintf(list_str + list_length, "TYPE %s@$type_%s$%d %s@%a\n", frame, left_supply, counter,Root->LeftPointer->content->type, str2fl(Root->LeftPointer->content->name)));
             generate_to_list2(sprintf(list_str + list_length, "MOVE %s@$temp_%s$%d %s@%a\n", frame, left_supply, counter,Root->LeftPointer->content->type, str2fl(Root->LeftPointer->content->name)));
         }
-        else {
+        else { // int a string, eg:
             generate_to_list2(sprintf(list_str + list_length, "TYPE %s@$type_%s$%d %s@%s\n", frame, left_supply, counter,Root->LeftPointer->content->type, Root->LeftPointer->content->name));
             generate_to_list2(sprintf(list_str + list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, left_supply, counter,Root->LeftPointer->content->type, Root->LeftPointer->content->name));
         }
@@ -1078,7 +1099,9 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
         generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d %s@%s\n", frame, right_supply, counter, frame, right_supply));
     }
     else { // je to konstanta
-        right_supply = Root->RightPointer->content->type;
+        right_supply = malloc(20);
+        strcpy(right_supply,Root->RightPointer->content->type); // bug
+        right_supply[strlen(right_supply)] = 'R';
         generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
         generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
         if(!strcmp(Root->RightPointer->content->type,"float")) {
