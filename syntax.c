@@ -106,8 +106,8 @@ void doMagic() {
     while ((read = fread(content, 1, BUF_SIZE, stdin))) {
         fwrite(content, read, 1, fp);
     }
-    fclose(fp);
-*/
+    fclose(fp);*/
+
     FILE *file = fopen("test.txt", "r");
 
     dyn_length = 50240; // dyn poc delka listu pro tisk
