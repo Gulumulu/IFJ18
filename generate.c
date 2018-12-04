@@ -551,9 +551,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
 
     char* macro;
 
-    if (!issingle) {
+    if (!issingle) { // neni single node strom
         macro = "func"; // makro pro nazev promenne (%s%d)
-
         // vygeneruj zakl promenne, pracuje se s nimi pri vypsani operace
         generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@func%d\n", frame, counter));
         generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@temp_%s_%d\n", frame, Root->content->type, counter));
@@ -561,6 +560,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
     }
     else {
         macro = "__"; // makro pro nazev promenne, pokud je single node (__%d)
+        generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@__%d\n", frame, counter));
     }
 
     if(id == 3) { // funkce length(string)
