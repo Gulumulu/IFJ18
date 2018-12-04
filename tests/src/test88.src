@@ -1,0 +1,16 @@
+def moje_funkce(a)
+reeee=10
+abc(reeee)
+end
+
+def abc(x)
+if x  then
+5
+else
+6
+end
+end
+
+moje_funkce "5"
+$
+5+5

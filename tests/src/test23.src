@@ -1,0 +1,4 @@
+def nieco (a,b)
+	a=1
+	b=3+2
+end
