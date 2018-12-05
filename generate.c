@@ -478,7 +478,7 @@ char* arguments_parse(char* str) { // vypreparuje pro funkci ordstring s argumen
     for(int j = 0; j < l+1; j++) {
         buff[j] = '\0';
         help[j] = '\0';
-    }  
+    }
     bool startReading = false;
     for(int i = 0; i < l; i++) {
 
@@ -486,7 +486,7 @@ char* arguments_parse(char* str) { // vypreparuje pro funkci ordstring s argumen
 				startReading = true;
 				i+=2;
 				continue;
-		}				
+		}
 		if(startReading) {
         if(str[i] == '(') {
             continue;
@@ -700,7 +700,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                     //free(asciistr);
                 }
             }
-         
+
             else if(strlen(i_ptr) > 0) { // zadal tam promennou misto cisla i
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$i_type%d\n",frame,counter));
                 generate_to_list2(sprintf(list_str+list_length,"TYPE %s@$i_type%d %s@%s\n",frame,counter,frame,i_help));
@@ -725,7 +725,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"EXIT int@58\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter));
             }
-          
+
         }
         else { // nepracovali jsme s primo textem, ale s promennou
 
@@ -772,7 +772,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter));
 			}
         }
-        
+
         parse_text = false; // reset parse_text zpatky
         free(s_help);
         free(i_help);
@@ -1874,21 +1874,21 @@ void generateCode(char* stackTop, int rules[], char* list_str, tFunctionTracker*
     //for(int i = 0; i < 50; i++) {
 		//if(rules[i] != 0)
 			//generate_to_list2(sprintf(list_str + list_length, "(DEBUG: %i)\n", rules[i]));
-		
+
 	//}
 	if(rules[0] == 1 && rules[1] == 2 && rules[2] == 4 && rules[3] == 6 && rules[4] == 7 && !strcmp(stackTop,"EOL")) { // generuj definici funkce
 		generate_to_list2(sprintf(list_str + list_length, "LABEL %s\n",tFunctionTrackerGetTop(functionTracker)));
 		generate_to_list2(sprintf(list_str + list_length, "PUSHFRAME\n"));
-		// tady chci pracovat s tim, co jsem si pushnul do LF pomoci pushframe pri volani funkce treba z generateexpression. K hodnotam 
+		// tady chci pracovat s tim, co jsem si pushnul do LF pomoci pushframe pri volani funkce treba z generateexpression. K hodnotam
 		// tady pristupuju pomoci LF
-		
-	
+
+
 	}
 		if(rules[0] == 12 && rules[1] == 5 && !strcmp(stackTop,"EOL")) { // generuj konec funkce POPFRAME
 		generate_to_list2(sprintf(list_str + list_length, "POPFRAME\n"));
-		// tady chci pracovat s tim, co jsem si pushnul do LF pomoci pushframe pri volani funkce treba z generateexpression. K hodnotam 
+		// tady chci pracovat s tim, co jsem si pushnul do LF pomoci pushframe pri volani funkce treba z generateexpression. K hodnotam
 		// tady pristupuju pomoci LF, na konci funkce pak dam POPFRAME
-		
-	
+
+
 	}
 }

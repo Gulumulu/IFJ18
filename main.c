@@ -28,5 +28,15 @@ int main() {
     fclose(file);*/
     doMagic();
 
+    /*void *content = malloc(1024);
+    int read;
+    while ((read = fread(content, 1, 1024, stdin))) {
+        printf("%s\n", (char*)content);
+    }
+    rewind(stdin);
+    content = malloc(1024);
+    while ((read = fread(content, 1, 1024, stdin))) {
+        printf("%s\n", (char*)content);
+    }*/
     return showErrorMessage(ERROR_TYPE);
 }

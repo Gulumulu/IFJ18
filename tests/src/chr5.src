@@ -2,5 +2,5 @@
 b=48
 print ("ASCII value of ", b, " and foobar is:")
 b=chr(48)
-b=b+"foobar"
+b= b+"foobar"
 print b
