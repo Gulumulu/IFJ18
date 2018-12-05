@@ -98,7 +98,7 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    /*if (feof(stdin))
+    if (feof(stdin))
         printf("file reached eof\n");
     void *content = malloc(BUF_SIZE);
     FILE *fp = fopen("test.txt", "w");
@@ -106,7 +106,7 @@ void doMagic() {
     while ((read = fread(content, 1, BUF_SIZE, stdin))) {
         fwrite(content, read, 1, fp);
     }
-    fclose(fp);*/
+    fclose(fp);
 
     FILE *file = fopen("test.txt", "r");
 
@@ -123,7 +123,7 @@ void doMagic() {
 
 
     generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"));
-    //generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
+    generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
 
 
     BSTNodeContentPtr* tmp;

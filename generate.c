@@ -8,7 +8,7 @@
 #include "predict.h"
 
 //asciistr; // je tu kvuli funkci convert_string, aby se dalo dat free() kdekoliv kde je funkce zavolana
-//bool issingle = false; // urceni jestli je single node (strom vel. 1)
+bool issingle = false; // urceni jestli je single node (strom vel. 1)
 char* left_supply; // zastupny symbol za levy uzel Root->LeftPointer->content->name
 char* right_supply; // zastupny symbol za pravy uzel Root->RightPointer->content->name
 char* funkce[] = {"ord","chr","print","length","inputi","inputf","inputs","substr"}; // seznam podporovanych funkci
@@ -144,8 +144,12 @@ void generateIfHead(tASTPointer *AST, tFunctionTracker* functionTracker) {
             tmpVariableNumber++;
             char* frame = get_frame(functionTracker);
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"AND TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d %s@comp_r$%i\n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s_comp_bool_eq$%d\n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s_comp_bool_ltgt$%d\n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"EQ TF@%s_comp_bool_eq$%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"LT TF@%s_comp_bool_ltgt$%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d TF@%s_comp_bool_eq$%d TF@%s_comp_bool_ltgt$%d\n", myTmpVariable, tmpVariableNumber, myTmpVariable, tmpVariableNumber,myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d bool@false\n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber)); // BUG: mel to prehozene, zmenil jsem na false
             tLabelStackPush(labelStack, ifLabelNumber);
         } else if (strcmp(AST->ID, ">") == 0) {
             generateExpression(AST, functionTracker, list_str, 1);
@@ -161,9 +165,13 @@ void generateIfHead(tASTPointer *AST, tFunctionTracker* functionTracker) {
             ifLabelNumber++;
             tmpVariableNumber++;
             char* frame = get_frame(functionTracker);
-            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber, frame, counter-1, frame, counter-1));
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d %s@comp_l$%i\n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber, frame, counter-1));
+			generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s_comp_bool_eq$%d\n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s_comp_bool_ltgt$%d\n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"EQ TF@%s_comp_bool_eq$%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"GT TF@%s_comp_bool_ltgt$%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d TF@%s_comp_bool_eq$%d TF@%s_comp_bool_ltgt$%d\n", myTmpVariable, tmpVariableNumber, myTmpVariable, tmpVariableNumber,myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d bool@false\n", myIfLabel, ifLabelNumber, myTmpVariable, tmpVariableNumber)); // BUG prehozeno
             tLabelStackPush(labelStack, ifLabelNumber);
         }
     }
@@ -226,10 +234,10 @@ void generateWhileHead(tASTPointer *AST,tFunctionTracker* functionTracker) {
             generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
             char* frame = get_frame(functionTracker);
+                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
             generate_to_list2(sprintf(list_str+list_length,"LT TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
@@ -237,34 +245,44 @@ void generateWhileHead(tASTPointer *AST,tFunctionTracker* functionTracker) {
             generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
             char* frame = get_frame(functionTracker);
+                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s_comp_bool_eq$%d\n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s_comp_bool_ltgt$%d\n", myTmpVariable, tmpVariableNumber));
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d\n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"AND TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d %s@comp_r$%i\n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber,frame,counter-1));
+
+            generate_to_list2(sprintf(list_str+list_length,"EQ TF@%s_comp_bool_eq$%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"LT TF@%s_comp_bool_ltgt$%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d TF@%s_comp_bool_eq$%d TF@%s_comp_bool_ltgt$%d\n", myTmpVariable, tmpVariableNumber, myTmpVariable, tmpVariableNumber,myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d bool@false\n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber)); // BUG: prehozeno
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         } else if (strcmp(AST->ID, ">") == 0) {
             generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
             char* frame = get_frame(functionTracker);
+                        generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d \n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
             whileEndLabelNumber++;
-            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
+
             generate_to_list2(sprintf(list_str+list_length,"GT TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
             generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ %s%d TF@%s%d bool@true \n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
-        } else if (strcmp(AST->ID, "<=") == 0) {
+        } else if (strcmp(AST->ID, ">=") == 0) {
             generateExpression(AST, functionTracker, list_str, 1);
             whileLabelNumber++;
             char* frame = get_frame(functionTracker);
+                                    generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s_comp_bool_eq$%d\n", myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s_comp_bool_ltgt$%d\n", myTmpVariable, tmpVariableNumber));
             generate_to_list2(sprintf(list_str+list_length,"LABEL %s%d\n", myWhileLabel, whileLabelNumber));
             tLabelStackPush(labelStack, whileLabelNumber);
-            whileEndLabelNumber++;
-            generate_to_list2(sprintf(list_str+list_length,"DEFVAR TF@%s%d\n", myTmpVariable, tmpVariableNumber));
-            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
-            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d %s@comp_l$%i\n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber,frame,counter-1));
+
+            generate_to_list2(sprintf(list_str+list_length,"EQ TF@%s_comp_bool_eq$%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"GT TF@%s_comp_bool_ltgt$%d %s@comp_l$%i %s@comp_r$%i\n", myTmpVariable, tmpVariableNumber,frame, counter-1, frame, counter-1));
+            generate_to_list2(sprintf(list_str+list_length,"OR TF@%s%d TF@%s_comp_bool_eq$%d TF@%s_comp_bool_ltgt$%d\n", myTmpVariable, tmpVariableNumber, myTmpVariable, tmpVariableNumber,myTmpVariable, tmpVariableNumber));
+            generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ %s%d TF@%s%d bool@false\n", myWhileLabel, whileEndLabelNumber, myTmpVariable, tmpVariableNumber));
             tLabelStackPush(endLabelStack, whileEndLabelNumber);
         }
     }
@@ -409,8 +427,6 @@ char* name_parse(char* str) { // vypreparuje ven z retezce string || promennou p
 
 char* print_arguments_parse(char* str) { // vypreparuje pro funkci print string s argumenty a vrati ho
 
-	printf("str: string %s\n",str);
-
     long l = strlen(str);
 
     char* buff = malloc((l + 1)*sizeof(char));
@@ -430,8 +446,9 @@ char* print_arguments_parse(char* str) { // vypreparuje pro funkci print string 
 				continue;
 		}				
 		if(startReading) {
-        if(str[i] == '(')
+        if(str[i] == '(') {
             continue;
+        }
 
             if(str[i] == ')') {
                 strcpy(buff,help);
@@ -471,11 +488,11 @@ char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string
             continue;
         }
 
-        //if(str[i] == '"' && !startReading) {
-            //readWithout = true;
-        //}
+        if(str[i] == '"' && !startReading) {
+            readWithout = true;
+        }
 
-        //if(startReading || readWithout) {
+        if(startReading || readWithout) {
 
             if(str[i] == ')') {
                 strcpy(buff,help);
@@ -487,7 +504,7 @@ char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string
             help[internal] = str[i];
             internal++;
             continue;
-        //}
+        }
     }
         strcpy(buff,help);
         return buff;
@@ -1086,8 +1103,8 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
         right_supply = "rstr";
         generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$type_%s$%d\n", frame, right_supply, counter));
         generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@$temp_%s$%d\n", frame, right_supply, counter));
-        generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d string@%s\n", frame, right_supply, counter,convert_string(Root->LeftPointer->content->name)));
-        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d string@%s\n", frame, right_supply, counter,convert_string(Root->LeftPointer->content->name)));
+        generate_to_list2(sprintf(list_str+list_length, "TYPE %s@$type_%s$%d string@%s\n", frame, right_supply, counter,convert_string(Root->RightPointer->content->name)));
+        generate_to_list2(sprintf(list_str+list_length, "MOVE %s@$temp_%s$%d string@%s\n", frame, right_supply, counter,convert_string(Root->RightPointer->content->name)));
     }
     else if(right_func) {
         right_supply = Root->RightPointer->content->type; // JMENO FUNKCE JAKO JEJI NAME
@@ -1351,23 +1368,23 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error$%d\n",counter)); // chyba typu
                 generate_to_list2(sprintf(list_str+list_length,"EXIT int@4\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_div$%d\n",counter)); // chyba deleni
-                generate_to_list2(sprintf(list_str+list_length,"EXIT int@57\n"));
+                generate_to_list2(sprintf(list_str+list_length,"EXIT int@9\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_same_types$%d\n",counter));
             }
             else if(!left && !right && !left_func && !right_func) { // L R konstanty
 				if(!strcmp(Root->LeftPointer->content->type,"float") && !strcmp(Root->RightPointer->content->type,"float")) { // oba floaty
 					if(!strcmp(right_supply,"0x0p+0")) { // vpravo nula, chyba
-						generate_to_list2(sprintf(list_str+list_length,"EXIT int@57\n"));
+						generate_to_list2(sprintf(list_str+list_length,"EXIT int@9\n"));
 						errorHandling(9);	
 					}	
 				}
                 else if(!strcmp(Root->LeftPointer->content->type,"int") && !strcmp(Root->RightPointer->content->type,"int")) { // oba int
 					if(!strcmp(right_supply,"0")) { // vpravo nula, chyba
-						generate_to_list2(sprintf(list_str+list_length,"EXIT int@57\n"));
+						generate_to_list2(sprintf(list_str+list_length,"EXIT int@9\n"));
 						errorHandling(9);	
 						}	
 					else {
-						generate_to_list2(sprintf(list_str+list_length,"JUMP $label_idiv_op$%d\n",counter));
+						generate_to_list2(sprintf(list_str+list_length,"JUMP $label_op_idiv$%d\n",counter));
 					}	
 				}
 				else if(!strcmp(Root->LeftPointer->content->type,"int") || !strcmp(Root->RightPointer->content->type,"int")) { // jeden z nich je int
@@ -1408,7 +1425,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error$%d\n",counter)); // chyba typu
                 generate_to_list2(sprintf(list_str+list_length,"EXIT int@4\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_div$%d\n",counter)); // chyba deleni
-                generate_to_list2(sprintf(list_str+list_length,"EXIT int@57\n"));
+                generate_to_list2(sprintf(list_str+list_length,"EXIT int@9\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_same_types$%d\n",counter));
         }
         else { // OP R || L OP
@@ -1435,7 +1452,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error$%d\n",counter)); // chyba typu
                 generate_to_list2(sprintf(list_str+list_length,"EXIT int@4\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_div$%d\n",counter)); // chyba deleni
-                generate_to_list2(sprintf(list_str+list_length,"EXIT int@57\n"));
+                generate_to_list2(sprintf(list_str+list_length,"EXIT int@9\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_same_types$%d\n",counter));
             }
             else { // L OP
@@ -1461,7 +1478,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error$%d\n",counter)); // chyba typu
                 generate_to_list2(sprintf(list_str+list_length,"EXIT int@4\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_div$%d\n",counter)); // chyba deleni
-                generate_to_list2(sprintf(list_str+list_length,"EXIT int@57\n"));
+                generate_to_list2(sprintf(list_str+list_length,"EXIT int@9\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_same_types$%d\n",counter));
             }
         }
@@ -1471,11 +1488,11 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
             if((left && right) || (left_func && right_func) || (left && !right) || (!left && right)) { // L R promenne a funkce
                 if(strcmp(Root->ID,"==") && strcmp(Root->ID,"!=")) { // nejsou to tyhle dva spesl operatory
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_left_not_string$%d %s@$type_%s$%d string@string\n",counter,frame, left_supply, counter)); // skoc pokud neni levej string
-                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d string@string\n",counter,frame, right_supply, counter)); // skoc na error jestli neni pravej string
+                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@string\n",counter,frame, right_supply, counter)); // skoc na error jestli neni pravej string
                     generate_to_list2(sprintf(list_str +list_length, "JUMP $label_same_types$%d\n",counter)); // stejny typ, ok
                     generate_to_list2(sprintf(list_str +list_length, "LABEL $label_left_not_string$%d\n", counter)); // levy nebyl string
-                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d nil@nil\n", counter, frame, left_supply, counter)); // levy nil, error
-                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d nil@nil\n", counter, frame, right_supply, counter)); // pravy nil, error
+                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d string@nil\n", counter, frame, left_supply, counter)); // levy nil, error
+                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d string@nil\n", counter, frame, right_supply, counter)); // pravy nil, error
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_same_types$%d %s@$type_%s$%d %s@$type_%s$%d\n", counter, frame, left_supply, counter, frame, right_supply, counter)); // stejne typy
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_left_not_int$%d %s@$type_%s$%d string@int\n", counter, frame, left_supply, counter)); // skoc pokud je levy jiny nez int
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_same_types$%d %s@$type_%s$%d string@int\n", counter, frame, right_supply, counter)); // levy je int, otestuj pravy na int
@@ -1562,11 +1579,11 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
         else if(left_operator && right_operator) { // OP OP
             if(strcmp(Root->ID,"==") && strcmp(Root->ID,"!=")) { // nejsou to tyhle dva spesl operatory
                 generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_left_not_string$%d %s@$type_%s string@string\n",counter,frame, left_supply)); // skoc pokud neni levej string
-                generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s string@string\n",counter,frame, right_supply)); // skoc na error jestli neni pravej string
+                generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_error$%d %s@$type_%s string@string\n",counter,frame, right_supply)); // skoc na error jestli neni pravej string
                 generate_to_list2(sprintf(list_str +list_length, "JUMP $label_same_types$%d\n",counter)); // stejny typ, ok
                 generate_to_list2(sprintf(list_str +list_length, "LABEL $label_left_not_string$%d\n", counter)); // levy nebyl string
-                generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s nil@nil\n", counter, frame, left_supply)); // levy nil, error
-                generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s nil@nil\n", counter, frame, right_supply)); // pravy nil, error
+                generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s string@nil\n", counter, frame, left_supply)); // levy nil, error
+                generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s string@nil\n", counter, frame, right_supply)); // pravy nil, error
                 generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_same_types$%d %s@$type_%s %s@$type_%s\n", counter, frame, left_supply, frame, right_supply)); // stejne typy
                 generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_left_not_int$%d %s@$type_%s string@int\n", counter, frame, left_supply)); // skoc pokud je levy jiny nez int
                 generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_same_types$%d %s@$type_%s string@int\n", counter, frame, right_supply)); // levy je int, otestuj pravy na int
@@ -1601,11 +1618,11 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
             if(left_operator) { // OP R
                 if(strcmp(Root->ID,"==") && strcmp(Root->ID,"!=")) { // nejsou to tyhle dva spesl operatory
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_left_not_string$%d %s@$type_%s string@string\n",counter,frame, left_supply)); // skoc pokud neni levej string
-                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d string@string\n",counter,frame, right_supply, counter)); // skoc na error jestli neni pravej string
+                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_error$%d %s@$type_%s$%d string@string\n",counter,frame, right_supply, counter)); // skoc na error jestli neni pravej string
                     generate_to_list2(sprintf(list_str +list_length, "JUMP $label_same_types$%d\n",counter)); // stejny typ, ok
                     generate_to_list2(sprintf(list_str +list_length, "LABEL $label_left_not_string$%d\n", counter)); // levy nebyl string
-                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s nil@nil\n", counter, frame, left_supply)); // levy nil, error
-                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d nil@nil\n", counter, frame, right_supply, counter)); // pravy nil, error
+                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s string@nil\n", counter, frame, left_supply)); // levy nil, error
+                    generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d string@nil\n", counter, frame, right_supply, counter)); // pravy nil, error
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_same_types$%d %s@$type_%s %s@$type_%s$%d\n", counter, frame, left_supply, frame, right_supply, counter)); // stejne typy
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_left_not_int$%d %s@$type_%s string@int\n", counter, frame, left_supply)); // skoc pokud je levy jiny nez int
                     generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_same_types$%d %s@$type_%s$%d string@int\n", counter, frame, right_supply, counter)); // levy je int, otestuj pravy na int
@@ -1640,11 +1657,11 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
                 if((left && right) || (left_func && right_func)) { // L R promenne a funkce
                     if(strcmp(Root->ID,"==") && strcmp(Root->ID,"!=")) { // nejsou to tyhle dva spesl operatory
                         generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_left_not_string$%d %s@$type_%s$%d string@string\n",counter,frame, left_supply, counter)); // skoc pokud neni levej string
-                        generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s string@string\n",counter,frame, right_supply)); // skoc na error jestli neni pravej string
+                        generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_error$%d %s@$type_%s string@string\n",counter,frame, right_supply)); // skoc na error jestli neni pravej string
                         generate_to_list2(sprintf(list_str +list_length, "JUMP $label_same_types$%d\n",counter)); // stejny typ, ok
                         generate_to_list2(sprintf(list_str +list_length, "LABEL $label_left_not_string$%d\n", counter)); // levy nebyl string
-                        generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d nil@nil\n", counter, frame, left_supply, counter)); // levy nil, error
-                        generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s nil@nil\n", counter, frame, right_supply)); // pravy nil, error
+                        generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s$%d string@nil\n", counter, frame, left_supply, counter)); // levy nil, error
+                        generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_error$%d %s@$type_%s string@nil\n", counter, frame, right_supply)); // pravy nil, error
                         generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_same_types$%d %s@$type_%s$%d %s@$type_%s$%d\n", counter, frame, left_supply, counter, frame, right_supply, counter)); // stejne typy
                         generate_to_list2(sprintf(list_str +list_length, "JUMPIFNEQ $label_left_not_int$%d %s@$type_%s$%d string@int\n", counter, frame, left_supply, counter)); // skoc pokud je levy jiny nez int
                         generate_to_list2(sprintf(list_str +list_length, "JUMPIFEQ $label_same_types$%d %s@$type_%s string@int\n", counter, frame, right_supply)); // levy je int, otestuj pravy na int
@@ -1795,7 +1812,7 @@ void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, 
         if(!strcmp(Root->ID,"/")) { // idiv jen kdyz je tam /
             generate_to_list2(sprintf(list_str + list_length, "JUMP $label_op_finished$%i\n", counter)); // skoc tesne za concat op
             // IDIV START
-            generate_to_list2(sprintf(list_str + list_length, "LABEL $label_idiv_op$%i\n", counter));
+            generate_to_list2(sprintf(list_str + list_length, "LABEL $label_op_idiv$%i\n", counter));
             generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%%%i\n", frame, counter)); // musi tu byt kvuli skoku na IDIV label
             if (!left_operator && !right_operator) { // ani jeden z L R neni operator, tisk operace
                 generate_to_list2(sprintf(list_str +list_length, "IDIV %s@%%%d %s@$temp_%s$%d %s@$temp_%s$%d\n", frame, counter, frame, left_supply, counter, frame, right_supply, counter));
