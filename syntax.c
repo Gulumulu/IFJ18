@@ -1,8 +1,10 @@
 /**
+ * Project for IFJ course - compiler
  * Source file for syntax driven compilation
  *
  * Implemented by Gabriel Quirschfeld   xquirs00
  *                Marek Varga           xvarga14
+ *                Michal Plsek          xplsek03
  */
 #include "syntax.h"
 #include "scanner.h"
@@ -10,12 +12,6 @@
 #include "queue.h"
 #include "generate.h"
 #include "list.h"
-
-// externi promenne
-//char* list_str;
-tFunctionTracker* functionTracker;
-
-#define BUF_SIZE 1024
 
 /**
  * Function initializes stack for function tracking.
@@ -98,31 +94,15 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    /*if (feof(stdin))
-        printf("file reached eof\n");
-    void *content = malloc(BUF_SIZE);
-    FILE *fp = fopen("test.txt", "w");
-    int read;
-    while ((read = fread(content, 1, BUF_SIZE, stdin))) {
-        fwrite(content, read, 1, fp);
-    }
-    fclose(fp);*/
-
-    //FILE *file = fopen("../test.txt", "r");
-    _IO_FILE *file = stdin;
+    FILE *file = fopen("../test.txt", "r");
+    //_IO_FILE *file = stdin;
 
     dyn_length = 50240; // dyn poc delka listu pro tisk
     list_length = 0; // ukazatel na pozici v listu
-
     list_str = malloc(sizeof(char)*(dyn_length+1)); // tisk do bufferu misto do ext souboru
     issingle = false;
 
-
-
     // zacatek programu
-    //global_token = malloc(sizeof(struct token));
-
-
     generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"));
     generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
 
@@ -140,10 +120,8 @@ void doMagic() {
     unsigned long func_id = 0;  // function id to be put into local id content
     unsigned long var_id = 0;   // variable id to be used when assigning variable a type (int, float or string)
 
-    BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode)*1000);
+    BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode)*1000); // global symtable storing the function ids
     BSTInit(global_symtable);
-    //BSTNodePtr* global_symtable = malloc(sizeof(struct BSTNode));       // global symtable storing the function ids
-    //BSTInit(global_symtable);
 
     struct BSTNode **array;         // array storing local symtables
     array = malloc(1000 * sizeof(struct BSTNode *));
@@ -153,13 +131,9 @@ void doMagic() {
 
     BSTNodeContentPtr* cnt;
 
-
-
     // first transit of compiler -- filling out symtable
     while (global_token.type != ss_eof && ERROR_TYPE == 0) {
         token_generate(file);   // calling lexical analysis to get another token
-        /*tmp = malloc(sizeof(struct BSTNodeContent));
-        cnt = malloc(sizeof(struct BSTNodeContent));*/
 
         tmp = malloc(sizeof(struct BSTNodeContent));
         cnt = malloc(sizeof(struct BSTNodeContent));
@@ -435,27 +409,9 @@ void doMagic() {
                     leftSideToken = global_token;
                 }
                 token_generate(file);
-                /*// added from 1st transit
-                if (global_token.type == kw_end && is_stat == 0) {
-                    is_global = 1;
-                } else if (global_token.type == kw_end && is_stat == 1) {
-                    is_stat = 0;
-                }
-                if (global_token.type == ss_eol) {
-                    undef = 0;
-                    after_eq = 0;
-                    not_int = 0;
-                } else if (global_token.type == s_eq || global_token.type == kw_if || global_token.type == kw_while) {   // after an equals sign, if and while only already defined ids can be used
-                    undef = 1;
-                    if (global_token.type == s_eq) {
-                        after_eq = 1;
-                    }
-                }
-                // addition ended here*/
                 tmpToken.type = decideID(global_token);
                 // simulate predictive SA for previous token
                 simulatePrecedence(tmpToken, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
-                //destroy_token(&tmpToken);
             }
             // simulate predictive SA for current token
             simulatePrecedence(global_token, expendedStack, stackAST, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)), global_symtable);
@@ -467,7 +423,6 @@ void doMagic() {
                 // assign newly created AST
                 if (stackAST != NULL && ERROR_TYPE == 0) {
                     // result of precedence will be stored in AST - abstract syntax tree
-                    //*AST = *stackAST->body[stackAST->top];
                     if (ifStatement == 1 && global_token.type == kw_then) {
                         generateIfHead(stackAST->body[stackAST->top],functionTracker);
                     }
@@ -492,14 +447,6 @@ void doMagic() {
                         generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, leftSideToken.content, frame,assign));
                         assign++;
                     }
-
-                    //destroy_token(&tmpToken);
-
-                    // clear tree after generating
-
-                    /*tASTDispose(AST); // SEGFAULT
-                            AST = malloc(sizeof(struct tAST) * 30);*/
-
                 }
             }
         }
@@ -514,23 +461,6 @@ void doMagic() {
                             leftSideToken = global_token;
                         }
                         token_generate(file);
-                        /*// added from 1st transit
-                        if (global_token.type == kw_end && is_stat == 0) {
-                            is_global = 1;
-                        } else if (global_token.type == kw_end && is_stat == 1) {
-                            is_stat = 0;
-                        }
-                        if (global_token.type == ss_eol) {
-                            undef = 0;
-                            after_eq = 0;
-                            not_int = 0;
-                        } else if (global_token.type == s_eq || global_token.type == kw_if || global_token.type == kw_while) {   // after an equals sign, if and while only already defined ids can be used
-                            undef = 1;
-                            if (global_token.type == s_eq) {
-                                after_eq = 1;
-                            }
-                        }
-                        // addition ended here*/
                         tmpToken.type = decideID(global_token);
                         if (tmpToken.type == s_func_id && strcmp(predictiveStack->content[predictiveStack->top-1], "<assign>") != 0 && strcmp(predictiveStack->content[predictiveStack->top-1], "<st-list>") != 0) {
                             // helper tracker stack of function names to keep track in which function we are in
@@ -550,17 +480,8 @@ void doMagic() {
 
 
                         generatePrint(&tmpToken, tFunctionTrackerGetTop(functionTracker));
-                        //destroy_token(&tmpToken);
 
                 generateCodeParek(&tmpToken);
-                // todo: generate code
-                /*
-                 * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
-                 */
-                // pop <print-expr> rule from stack
-                /*if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
-                    tStackPredictivePop(predictiveStack);
-                }*/
                 // we will not be printing anymore
                 printing = 0;
             }
@@ -603,24 +524,11 @@ void doMagic() {
                             generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, leftSideToken.content, frame,assign));
                             assign++;
                         }
-                        // clear tree after generating
-                        //AST = malloc(sizeof(struct tAST) * 2);
                     }
                     simulatePredictive(global_token, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
                 }
             }
             generateCodeParek(&global_token);
-
-            /*
-             * Create function generateCode(char* predictiveStackTop) and pass top of predictiveStack.
-             * Look at the top of predictiveStack: predictiveStack->content[predictiveStack->top-1] =>
-             *
-             * For example if it contains "EOL" and rules 1,2,4,6,7 were applied (stored in rulesApplied[]) => generate function declaration
-             * Generated code: label nasobeni
-             *
-             * P.S. maybe there is no need for checking applied rules
-             */
-            //generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied,list_str);
 
         }
 
@@ -630,14 +538,7 @@ void doMagic() {
             generatePrint(&global_token, tFunctionTrackerGetTop(functionTracker)); // BUG
             // tenhle tisk se pouziva ve vyrazu print(xxxxxx) || print xx
             generateCodeParek(&global_token);
-            // todo: generate code
-            /*
-             * Previous token was print => generate stuff that needs to be printed. Current token (global_token.content) contains expression for printing.
-             */
-            // pop <print-expr> rule from stack
-            /* if (strcmp(predictiveStack->content[predictiveStack->top-1], "<expr>") != 0) {
-                 tStackPredictivePop(predictiveStack);
-             }*/
+
             // we will not be printing anymore
             printing = 0;
         }
@@ -653,7 +554,6 @@ void doMagic() {
         if (global_token.type == ss_eol || global_token.type == s_rbrac) {
             if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {
                 // we are in main function => rule 3 was applied => unset tracker of current function
-                //currentFunction = "";
                 tFunctionTrackerPop(functionTracker);
             }
             // clearing applied rules at the of one line
@@ -663,11 +563,6 @@ void doMagic() {
                     destroy_token(&global_token);
                     global_token.type = kw_def;
                 }
-        /*BSTContentDispose(cnt);
-        free(cnt);
-        cnt = NULL;
-        BSTContentDispose(tmp);
-        free(tmp);*/
     }
 
     if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
@@ -691,10 +586,6 @@ void doMagic() {
         //free(&array[arr_id]);
         arr_id--;
     }
-    //BSTDispose(&array[0]);
-    /*for (int j = 0; j < 10000; j++) {
-        free(&array[j]);
-    }*/
         free(array);
         free(tmpToken.content);
         tStackASTDispose(stackAST);

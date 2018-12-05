@@ -1,5 +1,7 @@
 /**
+ * Project for IFJ course - compiler
  * Source file for error types
+ *
  * Implemented by Marek Varga, xvarga14
  */
 #include <stdio.h>

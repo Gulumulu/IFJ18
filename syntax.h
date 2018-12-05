@@ -1,4 +1,5 @@
 /**
+ * Project for IFJ course - compiler
  * Header file for syntax driven compilation
  *
  * Implemented by Gabriel Quirschfeld   xquirs00

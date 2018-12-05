@@ -1,5 +1,7 @@
 /**
+ * Project for IFJ course - compiler
  * Header file for predictive syntax analysis.
+ *
  * Implemented by Marek Varga, xvarga14
  */
 #ifndef IFJ_PREDICT_H

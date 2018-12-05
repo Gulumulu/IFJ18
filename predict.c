@@ -1,5 +1,7 @@
 /**
+ * Project for IFJ course - compiler
  * Source file for predictive syntax analysis.
+ *
  * Implemented by Marek Varga, xvarga14
  */
 #include <string.h>

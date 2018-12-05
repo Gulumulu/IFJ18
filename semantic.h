@@ -1,6 +1,9 @@
 /**
- *  Header for generating AST and appropriated semantic actions.
- *  Implemented by Marek Varga, xvarga14
+ * Project for IFJ course - compiler
+ * Header for generating AST and appropriated semantic actions.
+ *
+ * Implemented by:  Gabriel Quirschfeld,    xquirs00
+ *                  Marek Varga,            xvarga14
  */
 #ifndef IFJ_SEMANTIC_H
 #define IFJ_SEMANTIC_H

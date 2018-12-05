@@ -1,4 +1,5 @@
 /**
+ * Project for IFJ course - compiler
  * Header for table of symbols
  *
  * Implemented by Marek Varga           xvarga14

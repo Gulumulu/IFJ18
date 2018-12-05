@@ -1,7 +1,8 @@
 /**
+ * Project for IFJ course - compiler
  * Header for the scanner
  *
- * Implemented by Gabriel Quirschfeld xquirs00
+ * Implemented by:  Gabriel Quirschfeld xquirs00
  */
 
 #ifndef IFJ_SCANNER_H

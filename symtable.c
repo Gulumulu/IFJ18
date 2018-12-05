@@ -1,5 +1,6 @@
 /**
- * Table of symbols functions
+ * Project for IFJ course - compiler
+ * Source file for table of symbols functions
  *
  * Implemented by Marek Varga           xvarga14
  *                Gabriel Quirschfeld   xquirs00

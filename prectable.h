@@ -1,6 +1,8 @@
 /**
- * Implemented by Marek Varga, xvarga14
+ * Project for IFJ course - compiler
  * Header for precedence table
+ *
+ * Implemented by Marek Varga, xvarga14
  */
 #ifndef IFJ_PRECTABLE_H
 #define IFJ_PRECTABLE_H

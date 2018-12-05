@@ -1,4 +1,5 @@
 /**
+ * Project for IFJ course - compiler
  * Scanner - almighty creator of tokens
  *
  * Implemented by Gabriel Quirschfeld   xquirs00

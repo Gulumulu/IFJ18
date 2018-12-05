@@ -1,6 +1,8 @@
 /**
+ * Project for IFJ course - compiler
+ * Source file for precedence table
+ *
  * Implemented by Marek Varga, xvarga14
- * Precedence table
  */
 #include "prectable.h"
 #include <stdio.h>
@@ -675,12 +677,6 @@ void simulatePrecedence(Token token, tExpendedStack* expendedStack, tStackASTPtr
                 errorHandling(2);
                 end = 1;
             }
-            /*free(a);
-            a=NULL;
-            free(c);
-            c=NULL;
-            free(emptyString);
-            emptyString=NULL;*/
         } while (end != 1);
         free(a);
         free(c);

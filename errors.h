@@ -1,5 +1,7 @@
 /**
+ * Project for IFJ course - compiler
  * Header for error types
+ *
  * Implemented by Marek Varga, xvarga14
  */
 #ifndef IFJ_ERRORS_H

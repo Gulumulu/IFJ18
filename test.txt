@@ -1,3 +1,2 @@
-a  = "premenna"
-def a()
-end
+a=length("foobar")
+printf(a)
