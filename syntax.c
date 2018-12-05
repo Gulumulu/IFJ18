@@ -94,8 +94,8 @@ char* tFunctionTrackerGetTop(tFunctionTracker* stack) {
  */
 void doMagic() {
 
-    FILE *file = fopen("../test.txt", "r");
-    //_IO_FILE *file = stdin;
+    //FILE *file = fopen("../test.txt", "r");
+    _IO_FILE *file = stdin;
 
     dyn_length = 50240; // dyn poc delka listu pro tisk
     list_length = 0; // ukazatel na pozici v listu
