@@ -1879,9 +1879,11 @@ void generateExpression(tASTPointer* AST, tFunctionTracker* functionTracker, cha
 
 }
 
+/*
 void generateCode(char* stackTop, int rules[], char* list_str) {
     generate_to_list2(sprintf(list_str + list_length, "FUNKCE: \n"));
     for(int i = 0; i < 50; i++)
         generate_to_list2(sprintf(list_str + list_length, "%i\n", i));
     printf("GEN FINISHED.\n");
 }
+*/

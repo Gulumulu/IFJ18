@@ -157,7 +157,7 @@ BSTNodePtr* findNode(struct BSTNode** array, BSTNodePtr* globalSymtable, char* f
                 return NULL;
             } else {
                 unsigned long f_id = hash_id(functionName);
-                for (int i = 0; i < 10000; i++) {
+                for (int i = 0; i < 1000; i++) {
                     if (array[i] != NULL) {
                         if (array[i]->func_id == f_id) {
                             return &array[i];
