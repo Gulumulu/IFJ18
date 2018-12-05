@@ -123,7 +123,7 @@ void doMagic() {
 
 
     generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"));
-    //generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
+    generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
 
 
     BSTNodeContentPtr* tmp;
@@ -587,7 +587,7 @@ void doMagic() {
              *
              * P.S. maybe there is no need for checking applied rules
              */
-            //generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied);
+            //generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied,list_str);
 
         }
 
