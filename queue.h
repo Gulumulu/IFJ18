@@ -1,3 +1,11 @@
+/**
+ *
+ * Project for IFJ course - compiler
+ * Header file for code generation
+ *
+ * Implemented by: Michal Plsek          xplsek03
+ */
+
 #ifndef IFJ18_QUEUE_H
 #define IFJ18_QUEUE_H
 

@@ -1,4 +1,6 @@
 /**
+ *
+ * Project for IFJ course - compiler
  * Header file for code generation
  *
  * Implemented by Gabriel Quirschfeld   xquirs00

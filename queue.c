@@ -1,6 +1,10 @@
-//
-// Created by root on 11/23/18.
-//
+/**
+ *
+ * Project for IFJ course - compiler
+ * Source file for code generation
+ *
+ * Implemented by: Michal Plsek          xplsek03
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
