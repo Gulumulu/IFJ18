@@ -1,7 +1,3 @@
-def getChr(d,e)
-	a=d+e
+a  = "premenna"
+def a()
 end
-
-a = "test1"
-b = "test2"
-x = getChr(a,b) + getChr(a,b)

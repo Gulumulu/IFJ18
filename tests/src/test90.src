@@ -1,1 +1,1 @@
-a = "Hello\xa'\s'\xAG"
+a = "Ahoj\nSve'te\s\\\x22"

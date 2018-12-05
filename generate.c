@@ -1070,7 +1070,7 @@ void type_control(tASTPointer* Root,char* operation, tQueue* q, char* frame, cha
         else if(!strcmp(Root->content->type,"function")) { // je to prirazeni uzivatelske funkce, eg a = myChar(xxxxx)
             generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%%%d\n",frame,counter));
         }
-        
+
         //if(!strcmp(Root->content->type,"function")) { // je to prirazeni vysledku funkce
 			//generateCode();
 		//}
