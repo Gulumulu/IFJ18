@@ -577,7 +577,7 @@ char* get_frame(tFunctionTracker* functionTracker) { // najdi aktualni ramec
     if(!strcmp(tFunctionTrackerGetTop(functionTracker),"Main"))
         return "GF";
     else {
-        return "TF";
+        return "LF";
     }
 }
 
@@ -706,7 +706,6 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"TYPE %s@$i_type%d %s@%s\n",frame,counter,frame,i_help));
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_i_ok_%d %s@$i_type%d string@int\n",counter,frame,counter));
                 generate_to_list2(sprintf(list_str+list_length,"EXIT int@4\n"));
-
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_i_ok_%d\n",counter));
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$len%d\n",frame,counter));
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$i%d\n",frame,counter));
@@ -718,12 +717,10 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter)); // pokud bool false skoc do error
                 generate_to_list2(sprintf(list_str+list_length,"LT %s@bool%d %s@$i%d %s@$len%d\n",frame,counter,frame,counter,frame,counter)); // bool true pokud je mensi nez retezec
                 generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_error_%d %s@bool%d bool@true\n",counter,frame,counter));
-
                 //generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@%s%d\n",frame,macro,counter));
                 generate_to_list2(sprintf(list_str+list_length,"STRI2INT %s@%s%d string@%s %s@%s\n",frame,macro,counter,convert_string(s_help), frame, i_help));
                 //free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter));
-
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter));
                 generate_to_list2(sprintf(list_str+list_length,"EXIT int@58\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter));
@@ -792,14 +789,11 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_convert%d %s@intype%d string@float\n",counter,frame,counter)); // jestli je float zkonvertuj
         generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_wrong_type%d %s@intype%d string@int\n",counter,frame,counter)); // jestli neni ani int tak 0
         generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter)); // je to int
-
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_convert%d\n",counter));
         generate_to_list2(sprintf(list_str+list_length,"FLOAT2INT %s@%s%d %s@intemp%d\n",frame,macro,counter,frame,counter));
         generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter));
-
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_wrong_type%d\n",counter));
         generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d int@0\n",frame,macro,counter));
-
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter));
     }
     else if(id == 5) { // vestavena funkce inputf
@@ -812,14 +806,11 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         generate_to_list2(sprintf(list_str+list_length,"JUMPIFEQ $label_convert%d %s@floatype%d string@int\n",counter,frame,counter)); // jestli je int zkonvertuj
         generate_to_list2(sprintf(list_str+list_length,"JUMPIFNEQ $label_wrong_type%d %s@floatype%d string@float\n",counter,frame,counter)); // jestli neni ani float tak 0.0
         generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter)); // je to float
-
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_convert%d\n",counter));
         generate_to_list2(sprintf(list_str+list_length,"INT2FLOAT %s@%s%d %s@floatemp%d\n",frame,macro,counter,frame,counter));
         generate_to_list2(sprintf(list_str+list_length,"JUMP $label_inok%d\n",counter));
-
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_wrong_type%d\n",counter));
         generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d float@0.0\n",frame,macro,counter));
-
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter));
     }
     else if(id == 6) { // vestavena funkce inputs
@@ -1878,9 +1869,26 @@ void generateExpression(tASTPointer* AST, tFunctionTracker* functionTracker, cha
 
 }
 
-void generateCode(char* stackTop, int rules[], char* list_str) {
-    generate_to_list2(sprintf(list_str + list_length, "FUNKCE: \n"));
-    for(int i = 0; i < 50; i++)
-        generate_to_list2(sprintf(list_str + list_length, "%i\n", i));
-    printf("GEN FINISHED.\n");
+void generateCode(char* stackTop, int rules[], char* list_str, tFunctionTracker* functionTracker) {
+    generate_to_list2(sprintf(list_str + list_length, "(DEBUG: stackTop: %s func: %s)\n",stackTop,tFunctionTrackerGetTop(functionTracker)));
+    //for(int i = 0; i < 50; i++) {
+		//if(rules[i] != 0)
+			//generate_to_list2(sprintf(list_str + list_length, "(DEBUG: %i)\n", rules[i]));
+		
+	//}
+	if(rules[0] == 1 && rules[1] == 2 && rules[2] == 4 && rules[3] == 6 && rules[4] == 7 && !strcmp(stackTop,"EOL")) { // generuj definici funkce
+		generate_to_list2(sprintf(list_str + list_length, "LABEL %s\n",tFunctionTrackerGetTop(functionTracker)));
+		generate_to_list2(sprintf(list_str + list_length, "PUSHFRAME\n"));
+		// tady chci pracovat s tim, co jsem si pushnul do LF pomoci pushframe pri volani funkce treba z generateexpression. K hodnotam 
+		// tady pristupuju pomoci LF
+		
+	
+	}
+		if(rules[0] == 12 && rules[1] == 5 && !strcmp(stackTop,"EOL")) { // generuj konec funkce POPFRAME
+		generate_to_list2(sprintf(list_str + list_length, "POPFRAME\n"));
+		// tady chci pracovat s tim, co jsem si pushnul do LF pomoci pushframe pri volani funkce treba z generateexpression. K hodnotam 
+		// tady pristupuju pomoci LF, na konci funkce pak dam POPFRAME
+		
+	
+	}
 }

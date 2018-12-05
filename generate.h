@@ -18,11 +18,10 @@ char* get_frame(tFunctionTracker* functionTracker);
 
 void postorder(tASTPointer* Root, tQueue* q, tFunctionTracker* functionTracker, char* list_str);
 void generateExpression(tASTPointer* AST,tFunctionTracker* functionTracker, char* list_str, bool comp);
-void generateCode(char* stackTop, int rules[]);
+void generateCode(char* stackTop, int rules[],char* list_str, tFunctionTracker* functionTracker);
 
 void type_control(tASTPointer* Root, char* operation, tQueue* q, char* frame, char* list_str);
 
-void generate_to_list(int ad, int* ptr_list_length, int* ptr_dyn_length, char* list_str);
 void generate_to_list2(int ad);
 
 void call_function(int id, char* frame, tASTPointer* Root, char* list_str);
