@@ -3,6 +3,7 @@
  *
  * Implemented by Gabriel Quirschfeld   xquirs00
  *                Marek Varga           xvarga14
+ *                Michal Plsek          xplsek03
  */
 #include "syntax.h"
 #include "scanner.h"
@@ -31,7 +32,7 @@ void tFunctionTrackerInit(tFunctionTracker* stack) {
 
 /**
  * Function disposes stack.
- *
+ *function
  * @param stack
  */
 void tFunctionTrackerDispose(tFunctionTracker* stack) {
@@ -124,6 +125,7 @@ void doMagic() {
 
     generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"));
     generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
+    generate_to_list2(sprintf(list_str+list_length,"JUMP label_main\n"));
 
 
     BSTNodeContentPtr* tmp;
@@ -453,10 +455,10 @@ void doMagic() {
                     // result of precedence will be stored in AST - abstract syntax tree
                     //*AST = *stackAST->body[stackAST->top];
                     if (ifStatement == 1 && global_token.type == kw_then) {
-                        generateIfHead(stackAST->body[stackAST->top],functionTracker);
+                        generateIfHead(stackAST->body[stackAST->top],functionTracker, array, global_symtable, tmpToken);
                     }
                     else if (whileStatement == 1 && global_token.type == kw_do) {
-                        generateWhileHead(stackAST->body[stackAST->top],functionTracker);
+                        generateWhileHead(stackAST->body[stackAST->top],functionTracker, array, global_symtable, tmpToken);
                     }
                     else { // assigning
                         /*generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
@@ -464,8 +466,8 @@ void doMagic() {
                         generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@%s\n", frame, tmpToken.content));
                         generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@__assign%d\n", frame, tmpToken.content, frame,assign));
                         assign++;*/
-                        generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
-                        char *frame = get_frame(functionTracker);
+                        generateExpression(stackAST->body[stackAST->top], functionTracker, array,global_symtable,tmpToken, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                        char *frame = get_frame(functionTracker, array, global_symtable, tmpToken);
 
                         if(BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)) == NULL || BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used == 0) {
                             generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%s\n", frame, leftSideToken.content));
@@ -502,7 +504,9 @@ void doMagic() {
                         if (tmpToken.type == s_func_id && strcmp(predictiveStack->content[predictiveStack->top-1], "<assign>") != 0) {
                             // helper tracker stack of function names to keep track in which function we are in
                             tFunctionTrackerPush(functionTracker, tmpToken.content);
+
                         }
+
                         // simulate predictive SA for current token
                         simulatePredictive(tmpToken, predictiveStack, global_symtable, findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)));
                         if (precedence == 1) {
@@ -547,10 +551,10 @@ void doMagic() {
                         // result of precedence will be stored in AST - abstract syntax tree
                         //*AST = *stackAST->body[stackAST->top];
                         if(ifStatement == 1 && global_token.type == kw_then) {
-                            generateIfHead(stackAST->body[stackAST->top],functionTracker);
+                            generateIfHead(stackAST->body[stackAST->top],functionTracker, array, global_symtable, tmpToken);
                         }
                         else if(whileStatement == 1 && global_token.type == kw_do) {
-                            generateWhileHead(stackAST->body[stackAST->top],functionTracker);
+                            generateWhileHead(stackAST->body[stackAST->top],functionTracker, array, global_symtable, tmpToken);
                         }
                         else {
                             /*generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
@@ -558,8 +562,8 @@ void doMagic() {
                             generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@%s\n", frame, tmpToken.content));
                             generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@__assign%d\n", frame, tmpToken.content, frame,assign));
                             assign++;*/
-                            generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
-                            char *frame = get_frame(functionTracker);
+                            generateExpression(stackAST->body[stackAST->top], functionTracker, array,global_symtable,tmpToken, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                            char *frame = get_frame(functionTracker, array, global_symtable, tmpToken);
 
                             if(BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)) == NULL || BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used == 0) {
                                 generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%s\n", frame, leftSideToken.content));
@@ -587,8 +591,8 @@ void doMagic() {
              *
              * P.S. maybe there is no need for checking applied rules
              */
-            //generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied,list_str);
 
+            generateCode(predictiveStack->content[predictiveStack->top-1],rulesApplied,list_str, functionTracker, array, global_symtable, tmpToken);
         }
 
         // NEJAKEJ PRINTING
@@ -608,6 +612,7 @@ void doMagic() {
             // we will not be printing anymore
             printing = 0;
         }
+
         if (global_token.type == kw_if) {
             // current token was if-condition or while-loop => expression will follow => need to simulate precedence
             precedence = 1;
@@ -622,6 +627,8 @@ void doMagic() {
                 // we are in main function => rule 3 was applied => unset tracker of current function
                 //currentFunction = "";
                 tFunctionTrackerPop(functionTracker);
+                if(!strcmp(tFunctionTrackerGetTop(functionTracker),"Main"))
+                    generate_to_list2(sprintf(list_str+list_length, "LABEL label_main\n"));
             }
             // clearing applied rules at the of one line
             clearRulesApplied();
@@ -635,7 +642,6 @@ void doMagic() {
     if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
         errorHandling(2);                       // some rule remained on the stack
     }
-
 
 
 
@@ -677,7 +683,7 @@ void doMagic() {
         destroy_token(&tmpToken);
         //free(&global_token.content);
         //free(global_symtable);
-        global_symtable = NULL;
+        //global_symtable = NULL;
 
     free(list_str);
     fclose(file);

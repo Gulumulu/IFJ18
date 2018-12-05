@@ -1,4 +1,7 @@
-# test for int expression
-print("2*3.3+5*6-8*9.9/4 is: ")
-a=2*3.3+5*6-8*9.9/4
-print(a)
+def getChr(d,e)
+	a=d+e
+end
+
+a = "test1"
+b = "test2"
+x = getChr(a,b) + getChr(a,b)
