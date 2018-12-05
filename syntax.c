@@ -443,9 +443,10 @@ void doMagic() {
                         if(BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)) == NULL || BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used == 0) {
                             generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%s\n", frame, leftSideToken.content));
                             //BSTInsert(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)).used = 1);
+                            if (BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)) != NULL) {
                             BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used = 1;
                         }
-
+                        }
                         generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@%%assign%d\n", frame, leftSideToken.content, frame,assign));
                         assign++;
                     }

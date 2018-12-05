@@ -835,7 +835,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
             if(i_ret >= 0 && strlen(i_ptr) == 0) { // zadal tam platne cislo za i
                 if(i_ret > (long)(strlen(s_help)-1)) { // i je mimo rozsah
                     //generate_to_list2(sprintf(list_str+list_length,"MOVE %s@%s%d nil@nil\n",frame,macro,counter));
-                    generate_to_list2(sprintf(list_str+list_length,"EXIT int@58\n"));
+                    generate_to_list2(sprintf(list_str+list_length,"EXIT int@4\n"));
                 }
                 else { // index je v rozsahu
                     generate_to_list2(sprintf(list_str+list_length,"STRI2INT %s@%s%d string@%s int@%s\n",frame,macro,counter,convert_string(s_help),i_help));
@@ -864,7 +864,7 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 //free(asciistr);
                 generate_to_list2(sprintf(list_str+list_length,"JUMP $label_end_%d\n",counter));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_error_%d\n",counter));
-                generate_to_list2(sprintf(list_str+list_length,"EXIT int@58\n"));
+                generate_to_list2(sprintf(list_str+list_length,"EXIT int@4\n"));
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter));
             }
           
@@ -895,7 +895,6 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
                 generate_to_list2(sprintf(list_str+list_length,"LABEL $label_end_%d\n",counter));
             }
             else { // i je cislo
-				printf("i je cislo.\n");
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$len%d\n",frame,counter));
                 generate_to_list2(sprintf(list_str+list_length,"DEFVAR %s@$i%d\n",frame,counter));
                 generate_to_list2(sprintf(list_str+list_length,"MOVE %s@$i%d int@%s\n",frame, counter,i_help));
