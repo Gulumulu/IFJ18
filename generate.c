@@ -407,6 +407,49 @@ char* name_parse(char* str) { // vypreparuje ven z retezce string || promennou p
     return buff;
 }
 
+char* print_arguments_parse(char* str) { // vypreparuje pro funkci print string s argumenty a vrati ho
+
+	printf("str: string %s\n",str);
+
+    long l = strlen(str);
+
+    char* buff = malloc((l + 1)*sizeof(char));
+    char help[l+1];
+    int internal = 0;
+
+    for(int j = 0; j < l+1; j++) {
+        buff[j] = '\0';
+        help[j] = '\0';
+    }
+    bool startReading = false;
+
+    for(int i = 0; i < l; i++) {
+		if(!startReading && str[0] == 'p' && str[1] == 'r' && str[2] == 'i' && str[3] == 'n' && str[4] == 't') {
+				startReading = true;
+				i+=4;
+				continue;
+		}				
+		if(startReading) {
+        if(str[i] == '(')
+            continue;
+
+            if(str[i] == ')') {
+                strcpy(buff,help);
+                return buff;
+            }
+            if(str[i] == ' ')
+				continue;
+				
+            help[internal] = str[i];
+            internal++;
+            continue;
+		}
+	}
+        strcpy(buff,help);
+        return buff;
+
+}
+
 char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string s argumenty a vrati ho
 
     long l = strlen(str);
@@ -428,20 +471,23 @@ char* arguments_parse(char* str) { // vypreparuje pro funkci ord a strsub string
             continue;
         }
 
-        if(str[i] == '"' && !startReading) {
-            readWithout = true;
-        }
+        //if(str[i] == '"' && !startReading) {
+            //readWithout = true;
+        //}
 
-        if(startReading || readWithout) {
+        //if(startReading || readWithout) {
 
             if(str[i] == ')') {
                 strcpy(buff,help);
                 return buff;
             }
+            if(str[i] == ' ' || str[i] == '\t')
+				continue;
+				
             help[internal] = str[i];
             internal++;
             continue;
-        }
+        //}
     }
         strcpy(buff,help);
         return buff;
@@ -770,7 +816,8 @@ void call_function(int id, char* frame, tASTPointer* Root, char* list_str) { // 
         generate_to_list2(sprintf(list_str+list_length,"LABEL $label_inok%d\n",counter));
     }
     else if(id == 2) { // vestavena funkce print
-        char *str = arguments_parse(Root->content->name); // dlooooouhy retezec se vsemi argumenty
+        char *str = print_arguments_parse(Root->content->name); // dlooooouhy retezec se vsemi argumenty
+        printf("::%s::\n",str);
         long l = strlen(str); // delka celkoveho retezce
         char s[l+1]; // pomocne pole pro jednotlivy operand
         char* operand = malloc(sizeof(char) * (l + 1)); // finalni operand
