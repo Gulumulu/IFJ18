@@ -609,7 +609,7 @@ int token_generate(FILE *file)
             break;
 
             case ss_com_bl_s: {
-                if ((c == '\n') && ((strcmp(global_token.content, "=begin\0")) == 0)) {
+                if ((c == '\n') && (((strcmp(global_token.content, "=begin\0")) == 0) || ((strncmp(global_token.content, "=begin ", 7)) == 0))) {
                     state = ss_com_bl;
                 }
                 else if ((c == EOF) || (c == '\n')) {
@@ -652,7 +652,7 @@ int token_generate(FILE *file)
             break;
 
             case ss_com_bl_e: {
-                if (((c == '\n') || (c == EOF)) && ((strcmp(global_token.content, "=end\0") == 0))) {
+                if (((c == '\n') || (c == EOF)) && ((strcmp(global_token.content, "=end\0") == 0) || (strncmp(global_token.content, "=end ", 5) == 0))) {
                     empty_token(&global_token);
                     state = ss_new;
                 }
