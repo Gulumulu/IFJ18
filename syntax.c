@@ -548,10 +548,12 @@ void doMagic() {
             // current token was if-condition or while-loop => expression will follow => need to simulate precedence
             precedence = 1;
             ifStatement = 1;
+            tmpToken = global_token;
         }
         if (global_token.type == kw_while) {
             precedence = 1;
             whileStatement = 1;
+            tmpToken = global_token;
         }
         if (global_token.type == ss_eol || global_token.type == s_rbrac) {
             if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {
@@ -565,7 +567,7 @@ void doMagic() {
             // clearing applied rules at the of one line
             clearRulesApplied();
         }
-        if (main_generated == 0) {
+        if (main_generated == 0 && global_token.type != kw_def && global_token.type != ss_eol && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") == 0) {
             generate_to_list2(sprintf(list_str + list_length, "LABEL label_main\n"));
             main_generated = 1;
         }
@@ -596,7 +598,7 @@ void doMagic() {
         arr_id--;
     }
         free(array);
-        free(tmpToken.content);
+        //free(tmpToken.content);
         tStackASTDispose(stackAST);
         free(stackAST);
         stackAST=NULL;
@@ -612,7 +614,7 @@ void doMagic() {
         free(functionTracker);
         functionTracker=NULL;
         destroy_token(&global_token);
-        destroy_token(&tmpToken);
+        //destroy_token(&tmpToken);
         //free(&global_token.content);
         //free(global_symtable);
         global_symtable = NULL;
