@@ -395,6 +395,7 @@ void doMagic() {
     tFunctionTracker* functionTracker = malloc(sizeof(struct tFT) * 12);            // helper stack to keep track of the function name we are currently in
     tFunctionTrackerInit(functionTracker);
     Token leftSideToken;
+    int main_generated = 0;
 
     while (global_token.type != ss_eof && ERROR_TYPE == 0) {
         // call lexical analysis
@@ -556,11 +557,17 @@ void doMagic() {
             if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {
                 // we are in main function => rule 3 was applied => unset tracker of current function
                 tFunctionTrackerPop(functionTracker);
-                if(!strcmp(tFunctionTrackerGetTop(functionTracker),"Main"))
-                    generate_to_list2(sprintf(list_str+list_length, "LABEL label_main\n"));
+                if(!strcmp(tFunctionTrackerGetTop(functionTracker),"Main")) {
+                    generate_to_list2(sprintf(list_str + list_length, "LABEL label_main\n"));
+                    main_generated = 1;
+                }
             }
             // clearing applied rules at the of one line
             clearRulesApplied();
+        }
+        if (main_generated == 0) {
+            generate_to_list2(sprintf(list_str + list_length, "LABEL label_main\n"));
+            main_generated = 1;
         }
                 if (global_token.type != ss_eof) {
                     destroy_token(&global_token);
