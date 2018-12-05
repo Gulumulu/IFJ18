@@ -38,7 +38,7 @@ loadTests($path);
 $body = testParse();
 
 # put output files from parse through interpret
-#testInterpret();
+testInterpret();
 
 # end editing html
 saveHTML();
@@ -184,7 +184,7 @@ function testParse()
         }
 
         # check return code value
-        if ($returnCode >= 0) {
+        if ($returnCode > 0) {
             $tr = $html->createElement("tr");
             $td = $html->createElement("td", $testName[count($testName)-1]);
             $tr->appendChild($td);
