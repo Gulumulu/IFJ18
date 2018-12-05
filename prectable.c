@@ -213,6 +213,7 @@ char changeTokenTypeToChar(TokenType tokenType) {
         case s_exp_int:
         case s_string:
         case s_func_expr:
+        case kw_nil:
             return 'i';
         case ss_eol:
         case ss_eof:

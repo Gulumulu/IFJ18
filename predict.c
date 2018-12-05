@@ -188,7 +188,7 @@ int colOffset(TokenType symbol) {
             return i;
         }
     }
-    if (symbol == s_int || symbol == s_float || symbol == s_exp_int || symbol == s_exp_int_s || symbol == s_exp_f || symbol == s_exp_f_s) {
+    if (symbol == s_int || symbol == s_float || symbol == s_exp_int || symbol == s_exp_int_s || symbol == s_exp_f || symbol == s_exp_f_s || symbol == kw_nil) {
         return 6;
     }
     if (symbol == kw_length || symbol == kw_substr || symbol == kw_ord || symbol == kw_chr || symbol == kw_inputf || symbol == kw_inputi || symbol == kw_inputs) {

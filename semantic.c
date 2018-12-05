@@ -189,7 +189,7 @@ void findVariable(BSTNodePtr node, Token* token, BSTNodeContentPtr* nodeContentP
                 nodeContentPtr->var[0] = '\0';
             }
 
-        } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float || token->type == s_exp_f || token->type == s_string || token->type == kw_length || token->type == s_func_expr) {
+        } else if (token->type == s_int || token->type == s_exp_int || token->type == s_float || token->type == s_exp_f || token->type == s_string || token->type == kw_length || token->type == s_func_expr || token->type == kw_nil) {
             // leaf will be a constant therefore creation of new BSTNode is needed
             //BSTNodeContentPtr* tmpNode = malloc(sizeof(struct BSTNodeContent));
             /*if (tmpNode == NULL) {
@@ -227,6 +227,11 @@ void findVariable(BSTNodePtr node, Token* token, BSTNodeContentPtr* nodeContentP
                             nodeContentPtr->type = strcpy(nodeContentPtr->type, getFunctionName(token->content));
                             nodeContentPtr->type[strlen(getFunctionName(token->content))] = '\0';
                         }
+                        break;
+                    case kw_nil:
+                        nodeContentPtr->type = malloc(sizeof(char)*4);
+                        nodeContentPtr->type = strcpy(nodeContentPtr->type, "nil");
+                        nodeContentPtr->type[3] = '\0';
                         break;
                     default:
                         nodeContentPtr->type = malloc(sizeof(char)*7);
@@ -393,9 +398,9 @@ int matchingTypes(BSTNodeContentPtr *leftContent, BSTNodeContentPtr *rightConten
         } else {
             // addition or concatenation
             char* numberTypes[6] = {"int", "float", "inputi", "inputs", "length", "ord"};
-            char* stringTypes[4] = {"string", "inputs", "substr", "chr"};
+            char* stringTypes[5] = {"string", "inputs", "substr", "chr", "nil"};
             for (int i = 0; i < 6; i++) {
-                for (int j = 0; j < 4; j++) {
+                for (int j = 0; j < 5; j++) {
                     if ((strcmp(leftContent->type, numberTypes[i]) == 0 && strcmp(rightContent->type, stringTypes[j]) == 0) || (strcmp(rightContent->type, numberTypes[i]) == 0 && strcmp(leftContent->type, stringTypes[j]) == 0) ){
                         errorHandling(4);
                         return 0;
