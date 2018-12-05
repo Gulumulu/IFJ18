@@ -105,6 +105,7 @@ void doMagic() {
     // zacatek programu
     generate_to_list2(sprintf(list_str+list_length,".IFJcode18\n"));
     generate_to_list2(sprintf(list_str+list_length,"CREATEFRAME\n"));
+    generate_to_list2(sprintf(list_str+list_length,"JUMP label_main\n"));
 
 
     BSTNodeContentPtr* tmp;
@@ -424,10 +425,10 @@ void doMagic() {
                 if (stackAST != NULL && ERROR_TYPE == 0) {
                     // result of precedence will be stored in AST - abstract syntax tree
                     if (ifStatement == 1 && global_token.type == kw_then) {
-                        generateIfHead(stackAST->body[stackAST->top],functionTracker);
+                        generateIfHead(stackAST->body[stackAST->top],functionTracker, array, global_symtable, tmpToken);
                     }
                     else if (whileStatement == 1 && global_token.type == kw_do) {
-                        generateWhileHead(stackAST->body[stackAST->top],functionTracker);
+                        generateWhileHead(stackAST->body[stackAST->top],functionTracker, array, global_symtable, tmpToken);
                     }
                     else { // assigning
                         /*generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
@@ -435,8 +436,8 @@ void doMagic() {
                         generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@%s\n", frame, tmpToken.content));
                         generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@__assign%d\n", frame, tmpToken.content, frame,assign));
                         assign++;*/
-                        generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
-                        char *frame = get_frame(functionTracker);
+                        generateExpression(stackAST->body[stackAST->top], functionTracker, array,global_symtable,tmpToken, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                        char *frame = get_frame(functionTracker, array, global_symtable, tmpToken);
 
                         if(BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)) == NULL || BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used == 0) {
                             generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%s\n", frame, leftSideToken.content));
@@ -501,10 +502,10 @@ void doMagic() {
                         // result of precedence will be stored in AST - abstract syntax tree
                         //*AST = *stackAST->body[stackAST->top];
                         if(ifStatement == 1 && global_token.type == kw_then) {
-                            generateIfHead(stackAST->body[stackAST->top],functionTracker);
+                            generateIfHead(stackAST->body[stackAST->top],functionTracker, array, global_symtable, tmpToken);
                         }
                         else if(whileStatement == 1 && global_token.type == kw_do) {
-                            generateWhileHead(stackAST->body[stackAST->top],functionTracker);
+                            generateWhileHead(stackAST->body[stackAST->top],functionTracker, array, global_symtable, tmpToken);
                         }
                         else {
                             /*generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
@@ -512,8 +513,8 @@ void doMagic() {
                             generate_to_list2(sprintf(list_str+list_length, "DEFVAR %s@%s\n", frame, tmpToken.content));
                             generate_to_list2(sprintf(list_str+list_length, "MOVE %s@%s %s@__assign%d\n", frame, tmpToken.content, frame,assign));
                             assign++;*/
-                            generateExpression(stackAST->body[stackAST->top], functionTracker, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
-                            char *frame = get_frame(functionTracker);
+                            generateExpression(stackAST->body[stackAST->top], functionTracker, array,global_symtable,tmpToken, list_str, 0); // vygeneruj do seznamu instrukce vyrazu
+                            char *frame = get_frame(functionTracker, array, global_symtable, tmpToken);
 
                             if(BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content)) == NULL || BSTSearch(findNode(array, global_symtable, tFunctionTrackerGetTop(functionTracker)),hash_id(leftSideToken.content))->used == 0) {
                                 generate_to_list2(sprintf(list_str + list_length, "DEFVAR %s@%s\n", frame, leftSideToken.content));
@@ -555,6 +556,8 @@ void doMagic() {
             if (checkMainFunction() == 1 && strcmp(tFunctionTrackerGetTop(functionTracker), "Main") != 0) {
                 // we are in main function => rule 3 was applied => unset tracker of current function
                 tFunctionTrackerPop(functionTracker);
+                if(!strcmp(tFunctionTrackerGetTop(functionTracker),"Main"))
+                    generate_to_list2(sprintf(list_str+list_length, "LABEL label_main\n"));
             }
             // clearing applied rules at the of one line
             clearRulesApplied();
@@ -568,7 +571,6 @@ void doMagic() {
     if (strcmp(predictiveStack->content[predictiveStack->top - 1], "$") != 0) {
         errorHandling(2);                       // some rule remained on the stack
     }
-
 
 
 
